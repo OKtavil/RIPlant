@@ -1,0 +1,10 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27018:27017"   # host:contenedor
+    volumes:
+      - mongo-data:/data/db   # los datos sobreviven al reiniciar el contenedor
+
+volumes:
+  mongo-data:

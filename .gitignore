@@ -1,0 +1,35 @@
+# Dependencias
+node_modules/
+
+# Compilación / build
+dist/
+build/
+*.tsbuildinfo
+
+# Archivos de Windows (streams NTFS alternativos)
+*:Zone.Identifier
+
+# Entorno
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+npm-debug.log*
+
+# Editor y sistema operativo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.sw?
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

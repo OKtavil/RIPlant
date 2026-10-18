@@ -1,0 +1,33 @@
+# Compilación
+/dist
+
+# Dependencias
+/node_modules
+
+# Build
+*.tsbuildinfo
+
+# Entorno
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor y sistema operativo
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
