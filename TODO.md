@@ -14,7 +14,8 @@ sin haber observado el resultado. El orden importa; cada paso asume el anterior.
 - [x] **Fase 0 — Entorno**: pnpm workspace, docker-compose con MongoDB 7
 - [ ] **Fase 1 — Backend base**: NestJS típico, CRUD en memoria *(en curso)*
 - [ ] **Fase 2 — Persistencia**: conexión a Mongo, colecciones, índices, seeds
-- [ ] **Fase 3 — Usuarios y seguridad**: registro, login, guards, rol admin
+- [ ] **Fase 3 — Usuarios y seguridad**: login con sesión y rol admin ✅;
+      faltan registro, límite de intentos y pantalla de login en React
 - [ ] **Fase 4 — Interacción**: coronas, comentarios, rankings con contadores
 - [ ] **Fase 5 — Frontend**: pantallas del prototipo en React + Vite
 - [ ] **Fase 6 — Tests**: endpoints y lógica clave
@@ -377,9 +378,14 @@ Deuda abierta:
 
 #### Paso 10 — Dejar decidida la regla de admin (#9)
 
-- **Objetivo**: sin implementar nada — solo cerrar la decisión. Se implementa en
-  **Fase 3**, con guards.
-- **Verificación**: decisión escrita en el README.
+- **Objetivo**: cerrar la decisión y proteger las mutaciones de categorías.
+  Implementado en **Fase 3** con **middleware**, no con guards: el usuario pidió
+  explícitamente un middleware y la distinción autenticación/autorización se ve
+  mejor en dos capas (`SesionesMiddleware` + `AdminMiddleware`).
+- **Estado**: ✅ implementado. `POST`/`PUT`/`DELETE` de categorías exigen sesión
+  con rol `admin` (`401` sin sesión, `403` con rol `usuario`). `GET` sigue público.
+- **Verificación**: `test/sesiones.e2e-spec.ts` cubre los tres casos, y
+  `docs/spec.md` deja el contrato escrito.
 
 ### Etapa 1B — Lápidas
 
@@ -423,5 +429,5 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 | 3 | Una o varias categorías | Paso 14 |
 | 5 | Insignia Zombie (falta estado) | Fase 4 |
 | 8 | Borrar categoría en uso | Paso 9 |
-| 9 | ¿Solo admin administra categorías? | Paso 10 (decidir) / Fase 3 (implementar) |
+| 9 | ¿Solo admin administra categorías? | Resuelto: middleware + rol admin (Fase 3) |
 | 1 | Dónde se guarda la foto | Fase 2 |

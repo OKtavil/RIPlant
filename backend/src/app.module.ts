@@ -1,10 +1,17 @@
-import { Module } from '@nestjs/common';
+import {
+  type MiddlewareConsumer,
+  Module,
+  type NestModule,
+} from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LapidasModule } from './lapidas/lapidas.module';
 import { CategoriasModule } from './categorias/categorias.module';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LapidasModule } from './lapidas/lapidas.module';
+import { SesionesModule } from './sesiones/sesiones.module';
+import { SesionesMiddleware } from './sesiones/sesiones.middleware';
+import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
   imports: [
@@ -18,10 +25,21 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         ),
       }),
     }),
+    UsuariosModule,
+    SesionesModule,
     LapidasModule,
     CategoriasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  /**
+   * Resolución de sesión para todas las rutas. Se registra desde el módulo raíz
+   * (distancia 0), así que Nest la monta **antes** que los middlewares de
+   * módulos más lejanos: cuando `AdminMiddleware` corre, `req.sesion` ya está.
+   */
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(SesionesMiddleware).forRoutes('*');
+  }
+}

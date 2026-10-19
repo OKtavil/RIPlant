@@ -9,13 +9,13 @@ Red social retro donde la gente publica **lápidas** para las plantas que no sob
 - ✅ Prototipo de diseño (5 pantallas)
 - ✅ Esquema de datos original (relacional) y su traducción a MongoDB (propuesta)
 - ✅ Frontend funcional en React: cementerio, rankings, publicación, detalle, perfil y categorías
-- ✅ Backend funcional en NestJS con API en memoria para lápidas y categorías
+- ✅ Backend funcional en NestJS con API para lápidas y categorías
 - ✅ Persistencia en MongoDB con Mongoose, Docker, semillas e índices
-- ⬜ Autenticación y autorización: quedan como siguiente iteración
+- ✅ Sesiones con cookie httpOnly y CRUD de categorías protegido para administradores
 
-La entrega actual prioriza tener un producto navegable de extremo a extremo. Mientras no
-se conecte MongoDB, el backend reinicia con datos de ejemplo; el frontend conserva un
-modo demostración local si la API no está levantada.
+La entrega actual prioriza tener un producto navegable de extremo a extremo. El backend
+necesita MongoDB para arrancar (ver [Cómo correrlo](#cómo-correrlo)). La API de sesiones
+ya existe; conectarla al frontend queda para la próxima iteración.
 
 ## Documentación de la entrega
 
@@ -43,6 +43,87 @@ modo demostración local si la API no está levantada.
 4. **Detalle de lápida**: epitafio, autor, categoría, causa de muerte, fecha, *Dar corona* y comentarios.
 5. **Perfil**: estadísticas (plantas asesinadas, coronas recibidas), insignias y "su cementerio".
 6. **Categorías (CRUD)**: listar, crear, editar y eliminar categorías. Solo para administradores. *Pendiente de diseñar en el prototipo.*
+7. **Autenticación**: pantallas de iniciar sesión, crear cuenta, recuperar contraseña y establecer una nueva contraseña. *Diseño funcional documentado; queda pendiente de implementación.*
+
+### Pantallas de autenticación
+
+Estas pantallas definen el flujo visual y funcional del acceso a R.I.Planta. En esta
+iteración solo se documenta la experiencia; no se implementan todavía rutas, componentes,
+endpoints ni persistencia de usuarios.
+
+#### 1. Iniciar sesión
+
+Pantalla de entrada para usuarios que ya tienen una cuenta.
+
+- **Encabezado:** logotipo `R.I.PLANTA` y texto breve: "Vuelve a tu jardín memorial".
+- **Campos:**
+  - `Correo electrónico` — obligatorio, formato de email.
+  - `Contraseña` — obligatoria, oculta por defecto y con control para mostrar u ocultar.
+- **Acciones:**
+  - `Entrar` — valida los campos y envía las credenciales.
+  - `¿Olvidaste tu contraseña?` — lleva a Recuperar contraseña.
+  - `Crear una cuenta` — lleva a Crear cuenta.
+- **Estados:** formulario inicial, validación de campos, credenciales incorrectas,
+  usuario bloqueado o deshabilitado, error temporal del servidor y envío en progreso.
+- **Éxito:** redirige al Cementerio y conserva la sesión del usuario.
+
+#### 2. Crear cuenta
+
+Pantalla para registrar un nuevo jardinero.
+
+- **Encabezado:** `Únete al jardín memorial`.
+- **Campos:**
+  - `Nombre de usuario` — obligatorio y único.
+  - `Correo electrónico` — obligatorio y único.
+  - `Contraseña` — obligatoria, con requisitos visibles antes de enviar.
+  - `Confirmar contraseña` — debe coincidir con la contraseña.
+- **Acciones:**
+  - `Crear cuenta` — valida y registra al usuario.
+  - `Ya tengo una cuenta` — vuelve a Iniciar sesión.
+- **Estados:** validación por campo, nombre de usuario o correo ya registrados, contraseñas
+  diferentes, error temporal del servidor y envío en progreso.
+- **Éxito:** muestra confirmación y lleva a Iniciar sesión, o inicia sesión directamente
+  si posteriormente se decide activar el acceso automático.
+
+#### 3. Recuperar contraseña
+
+Pantalla para solicitar un enlace de recuperación sin revelar si el correo existe.
+
+- **Encabezado:** `Recupera el acceso a tu jardín`.
+- **Campo:** `Correo electrónico` — obligatorio, con formato válido.
+- **Acciones:**
+  - `Enviar enlace` — solicita el correo de recuperación.
+  - `Volver a iniciar sesión` — regresa a Iniciar sesión.
+- **Estados:** validación del correo, envío en progreso y error temporal del servidor.
+- **Éxito:** muestra siempre un mensaje neutro: "Si existe una cuenta con ese correo,
+  recibirás instrucciones para recuperar el acceso".
+
+#### 4. Establecer nueva contraseña
+
+Pantalla abierta desde el enlace de recuperación.
+
+- **Encabezado:** `Elige una nueva contraseña`.
+- **Campos:**
+  - `Nueva contraseña` — obligatoria, con los requisitos visibles.
+  - `Confirmar contraseña` — debe coincidir con la nueva contraseña.
+- **Acción:** `Guardar nueva contraseña`.
+- **Estados:** enlace inválido o expirado, contraseñas diferentes, validación por campo,
+  envío en progreso y error temporal del servidor.
+- **Éxito:** confirma el cambio y redirige a Iniciar sesión.
+
+#### Navegación y criterios comunes
+
+- Las pantallas mantienen el estilo retro pixelado del resto del producto y son
+  utilizables en móvil y escritorio.
+- Los mensajes de validación se muestran junto al campo correspondiente, en español, sin
+  borrar los valores que el usuario ya escribió.
+- El botón principal queda deshabilitado durante el envío para evitar solicitudes
+  duplicadas.
+- Ninguna pantalla muestra contraseñas en texto claro ni datos sensibles en mensajes de
+  error.
+- El usuario autenticado puede cerrar sesión desde su menú de perfil.
+- Las pantallas de autenticación no muestran datos de demostración ni permiten continuar
+  como invitado: si el acceso falla, se conserva la pantalla y se informa el error.
 
 ## Base de datos: MongoDB
 
@@ -417,9 +498,12 @@ pnpm install
 
 ### 2. Arrancar la aplicación
 
-La versión actual guarda datos en memoria. Abre dos terminales desde la raíz:
+El backend necesita MongoDB. Levantá el contenedor y después abrí dos terminales
+desde la raíz:
 
 ```bash
+docker compose up -d mongo
+
 # Terminal 1
 pnpm --filter backend run start:dev
 
@@ -453,6 +537,56 @@ La cadena predeterminada es `mongodb://localhost:27018/riplanta`. Para cambiarla
 copia [backend/.env.example](./backend/.env.example) como `backend/.env` y edita
 `MONGODB_URI`. Las colecciones se inicializan con datos semilla automáticamente.
 Los datos sobreviven al reinicio porque Docker usa el volumen `mongo-data`.
+
+### Sesiones y administración
+
+El backend administra sesiones en el servidor y entrega al cliente solo un token
+opaco en una cookie **httpOnly**. La cookie no se puede leer desde JavaScript;
+en MongoDB se guarda únicamente el SHA-256 del token, nunca el token en claro.
+
+| Método | Ruta | Resultado |
+|---|---|---|
+| POST | `/sesiones` | Inicia sesión con `{ username, password }` y devuelve la cookie |
+| GET | `/sesiones/actual` | Sesión vigente o `401` |
+| DELETE | `/sesiones` | Cierra la sesión y borra la cookie (`204`) |
+
+`POST /categorias`, `PUT /categorias/:id` y `DELETE /categorias/:id` exigen rol
+`admin`: sin sesión devuelven `401`, con rol `usuario` devuelven `403`. El
+`GET /categorias` sigue siendo público. La autorización se implementa con
+`AdminMiddleware`, aplicado solo a esas tres rutas.
+
+El administrador se siembra al arrancar desde `ADMIN_USERNAME` y
+`ADMIN_PASSWORD`. Fuera de producción, si `ADMIN_PASSWORD` no está definida, se
+usa `riplanta123` y el log lo advierte. En producción es obligatoria: sin ella no
+se crea el administrador y se registra un error. La sesión dura 8 horas por
+defecto (`SESION_TTL_HORAS`). Un reinicio del backend no cierra las sesiones,
+porque viven en MongoDB y no en memoria.
+
+Prueba manual del flujo:
+
+```bash
+# 1. Login: guarda la cookie en cookies.txt
+curl -c cookies.txt -X POST http://localhost:3000/sesiones \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"riplanta123"}'
+
+# 2. ¿Quién soy?
+curl -b cookies.txt http://localhost:3000/sesiones/actual
+
+# 3. Crear una categoría como admin
+curl -b cookies.txt -X POST http://localhost:3000/categorias \
+  -H 'Content-Type: application/json' -d '{"nombre":"Suculentas"}'
+
+# 4. Cerrar sesión
+curl -b cookies.txt -X DELETE http://localhost:3000/sesiones
+```
+
+La cookie usa `SameSite=Lax`, que frena los `POST` cross-site (mitigación básica
+de CSRF). El CORS acepta credenciales porque el frontend corre en otro puerto;
+en producción conviene reemplazar `origin: true` por una allowlist explícita. Para
+que el navegador envíe y guarde la cookie, el `fetch` del frontend tiene que usar
+`credentials: 'include'`. No hay límite de intentos de login todavía: es la deuda
+de seguridad más importante que queda.
 
 ## Para retomar el proyecto en otro lugar
 
