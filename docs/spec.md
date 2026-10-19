@@ -39,8 +39,9 @@ una corona y consultar rankings. Una persona administradora puede organizar cate
   quince minutos responde `429` sin gastar otra comparación bcrypt, y un tope global de
   comparaciones simultáneas evita que un flood sature el event loop.
 - Una corona incrementa exactamente una vez por acción en esta versión sin autenticación.
-- El frontend muestra estados útiles: demostración local si la API no está disponible,
-  confirmación después de publicar y confirmación antes de eliminar categorías.
+- El frontend muestra estados útiles: aviso de error si la API no está disponible (sin
+  datos de demostración; los mocks se reservan para las pruebas), confirmación después
+  de publicar y confirmación antes de eliminar categorías.
 - Las pruebas cubren el camino feliz y los errores HTTP principales.
 
 ## Casos de uso ODD

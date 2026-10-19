@@ -15,7 +15,8 @@ Red social retro donde la gente publica **lápidas** para las plantas que no sob
 
 La entrega actual prioriza tener un producto navegable de extremo a extremo. El backend
 necesita MongoDB para arrancar (ver [Cómo correrlo](#cómo-correrlo)). La API de sesiones
-ya existe; conectarla al frontend queda para la próxima iteración.
+ya está conectada al frontend: iniciar sesión, recuperar la sesión vigente y cerrarla
+funcionan de extremo a extremo.
 
 ## Documentación de la entrega
 
@@ -43,13 +44,14 @@ ya existe; conectarla al frontend queda para la próxima iteración.
 4. **Detalle de lápida**: epitafio, autor, categoría, causa de muerte, fecha, *Dar corona* y comentarios.
 5. **Perfil**: estadísticas (plantas asesinadas, coronas recibidas), insignias y "su cementerio".
 6. **Categorías (CRUD)**: listar, crear, editar y eliminar categorías. Solo para administradores. *Pendiente de diseñar en el prototipo.*
-7. **Autenticación**: pantallas de iniciar sesión, crear cuenta, recuperar contraseña y establecer una nueva contraseña. *Diseño funcional documentado; queda pendiente de implementación.*
+7. **Autenticación**: pantallas de iniciar sesión, crear cuenta, recuperar contraseña y establecer una nueva contraseña. *Iniciar sesión está implementado; crear cuenta y recuperar/restablecer contraseña quedan pendientes de endpoints en el backend.*
 
 ### Pantallas de autenticación
 
-Estas pantallas definen el flujo visual y funcional del acceso a R.I.Planta. En esta
-iteración solo se documenta la experiencia; no se implementan todavía rutas, componentes,
-endpoints ni persistencia de usuarios.
+Estas pantallas definen el flujo visual y funcional del acceso a R.I.Planta. Iniciar
+sesión ya está implementado contra la API de sesiones; crear cuenta, recuperar contraseña
+y establecer una nueva contraseña existen como pantallas con sus campos deshabilitados,
+a la espera de que el backend exponga esos endpoints.
 
 #### 1. Iniciar sesión
 
@@ -57,7 +59,7 @@ Pantalla de entrada para usuarios que ya tienen una cuenta.
 
 - **Encabezado:** logotipo `R.I.PLANTA` y texto breve: "Vuelve a tu jardín memorial".
 - **Campos:**
-  - `Correo electrónico` — obligatorio, formato de email.
+  - `Nombre de usuario` — obligatorio; es el mismo que valida `POST /sesiones`.
   - `Contraseña` — obligatoria, oculta por defecto y con control para mostrar u ocultar.
 - **Acciones:**
   - `Entrar` — valida los campos y envía las credenciales.

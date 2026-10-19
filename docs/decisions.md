@@ -8,8 +8,8 @@
 preparado para el puerto `27018`. Mongoose hace visible el esquema, los índices y la
 conversión entre documentos y el dominio sin introducir un ORM relacional.
 
-**Consecuencia:** el backend necesita MongoDB para el modo real. El modo demostración
-del frontend sigue permitiendo explorar la UI sin servicios.
+**Consecuencia:** el backend necesita MongoDB para el modo real. La interfaz no tiene
+modo demostración: si la API falla, informa el error (ver D-007).
 
 ## D-006 — IDs numéricos del dominio
 
@@ -30,13 +30,12 @@ restricciones.
 
 ## D-003 — Estado optimista controlado en React
 
-**Decisión:** la interfaz actualiza inmediatamente la experiencia y conserva un modo
-demostración cuando la API no está disponible.
+**Decisión:** la interfaz actualiza inmediatamente la experiencia y, si la API no está
+disponible, informa el error en lugar de conservar un estado que parece guardado.
 
-**Análisis:** permite explorar el prototipo sin levantar servicios, que es valioso en
-una ruta de aprendizaje. Las acciones de API siguen intentando persistir cuando el
-backend está disponible; la siguiente iteración debe distinguir mejor errores de red
-de errores de negocio y sincronizar con una consulta posterior.
+**Análisis:** la siguiente iteración debe distinguir mejor errores de red de errores de
+negocio y sincronizar con una consulta posterior. El modo demostración que preveía esta
+decisión queda descartado por D-007.
 
 ## D-004 — Una categoría por lápida en la UI inicial
 
@@ -53,3 +52,16 @@ usuario. El modelo puede evolucionar a `categoriaIds` cuando exista un caso real
 **Análisis:** SDD reduce ambigüedad técnica; ODD evita completar endpoints que no
 resuelven una capacidad visible. Juntos mantienen el proyecto pequeño, enseñable y
 verificable.
+
+## D-007 — Sin datos de demostración en la interfaz
+
+**Decisión:** la interfaz no incluye datos de demostración ni persistencia local: si la
+API no está disponible, informa el error. Los datos simulados se reservan para los mocks
+de las pruebas.
+
+**Análisis:** un modo demostración oculta fallos reales de red y presenta cambios como
+si estuvieran guardados cuando no lo están. `App.tsx` ya informa el error sin datos de
+demostración; el mock pertenece al entorno de pruebas, no al producto.
+
+**Consecuencia:** invalida el modo demostración previsto en D-003 y la frase equivalente
+de la consecuencia de D-001.

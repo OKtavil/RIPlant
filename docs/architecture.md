@@ -62,7 +62,8 @@ prueban ese orden de verdad, no lo asumen.
 
 1. Extraer interfaces de repositorio (`LapidasRepository`, `CategoriasRepository`).
 2. Añadir usuario autenticado y hacer la corona idempotente por `(usuarioId, lapidaId)`.
-3. Añadir límite de intentos de login y pantalla de login en React.
+3. Añadir los endpoints de registro y recuperación de contraseña que el frontend ya
+   tiene como pantallas deshabilitadas.
 4. Añadir pruebas de integración contra MongoDB en Docker CI.
 
 ## Principios de mantenimiento

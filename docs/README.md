@@ -59,9 +59,10 @@ datos ahora sí sobreviven al reinicio del backend porque viven en el volumen Do
 | Categorías | Abre `Categorías` → agrega, edita y elimina | La lista refleja cada operación y pide confirmación al eliminar |
 | Perfil | Abre `Mi perfil` | Se muestran estadísticas y las lápidas publicadas por `Tú` |
 
-Si el backend no está levantado, la interfaz entra en **modo demostración** y permite
-explorar/publicar localmente; esos cambios no sobreviven a una recarga. Con MongoDB y
-el backend activos, las peticiones se envían a `http://localhost:3000` y persisten.
+Si el backend no está levantado, la interfaz **no entra en modo demostración**: informa
+el error y no presenta cambios como si estuvieran guardados. Los datos simulados se
+reservan para los mocks de las pruebas. Con MongoDB y el backend activos, las peticiones
+se envían a `http://localhost:3000` y persisten.
 
 ## Probar la API directamente
 
