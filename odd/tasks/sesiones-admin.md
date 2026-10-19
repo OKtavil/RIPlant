@@ -74,7 +74,7 @@ Rama: `copilot/working-copy`. Runner: `pnpm --filter backend run ...`.
       presupuesto de líneas; se commitea después del cierre de la review (L14).
       *(inline)*
 - [x] T12 — Corregir `R3-cookie-malformed` (S12): `leerCookie` no debe lanzar con
-      un valor que no se puede decodificar. *(inline; este mismo work unit)*
+      un valor que no se puede decodificar. Commit: `291625b`. *(inline)*
 
 Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
 **item 5 (dependencia nueva: bcryptjs)**. Requiere verificación independiente.
@@ -180,3 +180,11 @@ Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
   entrada, 13 idénticos, y las 3 diferencias son exactamente los valores con
   percent-encoding inválido (`%`, `%E0%A4%A`, `%ZZ`), donde antes lanzaba y ahora
   devuelve `undefined`. Ninguna diferencia en los casos válidos.
+- **L18** — Assessment de RDD sobre el slice desde la última frontera revisada
+  (`d3c79e9`, la que quedó aceptada en L14): `risk: medium`,
+  `review_due: false`, `review_due_reason: under_budget` (142 líneas cambiadas
+  en 4 archivos; el único `executable_change` señalado es `cookie.ts`). Como la
+  razón es `under_budget` y no `passive`, la frontera **no** avanza: este trabajo
+  queda pendiente dentro del slice hasta que un commit posterior llegue al
+  presupuesto de review. No se abrió ninguna review para `291625b`.
+  Líneas pendientes acumuladas desde `d3c79e9`: 142.
