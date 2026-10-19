@@ -356,3 +356,35 @@ copia (`401`, `403`, `429`, `400`, `404`, red).
   `stacked-to-main` o `feature-branch-chain` (encadenado por slices). También queda
   sin commitear `R.I.Planta - Diseño retro.html` y `riplanta.op`, que son la fuente de
   verdad del diseño y no deberían perderse.
+
+- **R1 (2026-10-19, review bloqueante — consentimiento otorgado):** el usuario eligió
+  **"Review this change"** (`granted`). Al ejecutar el START:
+  `lens_context_budget_exceeded` — la evidencia completa del candidato excede el budget
+  nativo. El stop confirma que **no se creó autoridad**, así que no hay nada que
+  abandonar ni reparar. Remedio indicado por el propio stop: partir el candidato en una
+  secuencia encadenada de commits más chicos.
+
+- **R2 (2026-10-19, cadena de slices):** se rehízo la historia en 7 commits, cada uno
+  con su conteo de líneas autoradas:
+  | Commit | Slice | +/− |
+  |---|---|---|
+  | `25ee66e` | tokens, iconos, primitivas, cliente HTTP | +465 / −25 |
+  | `030a5dd` | hoja de estilos del prototipo | +888 / −255 |
+  | `8a12607` | feature lápidas y sus 5 pantallas | +566 / −8 |
+  | `177be80` | categorías CRUD y las 4 de auth | +453 / −177 |
+  | `b015cde` | composición de la app y sesión | +205 / −1 |
+  | `d88d7d1` | retiro de assets del template | +0 / −2 |
+  | `4b7843b` | documento ODD | +358 / −4 |
+
+  `pnpm build` y `pnpm lint` pasan sobre el árbol final. El árbol de trabajo quedó
+  intacto (`App.tsx` del scaffold, assets y CSS se retiraron en los slices
+  correspondientes).
+
+- **R3 (2026-10-19, límite de la herramienta detectado):** `gentle-ai review assess`
+  **no acota el candidato al `--base-ref` que se le pasa**: con `--base-ref 030a5dd`
+  reporta 24 paths / 1585 líneas, cuando el diff real entre `030a5dd` y el commit
+  siguiente es de **8 paths**. Los valores que sí respeta son los que puede canonicalizar
+  como branch point (`b015cde~1` → 6 paths / 566 líneas, `medium/under_budget`;
+  `4b7843b~1` → 1 path / 358 líneas, `passive`). Para reanudar la review hay que
+  decidir qué slice se somete y con qué base canónica, o pedirle al usuario la
+  estrategia de entrega (P1) para saber cuál es la primera slice a revisar.
