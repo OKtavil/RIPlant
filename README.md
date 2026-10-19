@@ -154,6 +154,115 @@ Ref: lapidas_has_categorias.category_id > categorias.id
 
 </details>
 
+## Convenciones de idioma y vocabulario
+
+**Decisión:** no hay un idioma único para el proyecto. Hay un criterio por cada capa,
+según quién la lee. Aplican al código, a los datos, a la interfaz y a la documentación.
+
+### 1. El vocabulario del dominio va en el idioma del dominio, y la misma palabra en todas las capas
+
+Quien nombra la cosa es el negocio, no el lector.
+
+`categoria`, `lapida`, `epitafio`, `corona`, `plantasAsesinadas` van en español, y van
+iguales en el identificador del código, en el nombre de la colección, en la clave del
+JSON y en la etiqueta de la pantalla.
+
+La razón no es estética: **cada traducción entre capas es una oportunidad de producir
+`undefined` sin darse cuenta.** Si el DTO llama `nombre` y Mongo guarda `name`, hace
+falta una capa de mapeo y hay que acordarse de escribirla. Con una sola palabra en las
+cuatro capas, no hay capa que olvidar.
+
+Es lo que en Domain-Driven Design se denomina **Ubiquitous Language**: el vocabulario del
+negocio debe ser idéntico en la conversación, en el código, en los datos y en la
+interfaz.
+
+### 2. La copia que ve el usuario la escribe el frontend
+
+**Decisión: los mensajes de la interfaz los traduce React, no el backend.**
+
+El backend responde con un código de estado y un mensaje técnico. La pantalla mapea esa
+respuesta a texto en español y decide dónde y cómo mostrarlo. Esto evita depender de
+mensajes que genera el framework o de terceros para la experiencia de usuario.
+
+Consecuencias:
+
+- Los mensajes que produce el framework (`"property rol should not exist"`,
+  `Internal server error`, `404`, `405`) están bien en inglés: son texto técnico y no
+  llegan a una pantalla.
+- Los `message:` de `CreateCategoriaDTO` dejan de ser copia de usuario y pasan a ser
+  ayuda de desarrollo (Postman, logs, respuesta de `curl`). Se mantienen en español
+  porque el único que los lee habla español.
+- **Pendiente:** la respuesta de validación de hoy es solo una lista de frases, sin el
+  campo: `{"message":["El nombre de la categoría es obligatorio"],"statusCode":400}`.
+  Sin el campo, la interfaz no sabe qué input resaltar y tendría que adivinarlo
+  comparando el texto. Para que el frontend sea dueño de la copia necesita un error
+  **estructurado** (campo + código de validación) en lugar de una frase; eso se
+  consigue con un `exceptionFactory` en el `ValidationPipe`. → `TODO.md`, deuda 10.
+
+### 3. Los nombres que no se inventan van en inglés; los mensajes propios, en español
+
+En inglés todo lo que definen el framework, la librería o el estándar: `findAll`,
+`create`, `@Injectable()`, `Service`, `DTO`, `beforeEach`, `describe`/`it`,
+Conventional Commits, `README`. Nombrarlo distinto no aporta y resta: hay menos
+documentación disponible, menos resultados de búsqueda y más fricción al leer un stack
+trace.
+
+En español los mensajes que se redactan en este proyecto, porque el único que los lee es
+el desarrollador y habla español.
+
+### 4. Lo que impone la herramienta no se traduce
+
+`_id`, `email`, `username`, `passwordHash`, `createdAt`, `@Injectable()`, `README.md`,
+`TODO.md`. Son artefactos de infraestructura, no del dominio.
+
+### Por qué no todo en inglés
+
+Si el dominio estuviera en inglés, correspondería. No lo está, y traducirlo casta
+significado:
+
+- **`corona`** es una ofrenda floral fúnebre. En inglés sería `crown` o `wreath`: la
+  primera es incorrecta y la segunda ya no conecta con la palabra que usan el visitante
+  y el propio dueño del proyecto.
+- **`plantasAsesinadas`** es un concepto con la voz propia del proyecto. `killedPlants`
+  o `murderedPlants` son traducciones que esa voz pierden.
+
+El argumento a favor de escribir todo en inglés es de escala: equipos con idiomas
+distintos que quieren reducir la fricción entre ellos. Ese argumento no aplica a un
+proyecto cuyo dominio y cuya interfaz están en español.
+
+### Glosario
+
+Una fila equivale a una palabra en todas las columnas. Si una columna cambia, debe ser
+una decisión y no un descuido. Revisar estas filas en un PR no tiene costo y detecta un
+`name` donde debería haber `nombre`, que es justamente un fallo que `build`, `lint` ni
+`test` identifican.
+
+| Concepto del negocio | Identificador en código | Colección | Claves donde aparece en JSON | Etiqueta en UI |
+|---|---|---|---|---|
+| Categoría | `Categoria` | `categorias` | `nombre` (en `categorias`), `categoriaIds` (en `lapidas`) | "Categoría" |
+| Lápida | `Lapida` | `lapidas` | `epitafio`, `fechaFallecimiento`, `causaMuerte` | "Lápida" |
+| Corona (ofrenda) | `Corona` | `coronas` | `coronasCount` (en `lapidas`) | "Corona" |
+| Comentario | `Comentario` | `comentarios` | `comentario` | "Comentario" |
+| Usuario | `Usuario` | `usuarios` | `plantasAsesinadas`, `rol` | "Usuario" |
+
+**Este glosario vive al lado de la propuesta de esquema, no en otro documento.** Son el
+mismo concepto descrito dos veces; si se separan en ficheros distintos se desincronizan,
+y esa desincronización es exactamente el fallo que previene. Completa la tabla de
+**Idea del producto**, que explica *qué es* cada concepto; esta explica *cómo se
+escribe* en cada capa.
+
+### Dónde aplica cada regla
+
+| Dónde | Idioma | Regla |
+|---|---|---|
+| Claves JSON, colecciones, identificadores de dominio | Español | 1 |
+| Copia de pantalla | Español, escrita en el frontend | 2 |
+| `message:` de los DTO, logs, excepciones internas | Español | 3 |
+| Funciones, decoradores, estructuras de test, ficheros | Inglés | 3 y 4 |
+| Commits | Conventional Commits en inglés, scope en español | 3 |
+| Nombres de `describe`/`it` | `should ...` en inglés con el término de dominio en español | 3 |
+| Documentación (`README.md`, `TODO.md`) | Español | — |
+
 ## Revisión: decisiones abiertas
 
 Al comparar el esquema con el prototipo, estos puntos siguen sin decidir:
