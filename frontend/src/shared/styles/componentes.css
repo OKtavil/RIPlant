@@ -1,0 +1,882 @@
+/*
+ * Componentes de diseño del prototipo retro.
+ * Cada regla traduce literalmente los estilos del HTML de referencia.
+ */
+
+/* ── Pantalla ─────────────────────────────────────────────────────────── */
+
+.pantalla {
+  min-height: 100vh;
+  padding: var(--padding-pantalla);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-pantalla);
+  color: var(--texto);
+}
+
+.pantalla__contenido {
+  flex-grow: 1;
+  min-height: 0;
+  display: flex;
+  gap: var(--gap-pantalla);
+}
+
+/* Fila de acciones de sesión, alineada a la derecha bajo la nav */
+.pantalla__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 18px;
+  margin-top: calc(var(--gap-pantalla) * -1 + 6px);
+}
+
+/* ── Barra de navegación ──────────────────────────────────────────────── */
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--panel);
+  border: 3px solid var(--borde-panel);
+  border-radius: var(--radio-panel);
+  padding: 14px 22px;
+  box-shadow: inset 0 0 0 2px var(--inset-panel);
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.nav__logo {
+  font-family: var(--fuente-pixel);
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: var(--amarillo);
+}
+
+.nav__logo:hover {
+  color: var(--amarillo);
+}
+
+.nav__items {
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+
+.nav__item {
+  font-family: var(--fuente-pixel);
+  font-size: 10px;
+  color: var(--crema);
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.nav__item:hover {
+  color: var(--amarillo);
+}
+
+.nav__item--activo {
+  color: var(--amarillo);
+}
+
+/* ── Paneles ──────────────────────────────────────────────────────────── */
+
+.panel-oscuro {
+  background: var(--panel);
+  border: 3px solid var(--borde-panel);
+  border-radius: var(--radio-panel);
+  box-shadow: inset 0 0 0 2px var(--inset-panel);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+}
+
+.panel-oscuro__titulo {
+  font-family: var(--fuente-pixel);
+  font-size: 13px;
+  color: var(--amarillo);
+}
+
+.panel-oscuro__badge {
+  font-family: var(--fuente-pixel);
+  font-size: 8px;
+  color: var(--crema);
+}
+
+.tarjeta {
+  background: var(--crema);
+  border: 3px solid var(--madera);
+  border-radius: var(--radio-tarjeta);
+  padding: 20px;
+}
+
+.tarjeta--suave {
+  border-width: 2px;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+/* ── Botones ──────────────────────────────────────────────────────────── */
+
+.boton {
+  font-family: var(--fuente-pixel);
+  font-size: 11px;
+  background: linear-gradient(var(--dorado-claro), var(--dorado));
+  border: 3px solid var(--inset-panel);
+  border-radius: 8px;
+  padding: 14px;
+  color: var(--texto-fuerte);
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.boton:hover:not(:disabled) {
+  background: var(--dorado-hover);
+  color: var(--texto-fuerte);
+}
+
+.boton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.boton--chico {
+  font-size: 8px;
+  border-width: 2px;
+  border-radius: var(--radio-control);
+  padding: 8px 10px;
+}
+
+.boton--bloque {
+  width: 100%;
+}
+
+.boton--peligro {
+  background: var(--rojo);
+  color: var(--crema);
+}
+
+.boton--peligro:hover:not(:disabled) {
+  background: var(--rojo);
+  color: var(--crema);
+}
+
+.texto-boton {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+}
+
+/* ── Formularios ──────────────────────────────────────────────────────── */
+
+.campo {
+  display: block;
+}
+
+.campo__etiqueta {
+  font-size: 11px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+  color: var(--texto);
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  font-family: var(--fuente-cuerpo);
+  font-size: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 2px solid var(--madera);
+  border-radius: var(--radio-control);
+  background: var(--blanco);
+  color: var(--texto);
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: var(--texto-placeholder);
+}
+
+.campo textarea {
+  resize: vertical;
+}
+
+.campo__ayuda {
+  font-size: 10px;
+  color: var(--texto-suave);
+  margin-top: 4px;
+}
+
+.campo__accion {
+  text-align: right;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.fila {
+  display: flex;
+  gap: var(--gap-bloque);
+}
+
+.fila > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Avisos de estado ─────────────────────────────────────────────────── */
+
+.aviso {
+  font-family: var(--fuente-cuerpo);
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: var(--radio-control);
+  padding: 10px 12px;
+  border-left: 3px solid var(--inset-panel);
+  background: var(--menta);
+  color: var(--texto);
+  margin: 0;
+}
+
+.aviso--error {
+  background: #f6d9d3;
+  border-left-color: var(--rojo);
+}
+
+.aviso--info {
+  background: var(--menta);
+}
+
+.aviso--pendiente {
+  background: #f3e3c6;
+  border-left-color: var(--dorado);
+}
+
+.aviso__titulo {
+  font-weight: 700;
+  display: block;
+}
+
+/* ── Tarjeta de lápida ────────────────────────────────────────────────── */
+
+.lapida {
+  background: var(--menta);
+  border: 3px solid var(--blanco);
+  outline: 2px solid var(--madera);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  color: var(--texto);
+}
+
+.lapida:hover {
+  color: var(--texto);
+}
+
+.lapida__foto {
+  width: 100%;
+  border-radius: var(--radio-control);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lapida__foto--alta {
+  height: 84px;
+}
+
+.lapida__foto--baja {
+  height: 70px;
+}
+
+.lapida__nombre {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--texto-fuerte);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.lapida__nombre--chico {
+  font-size: 11px;
+}
+
+.lapida__meta {
+  font-size: 10px;
+  color: var(--texto-suave);
+}
+
+.lapida__autor {
+  font-size: 10px;
+  color: var(--madera);
+}
+
+.lapida__coronas {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--madera);
+}
+
+/* Celda punteada "Publica tu lápida" / "Nueva lápida" */
+.lapida--nueva {
+  background: var(--menta);
+  border: 3px dashed var(--madera);
+  outline: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--madera);
+  font-size: 11px;
+  text-align: center;
+  min-height: 120px;
+}
+
+.lapida--nueva:hover {
+  color: var(--madera);
+}
+
+.lapida--nueva--baja {
+  min-height: 96px;
+}
+
+/* ── Rankings ─────────────────────────────────────────────────────────── */
+
+.ranking {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ranking__nota {
+  font-size: 10px;
+  color: var(--texto-muted);
+}
+
+.ranking__fila {
+  background: var(--crema);
+  border: 3px solid var(--madera);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: var(--texto);
+}
+
+.ranking__fila:hover {
+  color: var(--texto);
+}
+
+.ranking__puesto {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.ranking__detalle {
+  font-size: 10px;
+  color: var(--texto-muted);
+}
+
+.ranking__valor {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--madera);
+  white-space: nowrap;
+}
+
+.ranking__valor--rojo {
+  color: var(--rojo);
+}
+
+/* ── Sidebar del cementerio ───────────────────────────────────────────── */
+
+.sidebar {
+  flex: 1;
+  min-width: 0;
+  background: var(--madera);
+  border: 3px solid var(--borde-panel);
+  border-radius: var(--radio-panel);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-bloque);
+}
+
+.sidebar__cabecera {
+  background: var(--panel);
+  border-radius: var(--radio-control);
+  padding: 8px 12px;
+  font-family: var(--fuente-pixel);
+  font-size: 10px;
+  color: var(--amarillo);
+  text-align: left;
+}
+
+.sidebar__cabecera:hover {
+  color: var(--amarillo);
+}
+
+.sidebar__lista {
+  background: var(--crema);
+  border-radius: var(--radio-control);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.sidebar__lista--crece {
+  flex-grow: 1;
+}
+
+.sidebar__fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--texto);
+}
+
+.sidebar__fila:hover {
+  color: var(--texto);
+}
+
+.sidebar__valor {
+  color: var(--madera);
+  white-space: nowrap;
+}
+
+.sidebar__valor--rojo {
+  color: var(--rojo);
+}
+
+.sidebar__nota {
+  background: var(--crema);
+  border-radius: var(--radio-control);
+  padding: 12px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--texto);
+}
+
+.sidebar__nota strong {
+  color: var(--rojo);
+}
+
+/* ── Grillas ──────────────────────────────────────────────────────────── */
+
+.grilla {
+  display: grid;
+  gap: var(--gap-bloque);
+}
+
+.grilla--tres {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grilla--cuatro {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Bloque del feed de Inicio */
+.feed {
+  flex: 1.7;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-bloque);
+}
+
+/* ── Tablas / listas de categorías ───────────────────────────────────── */
+
+.lista {
+  background: var(--crema);
+  border: 3px solid var(--madera);
+  border-radius: var(--radio-tarjeta);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lista__fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--blanco);
+  border: 2px solid var(--madera);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.lista__nombre {
+  flex: 1;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.lista__conteo {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* ── Detalle de lápida ───────────────────────────────────────────────── */
+
+.detalle__media {
+  flex: 1.1;
+  min-width: 0;
+  background: var(--madera);
+  border: 3px solid var(--borde-panel);
+  border-radius: var(--radio-tarjeta);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-bloque);
+}
+
+.detalle__foto {
+  background: var(--menta);
+  border-radius: 8px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detalle__epitafio {
+  background: var(--crema);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.detalle__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-bloque);
+}
+
+.detalle__titulo {
+  font-family: var(--fuente-pixel);
+  font-size: 14px;
+  color: var(--texto-fuerte);
+  line-height: 1.5;
+}
+
+.detalle__autor {
+  font-size: 11px;
+  color: var(--madera);
+}
+
+.detalle__datos {
+  background: var(--crema);
+  border: 2px solid var(--madera);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detalle__corona {
+  align-self: flex-start;
+  font-size: 10px;
+  padding: 10px 16px;
+}
+
+.detalle__comentarios {
+  flex-grow: 1;
+  background: var(--crema);
+  border: 2px solid var(--madera);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detalle__comentarios-titulo {
+  font-family: var(--fuente-pixel);
+  font-size: 10px;
+  color: var(--texto-fuerte);
+}
+
+.detalle__comentario {
+  font-size: 11px;
+}
+
+.detalle__comentario strong {
+  font-weight: 700;
+}
+
+.detalle__comentarios input {
+  margin-top: auto;
+  font-family: var(--fuente-cuerpo);
+  font-size: 11px;
+  padding: 8px;
+  border: 2px solid var(--madera);
+  border-radius: var(--radio-control);
+}
+
+/* ── Perfil ──────────────────────────────────────────────────────────── */
+
+.perfil__cabecera {
+  background: var(--madera);
+  border: 3px solid var(--borde-panel);
+  border-radius: var(--radio-tarjeta);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.perfil__avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--menta);
+  border: 3px solid var(--crema);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.perfil__identidad {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.perfil__nombre {
+  font-family: var(--fuente-pixel);
+  font-size: 15px;
+  color: var(--amarillo);
+}
+
+.perfil__desde {
+  font-size: 11px;
+  color: var(--crema);
+  margin-top: 6px;
+}
+
+.perfil__stats {
+  display: flex;
+  gap: var(--gap-bloque);
+  flex-wrap: wrap;
+}
+
+.perfil__stat {
+  flex: 1;
+  min-width: 140px;
+  background: var(--crema);
+  border: 2px solid var(--madera);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+}
+
+.perfil__stat--insignia {
+  flex: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+
+.perfil__stat-valor {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.perfil__stat-valor--rojo {
+  color: var(--rojo);
+}
+
+.perfil__stat-valor--madera {
+  color: var(--madera);
+}
+
+.perfil__stat-etiqueta {
+  font-size: 10px;
+  color: var(--texto-muted);
+}
+
+.perfil__insignia-texto {
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.perfil__seccion {
+  font-family: var(--fuente-pixel);
+  font-size: 11px;
+  color: var(--texto-fuerte);
+}
+
+/* ── Autenticación ───────────────────────────────────────────────────── */
+
+.auth {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth__tarjeta {
+  width: 460px;
+  max-width: 100%;
+  background: var(--crema);
+  border: 3px solid var(--madera);
+  border-radius: var(--radio-tarjeta);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth__marca {
+  font-family: var(--fuente-pixel);
+  font-size: 9px;
+  color: var(--madera);
+}
+
+/* Formulario interno de la tarjeta de autenticación */
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth__titulo {
+  font-family: var(--fuente-pixel);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--texto-fuerte);
+}
+
+.auth__subtitulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.auth__pie {
+  text-align: center;
+  font-size: 11px;
+}
+
+.auth__enlace {
+  color: var(--madera);
+  font-weight: 700;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+}
+
+.auth__enlace--rojo {
+  color: var(--rojo);
+}
+
+/* ── Publicar ────────────────────────────────────────────────────────── */
+
+.publicar {
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.publicar__tarjeta {
+  width: 640px;
+  max-width: 100%;
+  align-self: flex-start;
+  background: var(--crema);
+  border: 3px solid var(--madera);
+  border-radius: var(--radio-tarjeta);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.publicar__titulo {
+  font-family: var(--fuente-pixel);
+  font-size: 13px;
+  color: var(--texto-fuerte);
+}
+
+.publicar__foto {
+  border: 3px dashed var(--madera);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--madera);
+}
+
+.publicar__foto svg {
+  margin: 0 auto 6px;
+  display: block;
+}
+
+.publicar__foto--deshabilitada {
+  opacity: 0.6;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .pantalla__contenido,
+  .fila,
+  .perfil__stats {
+    flex-direction: column;
+  }
+
+  .grilla--tres,
+  .grilla--cuatro {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .detalle__foto {
+    height: 220px;
+  }
+}
+
+@media (max-width: 620px) {
+  .grilla--tres,
+  .grilla--cuatro {
+    grid-template-columns: 1fr;
+  }
+
+  .nav__items {
+    gap: 16px;
+  }
+
+  .auth__tarjeta,
+  .publicar__tarjeta {
+    padding: 20px;
+  }
+}
