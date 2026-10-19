@@ -8,12 +8,16 @@ describe('CategoriasController', () => {
   let mockCategoriasService: {
     findAll: jest.Mock;
     create: jest.Mock;
+    update: jest.Mock;
+    remove: jest.Mock;
   };
 
   beforeEach(async () => {
     mockCategoriasService = {
       findAll: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -57,6 +61,23 @@ describe('CategoriasController', () => {
         createCategoriaDto,
       );
       expect(result).toEqual(createdCategoria);
+    });
+
+    it('should update a category', () => {
+      const dto = { nombre: 'Interior' };
+      const updated = { id: 2, nombre: 'Interior' };
+      mockCategoriasService.update.mockReturnValue(updated);
+
+      expect(controller.update(2, dto)).toEqual(updated);
+      expect(mockCategoriasService.update).toHaveBeenCalledWith(2, dto);
+    });
+
+    it('should remove a category', () => {
+      const removed = { id: 2, nombre: 'Interior' };
+      mockCategoriasService.remove.mockReturnValue(removed);
+
+      expect(controller.remove(2)).toEqual(removed);
+      expect(mockCategoriasService.remove).toHaveBeenCalledWith(2);
     });
   });
 });

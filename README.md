@@ -8,8 +8,21 @@ Red social retro donde la gente publica **lápidas** para las plantas que no sob
 
 - ✅ Prototipo de diseño (5 pantallas)
 - ✅ Esquema de datos original (relacional) y su traducción a MongoDB (propuesta)
-- ⬜ Pantalla de CRUD de categorías: falta diseñarla en el prototipo
-- ⬜ Entorno, backend y frontend: **todavía no hay código**
+- ✅ Frontend funcional en React: cementerio, rankings, publicación, detalle, perfil y categorías
+- ✅ Backend funcional en NestJS con API en memoria para lápidas y categorías
+- ✅ Persistencia en MongoDB con Mongoose, Docker, semillas e índices
+- ⬜ Autenticación y autorización: quedan como siguiente iteración
+
+La entrega actual prioriza tener un producto navegable de extremo a extremo. Mientras no
+se conecte MongoDB, el backend reinicia con datos de ejemplo; el frontend conserva un
+modo demostración local si la API no está levantada.
+
+## Documentación de la entrega
+
+- [Especificación funcional y criterios de aceptación](./docs/spec.md)
+- [Arquitectura y ruta de aprendizaje](./docs/architecture.md)
+- [Registro de decisiones](./docs/decisions.md)
+- [Cómo leer la documentación](./docs/README.md)
 
 ## Idea del producto
 
@@ -396,14 +409,50 @@ Cadena de conexión desde tu máquina: `mongodb://localhost:27018/riplanta`.
 
 ## Cómo correrlo
 
-Se completará conforme avance el proyecto. Comandos previstos:
+### 1. Instalar dependencias
 
 ```bash
 pnpm install
-docker compose up -d      # base de datos
-pnpm --filter backend dev
-pnpm --filter frontend dev
 ```
+
+### 2. Arrancar la aplicación
+
+La versión actual guarda datos en memoria. Abre dos terminales desde la raíz:
+
+```bash
+# Terminal 1
+pnpm --filter backend run start:dev
+
+# Terminal 2
+pnpm --filter frontend run dev
+```
+
+Abre la URL que indique Vite, normalmente `http://localhost:5173`.
+
+### 3. Ejecutar pruebas y builds
+
+```bash
+pnpm --filter backend run test
+pnpm --filter backend run test:e2e
+pnpm --filter backend run build
+pnpm --filter frontend run build
+```
+
+La guía completa, la checklist manual y ejemplos de `curl` están en
+[docs/README.md](./docs/README.md).
+
+### MongoDB
+
+MongoDB ya está conectado al backend. Levanta el contenedor antes de Nest:
+
+```bash
+docker compose up -d mongo
+```
+
+La cadena predeterminada es `mongodb://localhost:27018/riplanta`. Para cambiarla,
+copia [backend/.env.example](./backend/.env.example) como `backend/.env` y edita
+`MONGODB_URI`. Las colecciones se inicializan con datos semilla automáticamente.
+Los datos sobreviven al reinicio porque Docker usa el volumen `mongo-data`.
 
 ## Para retomar el proyecto en otro lugar
 

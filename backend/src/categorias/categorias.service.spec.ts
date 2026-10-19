@@ -1,56 +1,54 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriasService } from './categorias.service';
 
 describe('CategoriasService', () => {
+  const model = {
+    countDocuments: jest.fn().mockResolvedValue(1),
+    find: jest.fn(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([{ id: 1, nombre: 'Interior' }]),
+      }),
+    })),
+    findOne: jest.fn(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ id: 1, nombre: 'Interior' }),
+      }),
+    })),
+    create: jest.fn().mockResolvedValue({ id: 2, nombre: 'Exterior' }),
+    findOneAndUpdate: jest.fn().mockResolvedValue({ id: 1, nombre: 'Exterior' }),
+    findOneAndDelete: jest.fn().mockResolvedValue({ id: 1, nombre: 'Exterior' }),
+    bulkWrite: jest.fn().mockResolvedValue({}),
+  };
   let service: CategoriasService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [CategoriasService],
-    }).compile();
-
-    service = module.get<CategoriasService>(CategoriasService);
+  beforeEach(() => {
+    jest.clearAllMocks();
+    service = new CategoriasService(model as never);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('lists categories', async () => {
+    await expect(service.findAll()).resolves.toEqual([{ id: 1, nombre: 'Interior' }]);
   });
 
-  describe('findAll', () => {
-    it('findAll should return an array of categories', async () => {
-      const result = service.findAll();
-      expect(Array.isArray(result)).toBe(true);
-      expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({
-        id: 1,
-        nombre: 'Categoria 1',
-      });
+  it('creates a category with the next numeric id', async () => {
+    await expect(service.create({ nombre: 'Exterior' })).resolves.toEqual({
+      id: 2,
+      nombre: 'Exterior',
     });
   });
 
-  describe('create', () => {
-    it('should create a new category and return the category', () => {
-      const result = service.create({ nombre: 'Categoria 3' });
-
-      expect(result).toMatchObject({
-        id: expect.any(Number),
-        nombre: 'Categoria 3',
-      });
+  it('updates and removes categories', async () => {
+    await expect(service.update(1, { nombre: 'Exterior' })).resolves.toEqual({
+      id: 1,
+      nombre: 'Exterior',
     });
-
-    it('should increment the id of the new category', () => {
-      const antes = service.findAll().length;
-      service.create({ nombre: 'Categoria 4' });
-
-      expect(service.findAll().length).toBe(antes + 1);
+    await expect(service.remove(1)).resolves.toEqual({
+      id: 1,
+      nombre: 'Exterior',
     });
+  });
 
-    it('should assign an incremented id to the new category', () => {
-      const a = service.create({ nombre: 'Categoria 5' });
-      const b = service.create({ nombre: 'Categoria 6' });
-
-      expect(b.id).toBe(a.id + 1);
-      expect(b.id).not.toBe(a.id);
-    });
+  it('seeds only an empty collection', async () => {
+    await service.onModuleInit();
+    expect(model.bulkWrite).toHaveBeenCalledTimes(1);
   });
 });
