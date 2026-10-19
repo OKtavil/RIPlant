@@ -1,0 +1,88 @@
+/*
+ * Tokens de diseño de R.I.Planta.
+ * Fuente de verdad: `R.I.Planta - Diseño retro.html` (10 pantallas del prototipo retro).
+ */
+:root {
+  /* Superficies */
+  --fondo: #f2b87a;
+  --panel: #2e1305;
+  --borde-panel: #150800;
+  --inset-panel: #6e3a12;
+  --madera: #8b4513;
+  --crema: #f5e0b8;
+  --menta: #dcf2e9;
+  --blanco: #ffffff;
+
+  /* Texto */
+  --texto: #3b2a1a;
+  --texto-fuerte: #2e1305;
+  --texto-suave: #4a4a4a;
+  --texto-muted: #6e3a12;
+  --texto-placeholder: #777777;
+
+  /* Acentos */
+  --amarillo: #e8c547;
+  --rojo: #c0392b;
+  --dorado: #c9924f;
+  --dorado-claro: #e3c583;
+  --dorado-hover: #d6ab69;
+  --verde-insignia: #2e7d5b;
+
+  /* Colores de la "foto" placeholder de cada lápida */
+  --foto-verde: #7cb342;
+  --foto-rojo: #c0392b;
+  --foto-amarillo: #e8b94a;
+  --foto-oliva: #6c8e4e;
+  --foto-violeta: #9b7ede;
+
+  /* Tipografías */
+  --fuente-pixel: 'Press Start 2P', monospace;
+  --fuente-cuerpo: 'Space Mono', monospace;
+
+  /* Medidas del prototipo */
+  --ancho-referencia: 1280px;
+  --padding-pantalla: 24px;
+  --gap-pantalla: 18px;
+  --gap-bloque: 14px;
+  --radio-panel: 10px;
+  --radio-tarjeta: 12px;
+  --radio-control: 6px;
+
+  font-family: var(--fuente-cuerpo);
+  color: var(--texto);
+  background: var(--fondo);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--fondo);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--texto);
+  text-decoration: none;
+}
+
+/* El prototipo subraya los enlaces solo al pasar el mouse */
+a:hover {
+  color: var(--madera);
+}
