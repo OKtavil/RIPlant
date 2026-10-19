@@ -1,0 +1,4085 @@
+{
+  "version": "0.8.4",
+  "pages": [
+    {
+      "id": "n2",
+      "name": "Inicio",
+      "children": [
+        {
+          "type": "frame",
+          "id": "n217",
+          "name": "Inicio — Board",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 1088.0,
+          "height": 768.0,
+          "fill": [
+            {
+              "type": "solid",
+              "color": "#F2B87A"
+            }
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "n48",
+              "x": 626.0,
+              "y": 78.0,
+              "width": 442.0,
+              "height": 670.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#8B4513"
+                }
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n49",
+                  "x": 16.0,
+                  "y": 12.0,
+                  "width": 410.0,
+                  "height": 36.0,
+                  "layout": "none",
+                  "cornerRadius": 6.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n50",
+                      "x": 12.0,
+                      "y": 10.0,
+                      "width": 300.0,
+                      "height": 15.0,
+                      "content": "SALÓN DEL HONOR",
+                      "fontFamily": "Press Start 2P",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#E8C547"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n51",
+                  "x": 28.0,
+                  "y": 68.0,
+                  "width": 300.0,
+                  "height": 15.0,
+                  "content": "1. \"Descanse en cactus\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n52",
+                  "x": 330.0,
+                  "y": 68.0,
+                  "width": 96.0,
+                  "height": 15.0,
+                  "content": "♛ 287",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n53",
+                  "x": 28.0,
+                  "y": 92.0,
+                  "width": 300.0,
+                  "height": 15.0,
+                  "content": "2. \"Aquí yace Pepino\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n54",
+                  "x": 330.0,
+                  "y": 92.0,
+                  "width": 96.0,
+                  "height": 15.0,
+                  "content": "♛ 132",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n55",
+                  "x": 28.0,
+                  "y": 116.0,
+                  "width": 300.0,
+                  "height": 15.0,
+                  "content": "3. \"Viajó al más allá\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n56",
+                  "x": 330.0,
+                  "y": 116.0,
+                  "width": 96.0,
+                  "height": 15.0,
+                  "content": "♛ 64",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n57",
+                  "x": 16.0,
+                  "y": 140.0,
+                  "width": 410.0,
+                  "height": 36.0,
+                  "layout": "none",
+                  "cornerRadius": 6.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n58",
+                      "x": 12.0,
+                      "y": 10.0,
+                      "width": 300.0,
+                      "height": 15.0,
+                      "content": "ASESINOS SERIALES",
+                      "fontFamily": "Press Start 2P",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#E8C547"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n59",
+                  "x": 28.0,
+                  "y": 196.0,
+                  "width": 300.0,
+                  "height": 15.0,
+                  "content": "1. @manos_de_tierra",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n60",
+                  "x": 330.0,
+                  "y": 196.0,
+                  "width": 96.0,
+                  "height": 15.0,
+                  "content": "♙ 41",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#C0392B"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n61",
+                  "x": 28.0,
+                  "y": 220.0,
+                  "width": 300.0,
+                  "height": 15.0,
+                  "content": "2. @sinluznisombra",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n62",
+                  "x": 330.0,
+                  "y": 220.0,
+                  "width": 96.0,
+                  "height": 15.0,
+                  "content": "♙ 33",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#C0392B"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n63",
+                  "x": 28.0,
+                  "y": 244.0,
+                  "width": 300.0,
+                  "height": 15.0,
+                  "content": "3. @regabien_no",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n64",
+                  "x": 330.0,
+                  "y": 244.0,
+                  "width": 96.0,
+                  "height": 15.0,
+                  "content": "♙ 27",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#C0392B"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n65",
+                  "x": 16.0,
+                  "y": 610.0,
+                  "width": 410.0,
+                  "height": 50.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n66",
+                      "x": 12.0,
+                      "y": 10.0,
+                      "width": 380.0,
+                      "height": 14.0,
+                      "content": "Insignia especial: \"Superviviente Zombie\"",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 8.0,
+                      "fontWeight": 700,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#C0392B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "n67",
+                      "x": 12.0,
+                      "y": 27.0,
+                      "width": 390.0,
+                      "height": 14.0,
+                      "content": "una lápida reportada como muerta vuelve a mostrar señales de vida.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 7.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n222",
+                  "name": "Salón del Honor — surface",
+                  "x": 16.0,
+                  "y": 54.0,
+                  "width": 410.0,
+                  "height": 78.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ],
+                  "children": []
+                },
+                {
+                  "type": "frame",
+                  "id": "n223",
+                  "name": "Asesinos Seriales — surface",
+                  "x": 16.0,
+                  "y": 176.0,
+                  "width": 410.0,
+                  "height": 94.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n45",
+              "x": 420.0,
+              "y": 292.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n46",
+                  "x": 88.0,
+                  "y": 45.0,
+                  "width": 20.0,
+                  "height": 28.0,
+                  "content": "+",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 25.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n47",
+                  "x": 46.0,
+                  "y": 93.0,
+                  "width": 120.0,
+                  "height": 16.0,
+                  "content": "Publica tu lápida",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n38",
+              "x": 220.0,
+              "y": 292.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n39",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 68.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#9878DE"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n40",
+                      "x": 76.0,
+                      "y": 19.0,
+                      "width": 26.0,
+                      "height": 30.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 27.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n41",
+                  "x": 10.0,
+                  "y": 85.0,
+                  "width": 170.0,
+                  "height": 18.0,
+                  "content": "\"Mala suerte, buena tierra\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n42",
+                  "x": 10.0,
+                  "y": 108.0,
+                  "width": 170.0,
+                  "height": 16.0,
+                  "content": "Suculenta · plaga",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#4A4A4A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n43",
+                  "x": 10.0,
+                  "y": 127.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "por @plantitas_tristes",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n44",
+                  "x": 10.0,
+                  "y": 144.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ 19",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n31",
+              "x": 20.0,
+              "y": 292.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n32",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 68.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#73964F"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n33",
+                      "x": 76.0,
+                      "y": 19.0,
+                      "width": 26.0,
+                      "height": 30.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 27.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n34",
+                  "x": 10.0,
+                  "y": 85.0,
+                  "width": 170.0,
+                  "height": 18.0,
+                  "content": "\"Se secó sin avisar\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n35",
+                  "x": 10.0,
+                  "y": 108.0,
+                  "width": 170.0,
+                  "height": 16.0,
+                  "content": "Árbol frutal · sequía",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#4A4A4A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n36",
+                  "x": 10.0,
+                  "y": 127.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "por @manos_de_tierra",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n37",
+                  "x": 10.0,
+                  "y": 144.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ 41",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n24",
+              "x": 420.0,
+              "y": 122.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n25",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 68.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#EFC247"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n26",
+                      "x": 76.0,
+                      "y": 19.0,
+                      "width": 26.0,
+                      "height": 30.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 27.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n27",
+                  "x": 10.0,
+                  "y": 85.0,
+                  "width": 170.0,
+                  "height": 18.0,
+                  "content": "\"Viajó al más allá\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n28",
+                  "x": 10.0,
+                  "y": 108.0,
+                  "width": 170.0,
+                  "height": 16.0,
+                  "content": "Interior · falta de luz",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#4A4A4A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n29",
+                  "x": 10.0,
+                  "y": 127.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "por @regabien_no",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n30",
+                  "x": 10.0,
+                  "y": 144.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ 64",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n17",
+              "x": 220.0,
+              "y": 122.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n18",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 68.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#C0392B"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n19",
+                      "x": 76.0,
+                      "y": 19.0,
+                      "width": 26.0,
+                      "height": 30.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 27.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n20",
+                  "x": 10.0,
+                  "y": 85.0,
+                  "width": 170.0,
+                  "height": 18.0,
+                  "content": "\"Descanse en cactus\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n21",
+                  "x": 10.0,
+                  "y": 108.0,
+                  "width": 170.0,
+                  "height": 16.0,
+                  "content": "Cactus · olvido total",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#4A4A4A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n22",
+                  "x": 10.0,
+                  "y": 127.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "por @sinluznisombra",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n23",
+                  "x": 10.0,
+                  "y": 144.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ 287",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n10",
+              "x": 20.0,
+              "y": 122.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n11",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 68.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#7CB342"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n12",
+                      "x": 76.0,
+                      "y": 19.0,
+                      "width": 26.0,
+                      "height": 30.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 27.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n13",
+                  "x": 10.0,
+                  "y": 85.0,
+                  "width": 170.0,
+                  "height": 18.0,
+                  "content": "\"Aquí yace Pepino\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n14",
+                  "x": 10.0,
+                  "y": 108.0,
+                  "width": 170.0,
+                  "height": 16.0,
+                  "content": "Suculenta · exceso de agua",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#4A4A4A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n15",
+                  "x": 10.0,
+                  "y": 127.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "por @manos_de_tierra",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n16",
+                  "x": 10.0,
+                  "y": 144.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ 132",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n8",
+              "x": 20.0,
+              "y": 78.0,
+              "width": 592.0,
+              "height": 36.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n9",
+                  "x": 16.0,
+                  "y": 10.0,
+                  "width": 400.0,
+                  "height": 15.0,
+                  "content": "CEMENTERIO DE PLANTAS",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 11.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n3",
+              "x": 20.0,
+              "y": 20.0,
+              "width": 1048.0,
+              "height": 42.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n4",
+                  "x": 20.0,
+                  "y": 11.0,
+                  "width": 220.0,
+                  "height": 20.0,
+                  "content": "R.I.PLANTA",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 15.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n5",
+                  "x": 770.0,
+                  "y": 13.0,
+                  "width": 70.0,
+                  "height": 16.0,
+                  "content": "INICIO",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n6",
+                  "x": 850.0,
+                  "y": 13.0,
+                  "width": 80.0,
+                  "height": 16.0,
+                  "content": "RANKING",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n7",
+                  "x": 940.0,
+                  "y": 13.0,
+                  "width": 90.0,
+                  "height": 16.0,
+                  "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n68",
+      "name": "Ranking",
+      "children": [
+        {
+          "type": "frame",
+          "id": "n218",
+          "name": "Ranking — Board",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 1088.0,
+          "height": 768.0,
+          "fill": [
+            {
+              "type": "solid",
+              "color": "#F2B87A"
+            }
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "n108",
+              "x": 554.0,
+              "y": 358.0,
+              "width": 518.0,
+              "height": 56.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n109",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 360.0,
+                  "height": 16.0,
+                  "content": "4. @plantitas_tristes",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n110",
+                  "x": 14.0,
+                  "y": 34.0,
+                  "width": 360.0,
+                  "height": 14.0,
+                  "content": "",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n111",
+                  "x": 390.0,
+                  "y": 20.0,
+                  "width": 110.0,
+                  "height": 16.0,
+                  "content": "♙ 19 lápidas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n104",
+              "x": 554.0,
+              "y": 290.0,
+              "width": 518.0,
+              "height": 56.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n105",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 360.0,
+                  "height": 16.0,
+                  "content": "3. @regabien_no",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n106",
+                  "x": 14.0,
+                  "y": 34.0,
+                  "width": 360.0,
+                  "height": 14.0,
+                  "content": "",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n107",
+                  "x": 390.0,
+                  "y": 20.0,
+                  "width": 110.0,
+                  "height": 16.0,
+                  "content": "♙ 27 lápidas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n100",
+              "x": 554.0,
+              "y": 222.0,
+              "width": 518.0,
+              "height": 56.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n101",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 360.0,
+                  "height": 16.0,
+                  "content": "2. @sinluznisombra",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n102",
+                  "x": 14.0,
+                  "y": 34.0,
+                  "width": 360.0,
+                  "height": 14.0,
+                  "content": "",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n103",
+                  "x": 390.0,
+                  "y": 20.0,
+                  "width": 110.0,
+                  "height": 16.0,
+                  "content": "♙ 33 lápidas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n96",
+              "x": 554.0,
+              "y": 154.0,
+              "width": 518.0,
+              "height": 56.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n97",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 360.0,
+                  "height": 16.0,
+                  "content": "1. @manos_de_tierra",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n98",
+                  "x": 14.0,
+                  "y": 34.0,
+                  "width": 360.0,
+                  "height": 14.0,
+                  "content": "",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n99",
+                  "x": 390.0,
+                  "y": 20.0,
+                  "width": 110.0,
+                  "height": 16.0,
+                  "content": "♙ 41 lápidas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n92",
+              "x": 20.0,
+              "y": 358.0,
+              "width": 518.0,
+              "height": 56.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n93",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 360.0,
+                  "height": 16.0,
+                  "content": "4. \"Se secó sin avisar\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n94",
+                  "x": 14.0,
+                  "y": 34.0,
+                  "width": 360.0,
+                  "height": 14.0,
+                  "content": "por @manos_de_tierra · Árbol frutal",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n95",
+                  "x": 390.0,
+                  "y": 20.0,
+                  "width": 110.0,
+                  "height": 16.0,
+                  "content": "♛ 41",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n88",
+              "x": 20.0,
+              "y": 290.0,
+              "width": 518.0,
+              "height": 56.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n89",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 360.0,
+                  "height": 16.0,
+                  "content": "3. \"Viajó al más allá\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n90",
+                  "x": 14.0,
+                  "y": 34.0,
+                  "width": 360.0,
+                  "height": 14.0,
+                  "content": "por @regabien_no · Interior",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n91",
+                  "x": 390.0,
+                  "y": 20.0,
+                  "width": 110.0,
+                  "height": 16.0,
+                  "content": "♛ 64",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n84",
+              "x": 20.0,
+              "y": 222.0,
+              "width": 518.0,
+              "height": 56.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n85",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 360.0,
+                  "height": 16.0,
+                  "content": "2. \"Aquí yace Pepino\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n86",
+                  "x": 14.0,
+                  "y": 34.0,
+                  "width": 360.0,
+                  "height": 14.0,
+                  "content": "por @manos_de_tierra · Suculenta",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n87",
+                  "x": 390.0,
+                  "y": 20.0,
+                  "width": 110.0,
+                  "height": 16.0,
+                  "content": "♛ 132",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n80",
+              "x": 20.0,
+              "y": 154.0,
+              "width": 518.0,
+              "height": 56.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n81",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 360.0,
+                  "height": 16.0,
+                  "content": "1. \"Descanse en cactus\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n82",
+                  "x": 14.0,
+                  "y": 34.0,
+                  "width": 360.0,
+                  "height": 14.0,
+                  "content": "por @sinluznisombra · Cactus",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n83",
+                  "x": 390.0,
+                  "y": 20.0,
+                  "width": 110.0,
+                  "height": 16.0,
+                  "content": "♛ 287",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "right",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "n79",
+              "x": 554.0,
+              "y": 134.0,
+              "width": 400.0,
+              "height": 14.0,
+              "content": "Ordenado por lápidas publicadas",
+              "fontFamily": "Space Mono",
+              "fontSize": 8.0,
+              "fontWeight": 400,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#6E3A12"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "n78",
+              "x": 20.0,
+              "y": 134.0,
+              "width": 400.0,
+              "height": 14.0,
+              "content": "Ordenado por coronas recibidas",
+              "fontFamily": "Space Mono",
+              "fontSize": 8.0,
+              "fontWeight": 400,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#6E3A12"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n76",
+              "x": 554.0,
+              "y": 78.0,
+              "width": 514.0,
+              "height": 42.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n77",
+                  "x": 16.0,
+                  "y": 12.0,
+                  "width": 400.0,
+                  "height": 16.0,
+                  "content": "ASESINOS SERIALES",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 11.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n74",
+              "x": 20.0,
+              "y": 78.0,
+              "width": 518.0,
+              "height": 42.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n75",
+                  "x": 16.0,
+                  "y": 12.0,
+                  "width": 400.0,
+                  "height": 16.0,
+                  "content": "SALÓN DEL HONOR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 11.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n69",
+              "x": 20.0,
+              "y": 20.0,
+              "width": 1048.0,
+              "height": 42.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n70",
+                  "x": 20.0,
+                  "y": 11.0,
+                  "width": 220.0,
+                  "height": 20.0,
+                  "content": "R.I.PLANTA",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 15.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n71",
+                  "x": 770.0,
+                  "y": 13.0,
+                  "width": 70.0,
+                  "height": 16.0,
+                  "content": "INICIO",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n72",
+                  "x": 850.0,
+                  "y": 13.0,
+                  "width": 80.0,
+                  "height": 16.0,
+                  "content": "RANKING",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n73",
+                  "x": 940.0,
+                  "y": 13.0,
+                  "width": 90.0,
+                  "height": 16.0,
+                  "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n112",
+      "name": "Publicar",
+      "children": [
+        {
+          "type": "frame",
+          "id": "n219",
+          "name": "Publicar — Board",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 1088.0,
+          "height": 768.0,
+          "fill": [
+            {
+              "type": "solid",
+              "color": "#F2B87A"
+            }
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "n118",
+              "x": 247.0,
+              "y": 78.0,
+              "width": 598.0,
+              "height": 668.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n119",
+                  "x": 25.0,
+                  "y": 24.0,
+                  "width": 300.0,
+                  "height": 18.0,
+                  "content": "NUEVA LÁPIDA",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 13.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n120",
+                  "x": 25.0,
+                  "y": 54.0,
+                  "width": 200.0,
+                  "height": 14.0,
+                  "content": "Foto de la planta",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n121",
+                  "x": 25.0,
+                  "y": 70.0,
+                  "width": 548.0,
+                  "height": 84.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "transparent"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n122",
+                      "x": 269.0,
+                      "y": 22.0,
+                      "width": 18.0,
+                      "height": 24.0,
+                      "content": "+",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 22.0,
+                      "fontWeight": 400,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#8B4513"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "n123",
+                      "x": 194.0,
+                      "y": 53.0,
+                      "width": 260.0,
+                      "height": 14.0,
+                      "content": "Arrastra una imagen o toca para subir",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 8.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#8B4513"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n124",
+                  "x": 25.0,
+                  "y": 170.0,
+                  "width": 200.0,
+                  "height": 14.0,
+                  "content": "Nombre de la planta",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n125",
+                  "x": 25.0,
+                  "y": 187.0,
+                  "width": 548.0,
+                  "height": 34.0,
+                  "layout": "none",
+                  "cornerRadius": 5.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#FFFFFF"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n126",
+                      "x": 10.0,
+                      "y": 9.0,
+                      "width": 400.0,
+                      "height": 14.0,
+                      "content": "Ej. Pepino",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 9.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#777"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n127",
+                  "x": 25.0,
+                  "y": 235.0,
+                  "width": 200.0,
+                  "height": 14.0,
+                  "content": "Categoría",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n128",
+                  "x": 304.0,
+                  "y": 235.0,
+                  "width": 220.0,
+                  "height": 14.0,
+                  "content": "Fecha de fallecimiento",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n129",
+                  "x": 25.0,
+                  "y": 252.0,
+                  "width": 266.0,
+                  "height": 36.0,
+                  "layout": "none",
+                  "cornerRadius": 5.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#FFFFFF"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n130",
+                      "x": 10.0,
+                      "y": 11.0,
+                      "width": 230.0,
+                      "height": 14.0,
+                      "content": "Suculentas",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 9.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n131",
+                  "x": 304.0,
+                  "y": 252.0,
+                  "width": 269.0,
+                  "height": 36.0,
+                  "layout": "none",
+                  "cornerRadius": 5.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#FFFFFF"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n132",
+                      "x": 10.0,
+                      "y": 11.0,
+                      "width": 230.0,
+                      "height": 14.0,
+                      "content": "dd / mm / aaaa",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 9.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#777"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n133",
+                  "x": 25.0,
+                  "y": 308.0,
+                  "width": 200.0,
+                  "height": 14.0,
+                  "content": "Epitafio",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n134",
+                  "x": 25.0,
+                  "y": 325.0,
+                  "width": 548.0,
+                  "height": 78.0,
+                  "layout": "none",
+                  "cornerRadius": 5.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#FFFFFF"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n135",
+                      "x": 10.0,
+                      "y": 12.0,
+                      "width": 500.0,
+                      "height": 14.0,
+                      "content": "Escribe unas palabras de despedida...",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 9.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#777"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n136",
+                  "x": 25.0,
+                  "y": 423.0,
+                  "width": 548.0,
+                  "height": 38.0,
+                  "layout": "none",
+                  "cornerRadius": 6.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#D7A85E"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n137",
+                      "x": 204.0,
+                      "y": 11.0,
+                      "width": 200.0,
+                      "height": 16.0,
+                      "content": "PUBLICAR LÁPIDA",
+                      "fontFamily": "Press Start 2P",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n113",
+              "x": 20.0,
+              "y": 20.0,
+              "width": 1048.0,
+              "height": 42.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n114",
+                  "x": 20.0,
+                  "y": 11.0,
+                  "width": 220.0,
+                  "height": 20.0,
+                  "content": "R.I.PLANTA",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 15.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n115",
+                  "x": 770.0,
+                  "y": 13.0,
+                  "width": 70.0,
+                  "height": 16.0,
+                  "content": "INICIO",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n116",
+                  "x": 850.0,
+                  "y": 13.0,
+                  "width": 80.0,
+                  "height": 16.0,
+                  "content": "RANKING",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n117",
+                  "x": 940.0,
+                  "y": 13.0,
+                  "width": 90.0,
+                  "height": 16.0,
+                  "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n138",
+      "name": "Detalle de lápida",
+      "children": [
+        {
+          "type": "frame",
+          "id": "n220",
+          "name": "Detalle de lápida — Board",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 1088.0,
+          "height": 768.0,
+          "fill": [
+            {
+              "type": "solid",
+              "color": "#F2B87A"
+            }
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "n158",
+              "x": 594.0,
+              "y": 255.0,
+              "width": 476.0,
+              "height": 493.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n159",
+                  "x": 14.0,
+                  "y": 14.0,
+                  "width": 300.0,
+                  "height": 15.0,
+                  "content": "COMENTARIOS",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n160",
+                  "x": 14.0,
+                  "y": 51.0,
+                  "width": 440.0,
+                  "height": 14.0,
+                  "content": "@manos_de_tierra:  jaja el mío duró menos",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n161",
+                  "x": 14.0,
+                  "y": 75.0,
+                  "width": 440.0,
+                  "height": 14.0,
+                  "content": "@plantitas_tristes:  un minuto de silencio",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n162",
+                  "x": 14.0,
+                  "y": 99.0,
+                  "width": 440.0,
+                  "height": 14.0,
+                  "content": "@regabien_no:  clásico error de principiante",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n163",
+                  "x": 14.0,
+                  "y": 448.0,
+                  "width": 448.0,
+                  "height": 30.0,
+                  "layout": "none",
+                  "cornerRadius": 5.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#FFFFFF"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n164",
+                      "x": 10.0,
+                      "y": 8.0,
+                      "width": 400.0,
+                      "height": 14.0,
+                      "content": "Escribe un comentario...",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 8.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#777"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n156",
+              "x": 594.0,
+              "y": 210.0,
+              "width": 185.0,
+              "height": 34.0,
+              "layout": "none",
+              "cornerRadius": 6.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#D7A85E"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n157",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ DAR CORONA · 287",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n152",
+              "x": 594.0,
+              "y": 122.0,
+              "width": 476.0,
+              "height": 75.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n153",
+                  "x": 12.0,
+                  "y": 14.0,
+                  "width": 430.0,
+                  "height": 14.0,
+                  "content": "Categoría: Cactus",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n154",
+                  "x": 12.0,
+                  "y": 34.0,
+                  "width": 430.0,
+                  "height": 14.0,
+                  "content": "Causa de muerte: Olvido total",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n155",
+                  "x": 12.0,
+                  "y": 54.0,
+                  "width": 430.0,
+                  "height": 14.0,
+                  "content": "Fecha de fallecimiento: 03/03/2025",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "n151",
+              "x": 594.0,
+              "y": 103.0,
+              "width": 300.0,
+              "height": 14.0,
+              "content": "por @sinluznisombra",
+              "fontFamily": "Space Mono",
+              "fontSize": 8.0,
+              "fontWeight": 400,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#8B4513"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "n150",
+              "x": 594.0,
+              "y": 78.0,
+              "width": 450.0,
+              "height": 20.0,
+              "content": "\"DESCANSE EN CACTUS\"",
+              "fontFamily": "Press Start 2P",
+              "fontSize": 14.0,
+              "fontWeight": 400,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n144",
+              "x": 20.0,
+              "y": 78.0,
+              "width": 556.0,
+              "height": 670.0,
+              "layout": "none",
+              "cornerRadius": 10.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#8B4513"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n145",
+                  "x": 16.0,
+                  "y": 16.0,
+                  "width": 524.0,
+                  "height": 274.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#DCF2E9"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n146",
+                      "x": 247.0,
+                      "y": 105.0,
+                      "width": 30.0,
+                      "height": 35.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 32.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n147",
+                  "x": 16.0,
+                  "y": 300.0,
+                  "width": 524.0,
+                  "height": 62.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n148",
+                      "x": 14.0,
+                      "y": 14.0,
+                      "width": 500.0,
+                      "height": 14.0,
+                      "content": "\"Descanse en cactus. Nunca supo lo que era el sol, pero tampoco lo que era el",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 8.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "n149",
+                      "x": 14.0,
+                      "y": 30.0,
+                      "width": 500.0,
+                      "height": 14.0,
+                      "content": "agua. Se fue en paz, seco, digno.\"",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 8.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n139",
+              "x": 20.0,
+              "y": 20.0,
+              "width": 1048.0,
+              "height": 42.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n140",
+                  "x": 20.0,
+                  "y": 11.0,
+                  "width": 220.0,
+                  "height": 20.0,
+                  "content": "R.I.PLANTA",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 15.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n141",
+                  "x": 770.0,
+                  "y": 13.0,
+                  "width": 70.0,
+                  "height": 16.0,
+                  "content": "INICIO",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n142",
+                  "x": 850.0,
+                  "y": 13.0,
+                  "width": 80.0,
+                  "height": 16.0,
+                  "content": "RANKING",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n143",
+                  "x": 940.0,
+                  "y": 13.0,
+                  "width": 90.0,
+                  "height": 16.0,
+                  "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n165",
+      "name": "Perfil de usuario",
+      "children": [
+        {
+          "type": "frame",
+          "id": "n221",
+          "name": "Perfil de usuario — Board",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 1088.0,
+          "height": 768.0,
+          "fill": [
+            {
+              "type": "solid",
+              "color": "#F2B87A"
+            }
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "n209",
+              "x": 818.0,
+              "y": 313.0,
+              "width": 250.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n210",
+                  "x": 115.0,
+                  "y": 42.0,
+                  "width": 20.0,
+                  "height": 28.0,
+                  "content": "+",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 25.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n211",
+                  "x": 90.0,
+                  "y": 94.0,
+                  "width": 100.0,
+                  "height": 16.0,
+                  "content": "Nueva lápida",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n202",
+              "x": 552.0,
+              "y": 313.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n203",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 68.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#9878DE"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n204",
+                      "x": 76.0,
+                      "y": 19.0,
+                      "width": 26.0,
+                      "height": 30.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 27.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n205",
+                  "x": 10.0,
+                  "y": 85.0,
+                  "width": 170.0,
+                  "height": 18.0,
+                  "content": "\"Mala suerte, buena tierra\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n206",
+                  "x": 10.0,
+                  "y": 108.0,
+                  "width": 170.0,
+                  "height": 16.0,
+                  "content": "19 coronas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#4A4A4A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n207",
+                  "x": 10.0,
+                  "y": 127.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n208",
+                  "x": 10.0,
+                  "y": 144.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ 19",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n195",
+              "x": 286.0,
+              "y": 313.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n196",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 68.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#73964F"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n197",
+                      "x": 76.0,
+                      "y": 19.0,
+                      "width": 26.0,
+                      "height": 30.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 27.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n198",
+                  "x": 10.0,
+                  "y": 85.0,
+                  "width": 170.0,
+                  "height": 18.0,
+                  "content": "\"Se secó sin avisar\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n199",
+                  "x": 10.0,
+                  "y": 108.0,
+                  "width": 170.0,
+                  "height": 16.0,
+                  "content": "41 coronas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#4A4A4A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n200",
+                  "x": 10.0,
+                  "y": 127.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n201",
+                  "x": 10.0,
+                  "y": 144.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ 41",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n188",
+              "x": 20.0,
+              "y": 313.0,
+              "width": 190.0,
+              "height": 158.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#DCF2E9"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n189",
+                  "x": 10.0,
+                  "y": 10.0,
+                  "width": 170.0,
+                  "height": 68.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#7CB342"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n190",
+                      "x": 76.0,
+                      "y": 19.0,
+                      "width": 26.0,
+                      "height": 30.0,
+                      "content": "◒",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 27.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n191",
+                  "x": 10.0,
+                  "y": 85.0,
+                  "width": 170.0,
+                  "height": 18.0,
+                  "content": "\"Aquí yace Pepino\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n192",
+                  "x": 10.0,
+                  "y": 108.0,
+                  "width": 170.0,
+                  "height": 16.0,
+                  "content": "132 coronas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#4A4A4A"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n193",
+                  "x": 10.0,
+                  "y": 127.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n194",
+                  "x": 10.0,
+                  "y": 144.0,
+                  "width": 170.0,
+                  "height": 14.0,
+                  "content": "♛ 132",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "n187",
+              "x": 20.0,
+              "y": 290.0,
+              "width": 240.0,
+              "height": 16.0,
+              "content": "SU CEMENTERIO",
+              "fontFamily": "Press Start 2P",
+              "fontSize": 10.0,
+              "fontWeight": 400,
+              "textAlign": "center",
+              "textAlignVertical": "middle",
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n184",
+              "x": 656.0,
+              "y": 209.0,
+              "width": 412.0,
+              "height": 65.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n185",
+                  "x": 18.0,
+                  "y": 18.0,
+                  "width": 300.0,
+                  "height": 15.0,
+                  "content": "♧  Superviviente Zombie",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 700,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E7D5B"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n186",
+                  "x": 38.0,
+                  "y": 38.0,
+                  "width": 260.0,
+                  "height": 14.0,
+                  "content": "una lápida \"resucitó\"",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#3B2A1A"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n181",
+              "x": 338.0,
+              "y": 209.0,
+              "width": 306.0,
+              "height": 65.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n182",
+                  "x": 140.0,
+                  "y": 12.0,
+                  "width": 50.0,
+                  "height": 23.0,
+                  "content": "132",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 17.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n183",
+                  "x": 108.0,
+                  "y": 42.0,
+                  "width": 130.0,
+                  "height": 14.0,
+                  "content": "Coronas recibidas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n178",
+              "x": 20.0,
+              "y": 209.0,
+              "width": 306.0,
+              "height": 65.0,
+              "layout": "none",
+              "cornerRadius": 7.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#F5E0B8"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n179",
+                  "x": 145.0,
+                  "y": 12.0,
+                  "width": 40.0,
+                  "height": 23.0,
+                  "content": "41",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 17.0,
+                  "fontWeight": 700,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#C0392B"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n180",
+                  "x": 105.0,
+                  "y": 42.0,
+                  "width": 130.0,
+                  "height": 14.0,
+                  "content": "Plantas asesinadas",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6E3A12"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n171",
+              "x": 20.0,
+              "y": 78.0,
+              "width": 1048.0,
+              "height": 112.0,
+              "layout": "none",
+              "cornerRadius": 10.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#8B4513"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n172",
+                  "x": 20.0,
+                  "y": 18.0,
+                  "width": 76.0,
+                  "height": 76.0,
+                  "layout": "none",
+                  "cornerRadius": 42.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#DCF2E9"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n173",
+                      "x": 23.0,
+                      "y": 20.0,
+                      "width": 32.0,
+                      "height": 34.0,
+                      "content": "♙",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 30.0,
+                      "fontWeight": 400,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n174",
+                  "x": 112.0,
+                  "y": 37.0,
+                  "width": 360.0,
+                  "height": 20.0,
+                  "content": "@manos_de_tierra",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 14.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n175",
+                  "x": 112.0,
+                  "y": 61.0,
+                  "width": 400.0,
+                  "height": 14.0,
+                  "content": "Sepulturero honorario desde marzo 2025",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 8.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "n176",
+                  "x": 905.0,
+                  "y": 43.0,
+                  "width": 126.0,
+                  "height": 28.0,
+                  "layout": "none",
+                  "cornerRadius": 6.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#D7A85E"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": {}
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "n177",
+                      "x": 12.0,
+                      "y": 8.0,
+                      "width": 110.0,
+                      "height": 12.0,
+                      "content": "EDITAR PERFIL",
+                      "fontFamily": "Press Start 2P",
+                      "fontSize": 8.0,
+                      "fontWeight": 400,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n166",
+              "x": 20.0,
+              "y": 20.0,
+              "width": 1048.0,
+              "height": 42.0,
+              "layout": "none",
+              "cornerRadius": 8.0,
+              "fill": [
+                {
+                  "type": "solid",
+                  "color": "#2E1305"
+                }
+              ],
+              "stroke": {
+                "thickness": {}
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "n167",
+                  "x": 20.0,
+                  "y": 11.0,
+                  "width": 220.0,
+                  "height": 20.0,
+                  "content": "R.I.PLANTA",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 15.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n168",
+                  "x": 770.0,
+                  "y": 13.0,
+                  "width": 70.0,
+                  "height": 16.0,
+                  "content": "INICIO",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n169",
+                  "x": 850.0,
+                  "y": 13.0,
+                  "width": 80.0,
+                  "height": 16.0,
+                  "content": "RANKING",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n170",
+                  "x": 940.0,
+                  "y": 13.0,
+                  "width": 90.0,
+                  "height": 16.0,
+                  "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 9.0,
+                  "fontWeight": 400,
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "children": [],
+  "editorMeta": {
+    "activePageIndex": 0,
+    "preserveAuthoredGeometry": false
+  }
+}
