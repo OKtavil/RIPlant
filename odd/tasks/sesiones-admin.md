@@ -44,6 +44,11 @@ Rama: `copilot/working-copy`. Runner: `pnpm --filter backend run ...`.
   event loop. Un origen (IP) distinto no hereda el bloqueo. Límite conocido: al
   ser en memoria, con varias instancias hace falta un almacén compartido
   (Redis).
+- **S12** — Una cookie `riplanta_sesion` con percent-encoding inválido (por
+  ejemplo `%E0%A4%A`) **no rompe el request**: `leerCookie` la trata como
+  ausente. Las rutas públicas siguen respondiendo normal y las que requieren
+  sesión responden `401`, nunca `500`. Un valor así no puede ser un token
+  nuestro: los tokens son base64url y nunca necesitan decodificarse.
 
 ## Tasks
 
@@ -68,6 +73,8 @@ Rama: `copilot/working-copy`. Runner: `pnpm --filter backend run ...`.
       Engram): quedó fuera del commit de la corrección para respetar su
       presupuesto de líneas; se commitea después del cierre de la review (L14).
       *(inline)*
+- [x] T12 — Corregir `R3-cookie-malformed` (S12): `leerCookie` no debe lanzar con
+      un valor que no se puede decodificar. *(inline; este mismo work unit)*
 
 Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
 **item 5 (dependencia nueva: bcryptjs)**. Requiere verificación independiente.
@@ -157,3 +164,19 @@ Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
   `R3-null-hash-path` (`password.ts:31`), `R4-AUTH-OBSERVABILITY-GAP` y
   `R4-LOGOUT-COOKIE-AFTER-DB`. `R2-001` y `R3-doc-resilience` (el texto viejo de
   L5) ya quedaron resueltos en este mismo commit de docs.
+- **L16** — Usuario, 2026-10-19: "ataca r3". Es `R3-cookie-malformed`
+  (`cookie.ts:41`): `decodeURIComponent` sin proteger. Un valor con
+  percent-encoding inválido lanza `URIError` dentro de `leerCookie`, que es un
+  helper compartido por `SesionesMiddleware` (toda ruta) y `DELETE /sesiones`;
+  el resultado es un `500` en cualquier request que traiga la cookie rota,
+  incluso en rutas públicas. La corrección es tratarlo como cookie ausente
+  (fail-closed: sin sesión), no adivinar el token.
+- **L17** — Evidencia de T12 (S12). RED: unit `sesiones.middleware.spec.ts` con
+  `URIError: URI malformed` en `cookie.ts:41`; e2e real `expected 200 "OK", got
+  500 "Internal Server Error"` en `GET /categorias` con `Cookie:
+  riplanta_sesion=%E0%A4%A`. GREEN: unit 40/40, e2e 18/18, build OK, lint solo
+  con los 2 avisos preexistentes de `lapidas.service.ts`. Chequeo diferencial
+  contra el commit base (copia en `mktemp -d`, no commiteada): 16 casos de
+  entrada, 13 idénticos, y las 3 diferencias son exactamente los valores con
+  percent-encoding inválido (`%`, `%E0%A4%A`, `%ZZ`), donde antes lanzaba y ahora
+  devuelve `undefined`. Ninguna diferencia en los casos válidos.

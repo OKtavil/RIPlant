@@ -38,7 +38,18 @@ export function leerCookie(
   for (const parte of header.split(';')) {
     const [clave, ...resto] = parte.trim().split('=');
     if (clave?.trim() === nombre) {
-      return decodeURIComponent(resto.join('=').trim());
+      // Un valor con percent-encoding inválido (por ejemplo `%E0%A4%A`) hace
+      // que `decodeURIComponent` lance `URIError`. Sin este try/catch el error
+      // sale por `SesionesMiddleware`, que corre en todas las rutas, y
+      // cualquier request que traiga la cookie rota termina en 500, incluso en
+      // rutas públicas. Un valor que no se puede decodificar no es un token
+      // nuestro: los tokens son base64url y nunca necesitan decodificarse, así
+      // que se trata como cookie ausente (sin sesión) en vez de adivinar.
+      try {
+        return decodeURIComponent(resto.join('=').trim());
+      } catch {
+        return undefined;
+      }
     }
   }
   return undefined;

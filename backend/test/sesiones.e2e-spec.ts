@@ -119,6 +119,28 @@ describe('Sesiones (e2e)', () => {
     await request(app.getHttpServer()).get('/sesiones/actual').expect(401);
   });
 
+  it('should treat a malformed session cookie as no session instead of failing', async () => {
+    // Un valor con percent-encoding inválido hacía que decodeURIComponent
+    // lanzara dentro del middleware de sesión: toda ruta que trajera esta
+    // cookie respondía 500.
+    const rota = 'riplanta_sesion=%E0%A4%A';
+
+    await request(app.getHttpServer())
+      .get('/categorias')
+      .set('Cookie', rota)
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .get('/sesiones/actual')
+      .set('Cookie', rota)
+      .expect(401);
+
+    await request(app.getHttpServer())
+      .delete('/sesiones')
+      .set('Cookie', rota)
+      .expect(204);
+  });
+
   describe('categorias protegidas por AdminMiddleware', () => {
     it('should return 401 when mutating without a session', async () => {
       await request(app.getHttpServer())

@@ -52,4 +52,17 @@ describe('SesionesMiddleware', () => {
     expect(request.sesion).toBeUndefined();
     expect(next).toHaveBeenCalledTimes(1);
   });
+
+  it('should not break the request when the cookie has invalid percent-encoding', async () => {
+    // `%E0%A4%A` no es una secuencia UTF-8 válida, así que decodeURIComponent
+    // lanza URIError. Sin protección el error sale del middleware y cualquier
+    // request que traiga la cookie rota responde 500.
+    const request = req('riplanta_sesion=%E0%A4%A; otra=1');
+
+    await middleware.use(request, {} as never, next);
+
+    expect(sesiones.resolver).toHaveBeenCalledWith(undefined);
+    expect(request.sesion).toBeUndefined();
+    expect(next).toHaveBeenCalledTimes(1);
+  });
 });
