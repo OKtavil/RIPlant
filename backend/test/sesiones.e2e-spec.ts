@@ -58,6 +58,18 @@ describe('Sesiones (e2e)', () => {
       .expect(401);
   });
 
+  it('should answer 429 after five failed attempts from the same origin', async () => {
+    const credenciales = { username: `sospechoso-${sufijo}`, password: 'x' };
+    const intentar = () =>
+      request(app.getHttpServer()).post('/sesiones').send(credenciales);
+
+    for (let intento = 0; intento < 5; intento += 1) {
+      await intentar().expect(401);
+    }
+
+    await intentar().expect(429);
+  });
+
   it('should reject an empty payload with 400', async () => {
     await request(app.getHttpServer()).post('/sesiones').send({}).expect(400);
   });

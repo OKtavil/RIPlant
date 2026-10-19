@@ -19,7 +19,7 @@ una corona y consultar rankings. Una persona administradora puede organizar cate
 | POST | `/categorias` | Crea una categoría validada (solo `admin`) |
 | PUT | `/categorias/:id` | Renombra una categoría o `404` (solo `admin`) |
 | DELETE | `/categorias/:id` | Elimina una categoría o `404` (solo `admin`) |
-| POST | `/sesiones` | Inicia sesión o `401`; entrega una cookie httpOnly |
+| POST | `/sesiones` | Inicia sesión o `401`; entrega una cookie httpOnly. Tras 5 fallos del mismo origen responde `429` |
 | GET | `/sesiones/actual` | Sesión vigente o `401` |
 | DELETE | `/sesiones` | Cierra la sesión (`204`) |
 
@@ -35,6 +35,9 @@ una corona y consultar rankings. Una persona administradora puede organizar cate
   respuesta.
 - Cerrar sesión invalida el token en el servidor: reenviar la misma cookie devuelve `401`.
 - Una sesión vencida no se acepta aunque el índice TTL todavía no la haya borrado.
+- El login frena la fuerza bruta: tras cinco fallos del mismo origen (IP + usuario) en
+  quince minutos responde `429` sin gastar otra comparación bcrypt, y un tope global de
+  comparaciones simultáneas evita que un flood sature el event loop.
 - Una corona incrementa exactamente una vez por acción en esta versión sin autenticación.
 - El frontend muestra estados útiles: demostración local si la API no está disponible,
   confirmación después de publicar y confirmación antes de eliminar categorías.

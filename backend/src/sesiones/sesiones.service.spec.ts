@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto';
 import { UnauthorizedException } from '@nestjs/common';
-import { SesionesService } from './sesiones.service';
+import {
+  DemasiadosIntentosException,
+  SesionesService,
+} from './sesiones.service';
 import type { SesionDocument } from './sesion.schema';
 import type { Model } from 'mongoose';
 import type { UsuariosService } from '../usuarios/usuarios.service';
@@ -21,6 +24,13 @@ describe('SesionesService', () => {
   function sha256(valor: string): string {
     return createHash('sha256').update(valor).digest('hex');
   }
+
+  /** Credenciales válidas que devuelve el doble de `UsuariosService`. */
+  const usuarioValido = {
+    id: '5f7b1c9e4b3a2d1f0e9d8c7b',
+    username: 'admin',
+    rol: 'admin' as const,
+  };
 
   beforeEach(() => {
     model = {
@@ -45,6 +55,58 @@ describe('SesionesService', () => {
       UnauthorizedException,
     );
     expect(model.create).not.toHaveBeenCalled();
+  });
+
+  /** Gasta `veces` intentos fallidos del mismo origen. */
+  async function fallarIntentos(origen: string, veces = 5): Promise<void> {
+    usuarios.validarCredenciales.mockResolvedValue(null);
+    for (let intento = 0; intento < veces; intento += 1) {
+      await expect(service.iniciar('jardinero', 'mala', origen)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    }
+  }
+
+  it('should answer 429 after five failed attempts from one origin', async () => {
+    await fallarIntentos('10.0.0.1');
+
+    // El 429 real (y su código de estado) lo cubre la prueba e2e.
+    await expect(
+      service.iniciar('jardinero', 'mala', '10.0.0.1'),
+    ).rejects.toThrow(DemasiadosIntentosException);
+    // El sexto intento se rechaza sin gastar otra comparación bcrypt.
+    expect(usuarios.validarCredenciales).toHaveBeenCalledTimes(5);
+  });
+
+  it('should keep the block scoped to one origin', async () => {
+    await fallarIntentos('10.0.0.2');
+
+    // Otro origen, mismo usuario: no hereda el bloqueo.
+    await expect(
+      service.iniciar('jardinero', 'mala', '10.0.0.3'),
+    ).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('should reset the failed attempts after a successful login', async () => {
+    await fallarIntentos('10.0.0.4', 4);
+    usuarios.validarCredenciales.mockResolvedValue(usuarioValido);
+    await service.iniciar('jardinero', 'buena', '10.0.0.4');
+
+    // Sin el reinicio, este quinto fallo acumulado daría 429.
+    await fallarIntentos('10.0.0.4');
+  });
+
+  it('should cap simultaneous bcrypt comparisons', async () => {
+    usuarios.validarCredenciales.mockResolvedValue(usuarioValido);
+    const enVuelo = Array.from({ length: 8 }, (_, indice) =>
+      service.iniciar('jardinero', 'buena', `10.1.0.${indice + 1}`),
+    );
+
+    await expect(
+      service.iniciar('jardinero', 'buena', '10.1.0.9'),
+    ).rejects.toThrow(DemasiadosIntentosException);
+    await Promise.all(enVuelo);
+    expect(model.create).toHaveBeenCalledTimes(8);
   });
 
   it('should store only the sha256 of the token, never the token itself', async () => {

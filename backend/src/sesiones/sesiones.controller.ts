@@ -27,11 +27,13 @@ export class SesionesController {
   @Post()
   async iniciar(
     @Body() dto: IniciarSesionDTO,
+    @Req() req: RequestConSesion,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { token, sesion } = await this.sesiones.iniciar(
       dto.username,
       dto.password,
+      req.ip ?? 'origen-desconocido',
     );
     escribirCookieSesion(res, token, this.sesiones.ttlMs());
     return this.aRespuesta(sesion.usuario, sesion.expiraEn);

@@ -585,8 +585,10 @@ La cookie usa `SameSite=Lax`, que frena los `POST` cross-site (mitigación bási
 de CSRF). El CORS acepta credenciales porque el frontend corre en otro puerto;
 en producción conviene reemplazar `origin: true` por una allowlist explícita. Para
 que el navegador envíe y guarde la cookie, el `fetch` del frontend tiene que usar
-`credentials: 'include'`. No hay límite de intentos de login todavía: es la deuda
-de seguridad más importante que queda.
+`credentials: 'include'`. El login frena la fuerza bruta: tras cinco fallos del mismo
+origen (IP + usuario) en quince minutos responde `429` sin gastar otra comparación
+bcrypt, y limita a ocho las comparaciones simultáneas para que un flood no sature el
+event loop. El contador es en memoria: con varias instancias hace falta Redis.
 
 ## Para retomar el proyecto en otro lugar
 
