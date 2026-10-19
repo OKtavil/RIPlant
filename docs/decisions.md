@@ -65,3 +65,21 @@ demostración; el mock pertenece al entorno de pruebas, no al producto.
 
 **Consecuencia:** invalida el modo demostración previsto en D-003 y la frase equivalente
 de la consecuencia de D-001.
+
+## D-008 — Usuario Zombie en lugar de purgar las lápidas sin dueño
+
+**Decisión:** las lápidas que llegan sin dueño no se eliminan. Se transfieren a un usuario
+reservado `zombie` (rol `zombie`) al arrancar, el frontend las muestra marcadas como
+distintas, y `GET /lapidas/asesinos` lo excluye del ranking.
+
+**Análisis:** una purga (`deleteMany` de todo lo sin `usuarioId`) es irreversible, borra
+contenido que un usuario escribió de verdad y deja la pantalla vacía sin que nadie decida
+eso. Transferir al zombie conserva el dato, lo hace visible y convierte un caso borde en
+estado de dominio con nombre propio — el cementerio ya hablaba de muertos que vuelven.
+Además obliga a modelar un rol que no autoriza nada, que es la prueba de que la
+autorización y la identidad son capas distintas.
+
+**Consecuencia:** el usuario `zombie` queda reservado (`400` en el registro, no `409`) y su
+contraseña es intratable, así que nadie puede iniciar sesión como él. El estado sale de
+`duenio.rol` en la respuesta de la API: si lo resolviera el frontend comparando usernames
+se repetiría el mismo error frágil que ya existe en `autor`.
