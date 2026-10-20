@@ -72,4 +72,37 @@ describe('DetallePage', () => {
 
     expect(screen.getByRole('button', { name: /borrar la lápida/i })).toBeTruthy()
   })
+
+  it('deja todos los datos en la columna izquierda', () => {
+    const { container } = montar({ sesion: sesionDuenia })
+
+    const izquierda = container.querySelector('.detalle__info')!
+    // Todo junto: la columna izquierda es la que tiene la información.
+    expect(izquierda.querySelector('.detalle__epitafio')).toBeTruthy()
+    expect(izquierda.querySelector('.detalle__titulo')).toBeTruthy()
+    expect(izquierda.querySelector('.detalle__autor')).toBeTruthy()
+    expect(izquierda.querySelector('.detalle__datos')).toBeTruthy()
+    expect(izquierda.querySelector('.detalle__corona')).toBeTruthy()
+    expect(izquierda.querySelector('.detalle__borrar')).toBeTruthy()
+  })
+
+  it('deja solo los comentarios en la columna derecha', () => {
+    const { container } = montar({ sesion: sesionDuenia })
+
+    const derecha = container.querySelector('.detalle__comentarios')!
+    expect(derecha).toBeTruthy()
+    // El resto de la información no se cuela en la columna de comentarios.
+    expect(derecha.querySelector('.detalle__titulo')).toBeNull()
+    expect(derecha.querySelector('.detalle__datos')).toBeNull()
+    expect(derecha.querySelector('.detalle__corona')).toBeNull()
+    expect(derecha.querySelector('.detalle__borrar')).toBeNull()
+    expect(derecha.querySelector('.detalle__epitafio')).toBeNull()
+  })
+
+  it('la foto también vive en la columna izquierda', () => {
+    const { container } = montar()
+
+    const izquierda = container.querySelector('.detalle__info')!
+    expect(izquierda.querySelector('.detalle__foto')).toBeTruthy()
+  })
 })

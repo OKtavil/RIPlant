@@ -14,20 +14,26 @@ type Props = {
   onVolver: () => void
 }
 
+/**
+ * Página propia de una lápida.
+ *
+ * Toda la información vive en la columna izquierda (`detalle__info`); la derecha
+ * es solo para los comentarios. Así la ficha se lee de corrido en un solo lugar
+ * y la conversación no la interrumpe.
+ */
 export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, onVolver }: Props) {
   const categoria = categorias.find((c) => c.id === lapida.categoriaId)?.nombre || 'Sin categoría'
   const mostrarBorrar = puedeBorrar(lapida, sesion)
 
   return (
     <div className="pantalla__contenido">
-      <section className="detalle__media">
+      <section className="detalle__info">
         <div className="detalle__foto" style={{ background: colorDeFoto(lapida.id) }}>
           <IconoHoja size={96} />
         </div>
-        <p className="detalle__epitafio">“{lapida.epitafio}”</p>
-      </section>
 
-      <section className="detalle__info">
+        <p className="detalle__epitafio">“{lapida.epitafio}”</p>
+
         <h1 className="detalle__titulo">“{lapida.nombrePlanta.toUpperCase()}”</h1>
         <p className="detalle__autor">por @{nombreDelDuenio(lapida)}</p>
 
@@ -43,24 +49,16 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
           </span>
         </div>
 
-        <Boton
-          className="detalle__corona"
-          onClick={() => void onCorona(lapida)}
-          aria-label="Dar una corona a esta lápida"
-        >
-          <IconoCorona size={14} />
-          DAR CORONA · {lapida.coronasCount}
-        </Boton>
-
-        <div className="detalle__comentarios">
-          <h2 className="detalle__comentarios-titulo">COMENTARIOS</h2>
-          <AvisoNoDisponible>
-            Los comentarios todavía no tienen endpoint, así que no se pueden leer ni escribir.
-          </AvisoNoDisponible>
-          <input type="text" placeholder="Escribe un comentario..." disabled />
-        </div>
-
         <div className="detalle__acciones">
+          <Boton
+            className="detalle__corona"
+            onClick={() => void onCorona(lapida)}
+            aria-label="Dar una corona a esta lápida"
+          >
+            <IconoCorona size={14} />
+            DAR CORONA · {lapida.coronasCount}
+          </Boton>
+
           {mostrarBorrar && (
             <Boton
               className="detalle__borrar"
@@ -71,11 +69,20 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
               BORRAR ESTA LÁPIDA
             </Boton>
           )}
+
           <Boton tamano="chico" onClick={onVolver}>
             VOLVER AL CEMENTERIO
           </Boton>
         </div>
       </section>
+
+      <div className="detalle__comentarios">
+        <h2 className="detalle__comentarios-titulo">COMENTARIOS</h2>
+        <AvisoNoDisponible>
+          Los comentarios todavía no tienen endpoint, así que no se pueden leer ni escribir.
+        </AvisoNoDisponible>
+        <input type="text" placeholder="Escribe un comentario..." disabled />
+      </div>
     </div>
   )
 }
