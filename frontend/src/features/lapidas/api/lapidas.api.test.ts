@@ -25,6 +25,17 @@ describe('lapidasApi', () => {
     expect(init.method).toBe('GET')
   })
 
+  it('asesinos pide GET /lapidas/asesinos', async () => {
+    conRespuesta(Response.json([{ username: 'jardinera', muertes: 4 }]))
+
+    const ranking = await lapidasApi.asesinos()
+
+    expect(ranking).toEqual([{ username: 'jardinera', muertes: 4 }])
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe(`${BASE}/lapidas/asesinos`)
+    expect(init.method).toBe('GET')
+  })
+
   it('create hace POST /lapidas con el payload completo', async () => {
     conRespuesta(Response.json({ id: 9 }))
     const payload = {

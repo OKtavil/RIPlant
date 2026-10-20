@@ -1,8 +1,11 @@
 import { request } from '../../../shared/api/client'
-import type { CreateGraveInput, Grave } from '../model/lapida'
+import type { Asesino, CreateGraveInput, Grave } from '../model/lapida'
 
 export const lapidasApi = {
   findAll: () => request<Grave[]>('/lapidas'),
+
+  /** Ranking de muertes por usuario, ya agregado y ordenado por el backend. */
+  asesinos: () => request<Asesino[]>('/lapidas/asesinos'),
 
   findById: (id: number) => request<Grave>(`/lapidas/${id}`),
 

@@ -17,6 +17,19 @@ export type Grave = {
   causaMuerte: string
   fotoUrl: string
   coronasCount: number
+  /** Id del usuario dueño; `''` en datos anteriores a la propiedad. */
+  usuarioId: string
+  /**
+   * Dueño resuelto por el backend contra `usuarios.username`. Es la fuente de
+   * verdad de la identidad: `autor` es texto libre y puede no coincidir.
+   */
+  duenio?: { username: string; rol: string }
+}
+
+/** Fila de `GET /lapidas/asesinos`. */
+export type Asesino = {
+  username: string
+  muertes: number
 }
 
 export type CreateGraveInput = {

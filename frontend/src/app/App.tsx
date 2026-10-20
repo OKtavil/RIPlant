@@ -11,7 +11,7 @@ import { PerfilPage } from '../features/lapidas/ui/PerfilPage'
 import { PublicarPage } from '../features/lapidas/ui/PublicarPage'
 import { RankingPage } from '../features/lapidas/ui/RankingPage'
 import { lapidasApi } from '../features/lapidas/api/lapidas.api'
-import type { CreateGraveInput, Grave } from '../features/lapidas/model/lapida'
+import type { Asesino, CreateGraveInput, Grave } from '../features/lapidas/model/lapida'
 import { LoginPage } from '../features/sesiones/ui/LoginPage'
 import { RecuperarPage } from '../features/sesiones/ui/RecuperarPage'
 import { RegistroPage } from '../features/sesiones/ui/RegistroPage'
@@ -26,6 +26,8 @@ export default function App() {
   const [vistaAuth, setVistaAuth] = useState<VistaAuth | null>(null)
   const [lapidas, setLapidas] = useState<Grave[]>([])
   const [categorias, setCategorias] = useState<Category[]>([])
+  const [asesinos, setAsesinos] = useState<Asesino[]>([])
+  const [errorAsesinos, setErrorAsesinos] = useState('')
   const [seleccionada, setSeleccionada] = useState<Grave | null>(null)
   const [sesion, setSesion] = useState<Session | null>(null)
   const [cargando, setCargando] = useState(true)
@@ -53,6 +55,20 @@ export default function App() {
         if (vigente) setSesion(actual)
       } catch {
         // Sin sesión: es un estado válido, no un error.
+      }
+
+      // El ranking de asesinos se carga aparte: si falla, el cementerio igual
+      // se muestra y la sección avisa su propio error.
+      try {
+        const ranking = await lapidasApi.asesinos()
+        if (vigente) setAsesinos(ranking)
+      } catch (fallo) {
+        if (vigente)
+          setErrorAsesinos(
+            fallo instanceof ApiError
+              ? fallo.message
+              : 'No se pudo cargar el ranking de asesinos.',
+          )
       }
     })()
     return () => {
@@ -172,13 +188,21 @@ export default function App() {
             <InicioPage
               lapidas={lapidas}
               categorias={categorias}
+              asesinos={asesinos}
+              errorAsesinos={errorAsesinos}
               onAbrir={setSeleccionada}
               onCorona={(l) => void darCorona(l)}
               onPublicar={() => setVista('publicar')}
             />
           )}
           {vista === 'ranking' && (
-            <RankingPage lapidas={lapidas} categorias={categorias} onAbrir={setSeleccionada} />
+            <RankingPage
+              lapidas={lapidas}
+              categorias={categorias}
+              asesinos={asesinos}
+              errorAsesinos={errorAsesinos}
+              onAbrir={setSeleccionada}
+            />
           )}
           {vista === 'publicar' && <PublicarPage categorias={categorias} onPublicar={publicar} />}
           {vista === 'perfil' && (
@@ -186,6 +210,7 @@ export default function App() {
               sesion={sesion}
               lapidas={lapidas}
               categorias={categorias}
+              asesinos={asesinos}
               onAbrir={setSeleccionada}
               onPublicar={() => setVista('publicar')}
               onIniciarSesion={() => setVistaAuth('login')}

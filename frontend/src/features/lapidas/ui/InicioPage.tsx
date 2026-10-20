@@ -1,12 +1,14 @@
-import { AvisoNoDisponible } from '../../../shared/ui/Aviso'
 import { IconoCorona } from '../../../shared/ui/iconos'
 import type { Category } from '../../categorias/model/categoria'
-import type { Grave } from '../model/lapida'
+import type { Asesino, Grave } from '../model/lapida'
 import { GraveCard, GraveCardNueva } from './GraveCard'
+import { AvisoAsesinos, ListaAsesinos } from './ListaAsesinos'
 
 type Props = {
   lapidas: Grave[]
   categorias: Category[]
+  asesinos: Asesino[]
+  errorAsesinos: string
   onAbrir: (lapida: Grave) => void
   onCorona: (lapida: Grave) => void
   onPublicar: () => void
@@ -16,7 +18,15 @@ function nombreCategoria(categorias: Category[], id: number): string | undefined
   return categorias.find((categoria) => categoria.id === id)?.nombre
 }
 
-export function InicioPage({ lapidas, categorias, onAbrir, onCorona, onPublicar }: Props) {
+export function InicioPage({
+  lapidas,
+  categorias,
+  asesinos,
+  errorAsesinos,
+  onAbrir,
+  onCorona,
+  onPublicar,
+}: Props) {
   const salonDelHonor = [...lapidas].sort((a, b) => b.coronasCount - a.coronasCount).slice(0, 3)
 
   return (
@@ -58,9 +68,11 @@ export function InicioPage({ lapidas, categorias, onAbrir, onCorona, onPublicar 
 
         <div className="sidebar__cabecera">ASESINOS SERIALES</div>
         <div className="sidebar__lista sidebar__lista--crece">
-          <AvisoNoDisponible>
-            La API todavía no expone un contador de plantas asesinadas por persona.
-          </AvisoNoDisponible>
+          {errorAsesinos ? (
+            <AvisoAsesinos>{errorAsesinos}</AvisoAsesinos>
+          ) : (
+            <ListaAsesinos asesinos={asesinos} variante="sidebar" />
+          )}
         </div>
 
         <p className="sidebar__nota">

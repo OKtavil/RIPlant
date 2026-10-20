@@ -3,23 +3,35 @@ import { Boton } from '../../../shared/ui/Boton'
 import { IconoInsignia, IconoPersona } from '../../../shared/ui/iconos'
 import type { Session } from '../../sesiones/model/sesion'
 import type { Category } from '../../categorias/model/categoria'
-import type { Grave } from '../model/lapida'
+import type { Asesino, Grave } from '../model/lapida'
 import { GraveCard, GraveCardNueva } from './GraveCard'
 
 type Props = {
   sesion: Session | null
   lapidas: Grave[]
   categorias: Category[]
+  asesinos: Asesino[]
   onAbrir: (lapida: Grave) => void
   onPublicar: () => void
   onIniciarSesion: () => void
 }
 
-export function PerfilPage({ sesion, lapidas, categorias, onAbrir, onPublicar, onIniciarSesion }: Props) {
+export function PerfilPage({
+  sesion,
+  lapidas,
+  categorias,
+  asesinos,
+  onAbrir,
+  onPublicar,
+  onIniciarSesion,
+}: Props) {
+  // La identidad sale de `duenio.username` (resuelto por el backend contra
+  // `usuarios.username`), no de `autor`: ese es texto libre y puede no coincidir.
   const propias = sesion
-    ? lapidas.filter((lapida) => lapida.autor === sesion.username)
+    ? lapidas.filter((lapida) => lapida.duenio?.username === sesion.username)
     : []
   const coronasRecibidas = propias.reduce((total, lapida) => total + lapida.coronasCount, 0)
+  const misMuertes = asesinos.find((a) => a.username === sesion?.username)?.muertes ?? 0
   const nombreCategoria = (id: number) => categorias.find((c) => c.id === id)?.nombre
 
   return (
@@ -47,7 +59,7 @@ export function PerfilPage({ sesion, lapidas, categorias, onAbrir, onPublicar, o
 
       <section className="perfil__stats">
         <div className="perfil__stat">
-          <p className="perfil__stat-valor perfil__stat-valor--rojo">{propias.length}</p>
+          <p className="perfil__stat-valor perfil__stat-valor--rojo">{misMuertes}</p>
           <p className="perfil__stat-etiqueta">Plantas asesinadas</p>
         </div>
         <div className="perfil__stat">
@@ -65,8 +77,7 @@ export function PerfilPage({ sesion, lapidas, categorias, onAbrir, onPublicar, o
       </section>
 
       <AvisoNoDisponible>
-        El contador de “plantas asesinadas” muestra tus lápidas publicadas: la API todavía no
-        expone un contador propio.
+        La insignia “Superviviente Zombie” todavía no tiene estado en la API.
       </AvisoNoDisponible>
 
       <h2 className="perfil__seccion">SU CEMENTERIO</h2>
