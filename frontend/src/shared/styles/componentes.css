@@ -696,6 +696,25 @@
   font-weight: 700;
 }
 
+/* Solo lo ve el admin. Se queda chico y pegado al texto del comentario para no
+   competir con el contenido de la conversación. */
+.detalle__comentario-borrar {
+  margin-left: 6px;
+  font-family: var(--fuente-pixel);
+  font-size: 8px;
+  padding: 2px 6px;
+  color: var(--rojo);
+  background: transparent;
+  border: 1px solid var(--rojo);
+  border-radius: var(--radio-control);
+  cursor: pointer;
+}
+
+.detalle__comentario-borrar:hover {
+  color: var(--texto-fuerte);
+  background: var(--rojo);
+}
+
 /* El formulario es el hijo directo del flex, así que el `auto` que lo ancla al
    fondo va acá; el input solo se estira a lo ancho. */
 .detalle__comentario-form {

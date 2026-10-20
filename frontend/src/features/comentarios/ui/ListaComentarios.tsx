@@ -65,6 +65,23 @@ export function ListaComentarios({ lapidaId, sesion }: Props) {
     }
   }
 
+  // Solo el admin borra. La comprobación viaja con el rol de la sesión, no con
+  // el comentario: el backend no deja al autor borrar el suyo.
+  const esAdmin = sesion?.rol === 'admin'
+
+  async function borrar(comentarioId: string, autor: string) {
+    // Borrar no se deshace: mismo patrón de confirmación que usa el borrado de
+    // categoría (`CategoriasPage.tsx:67`).
+    if (!window.confirm(`¿Borrar el comentario de @${autor}?`)) return
+    setError(null)
+    try {
+      await comentariosApi.borrar(comentarioId)
+      setComentarios((items) => (items ?? []).filter((c) => c.id !== comentarioId))
+    } catch (e: unknown) {
+      setError(mensajeDeError(e))
+    }
+  }
+
   return (
     <div className="detalle__comentarios">
       <h2 className="detalle__comentarios-titulo">COMENTARIOS</h2>
@@ -81,6 +98,16 @@ export function ListaComentarios({ lapidaId, sesion }: Props) {
         comentarios?.map((c) => (
           <p key={c.id} className="detalle__comentario">
             <strong>@{c.autor}:</strong> {c.texto}
+            {esAdmin && (
+              <button
+                type="button"
+                className="detalle__comentario-borrar"
+                onClick={() => void borrar(c.id, c.autor)}
+                aria-label={`Borrar el comentario de @${c.autor}`}
+              >
+                BORRAR
+              </button>
+            )}
           </p>
         ))
       )}

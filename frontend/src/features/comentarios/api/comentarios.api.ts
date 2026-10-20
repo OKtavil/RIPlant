@@ -22,4 +22,12 @@ export const comentariosApi = {
       method: 'POST',
       body: { texto },
     }),
+
+  /**
+   * Solo `admin`. El autor no borra el suyo: el `AdminMiddleware` del backend
+   * rechaza con `403` a cualquier otro rol, así que la UI no ofrece el botón
+   * fuera de admin en vez de mostrar uno que rebotaría.
+   */
+  borrar: (comentarioId: string) =>
+    request<{ id: string }>(`/comentarios/${comentarioId}`, { method: 'DELETE' }),
 }

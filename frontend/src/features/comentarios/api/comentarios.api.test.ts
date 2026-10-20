@@ -37,4 +37,15 @@ describe('comentariosApi', () => {
     // El autor no viaja en el cuerpo: lo pone el backend desde la sesión.
     expect(init.body).toBe(JSON.stringify({ texto: 'que en paz descanse' }))
   })
+
+  it('borrar hace DELETE /comentarios/:id, fuera de la colección de la lápida', async () => {
+    conRespuesta(Response.json({ id: 'c1' }))
+
+    await comentariosApi.borrar('c1')
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    // El controller del backend no cuelga de /lapidas: con el prefijo da 404.
+    expect(url).toBe(`${BASE}/comentarios/c1`)
+    expect(init.method).toBe('DELETE')
+  })
 })
