@@ -579,10 +579,14 @@ reiniciar no duplica nada):
 El orden importa: primero se siembra el zombie, después se migran las lápidas huérfanas a
 él, y recién entonces se siembran los datos.
 
-> **Las pruebas e2e escriben en la base de `.env`.** Hoy la suite lee `MONGODB_URI` de
-> `backend/.env`, que apunta a la base de desarrollo. Mientras eso no se separe, cada
-> corrida de `pnpm --filter backend run test:e2e` deja usuarios y lápidas de prueba en
-> `riplanta`. (Las fotos sí van a un temporal: los e2e definen `UPLOADS_DIR`.)
+> **Las pruebas e2e usan bases aisladas.** Cada suite define su propio
+> `MONGODB_URI` antes de construir la app (`test/helpers/base-datos.ts`), así que
+> `riplanta` — la base con la que se desarrolla a mano — no se ensucia. La base de
+> cada suite se borra al terminar, y el `globalSetup` barre las que hayan quedado
+> de una corrida interrumpida.
+>
+> Las fotos van a un temporal: los e2e definen `RIPLANTA_UPLOADS_DIR` (ver
+> *Costura de test* abajo).
 
 ### Sesiones y administración
 
@@ -629,6 +633,28 @@ origen (IP + usuario) en quince minutos responde `429` sin gastar otra comparaci
 bcrypt, y limita a ocho las comparaciones simultáneas para que un flood no sature el
 event loop. El contador es en memoria: con varias instancias hace falta Redis.
 
+### Costura de test: `RIPLANTA_UPLOADS_DIR`
+
+Las fotos se escriben por defecto en `backend/var/uploads/` (ignorada por git). La
+variable `RIPLANTA_UPLOADS_DIR` es una **costura, no configuración de despliegue**:
+
+- **Quién la usa:** solo las pruebas e2e. `test/lapidas.e2e-spec.ts` la apunta a un
+  temporal para que las fotos no terminen en el worktree.
+- **Por qué no está en `.env.example`:** no es una variable soportada. Quien la defina
+  creyendo que es config mueve el directorio de las fotos en silencio, y las ya subidas
+  responden `404`.
+- **Por qué lleva el prefijo `RIPLANTA_`** aunque `MONGODB_URI`, `PORT` y `ADMIN_*` no lo
+  lleven: `UPLOADS_DIR` es un nombre genérico y colisiona con cualquier otro servicio que
+  lo use en el mismo entorno (un `.env` compartido, un `docker-compose` con varias apps,
+  un shell que la tenga exportada). Con el prefijo, la colisión es imposible.
+- **El nombre viejo `UPLOADS_DIR` se ignora a propósito.** No hay compatibilidad hacia
+  atrás: un test lo fija, para que dejar la variable vieja definida falle fuerte en vez
+  de aplicar la costura a medias.
+
+La ruta la resuelve una sola función, `directorioDeSubidas()`: el servicio escribe con
+ella y `main.ts` monta el estático con ella. Si resolvieran la ruta por separado, la foto
+se guardaría donde nadie la sirve.
+
 ### Autorización: middlewares, no guards
 
 Toda la autorización se implementa con **middlewares** aplicados por ruta en cada
@@ -637,7 +663,7 @@ módulo. Hay cuatro:
 | Middleware | Qué exige | Dónde está aplicado |
 |---|---|---|
 | `SesionesMiddleware` | Nada: resuelve `req.sesion` y no bloquea | Global (`AppModule`) |
-| `SesionRequeridaMiddleware` | Sesión iniciada, cualquier rol → si no, `401` | `POST /lapidas`, `POST /lapidas/:id/corona`, `POST /lapidas/:id/comentarios` |
+| `SesionRequeridaMiddleware` | Sesión iniciada, cualquier rol → si no, `401` | `POST /lapidas`, `POST`/`DELETE /lapidas/:id/corona`, `POST /lapidas/:id/comentarios` |
 | `DuenoOAdminLapidaMiddleware` | Sesión **y** ser el dueño de la lápida o `admin`. Carga la lápida y la adjunta a la request | `PUT`/`DELETE /lapidas/:id`, `POST /lapidas/:id/foto` |
 | `AdminMiddleware` | Rol `admin` → si no, `401` sin sesión / `403` con rol `usuario` | Las tres mutaciones de `/categorias`, `DELETE /comentarios/:id` |
 

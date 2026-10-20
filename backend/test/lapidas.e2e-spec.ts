@@ -12,8 +12,10 @@ import { borrarBaseAislada, prepararBaseAislada } from './helpers/base-datos';
 
 // S8: las fotos de los e2e van a un temporal, nunca al worktree. Se define
 // antes de importar AppModule para que el servicio lo lea al construirse.
+// `RIPLANTA_UPLOADS_DIR` es la costura (renombrada desde `UPLOADS_DIR` para no
+// colisionar con otro servicio que use ese nombre genérico).
 const uploadsScratch = mkdtempSync(join(tmpdir(), 'riplanta-e2e-uploads-'));
-process.env.UPLOADS_DIR = uploadsScratch;
+process.env.RIPLANTA_UPLOADS_DIR = uploadsScratch;
 
 describe('Lapidas (e2e)', () => {
   let app: INestApplication;

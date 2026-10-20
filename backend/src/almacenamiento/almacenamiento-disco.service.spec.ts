@@ -122,23 +122,38 @@ describe('AlmacenamientoDiscoService (S8)', () => {
 
   it('el directorio del servicio y el que monta main.ts son el mismo (regresión)', () => {
     // `main.ts` monta el estático con `directorioDeSubidas()`. Si el servicio
-    // resolviera la ruta por su cuenta, alcanzaba con definir `UPLOADS_DIR`
-    // para que la foto se guardara donde el estático no la busca y todo
-    // respondiera 404 con la subida en 201.
-    const original = process.env.UPLOADS_DIR;
+    // resolviera la ruta por su cuenta, alcanzaba con definir la variable para
+    // que la foto se guardara donde el estático no la busca y todo respondiera
+    // 404 con la subida en 201.
+    const original = process.env.RIPLANTA_UPLOADS_DIR;
 
-    process.env.UPLOADS_DIR = '/tmp/opencode/dir-explícito';
+    process.env.RIPLANTA_UPLOADS_DIR = '/tmp/opencode/dir-explícito';
     expect(directorioDeSubidas()).toBe('/tmp/opencode/dir-explícito');
     expect(new AlmacenamientoDiscoService()['directorio']).toBe(
       directorioDeSubidas(),
     );
 
-    delete process.env.UPLOADS_DIR;
+    delete process.env.RIPLANTA_UPLOADS_DIR;
     expect(directorioDeSubidas()).toBe(
       join(process.cwd(), 'var', 'uploads'),
     );
 
-    if (original === undefined) delete process.env.UPLOADS_DIR;
-    else process.env.UPLOADS_DIR = original;
+    if (original === undefined) delete process.env.RIPLANTA_UPLOADS_DIR;
+    else process.env.RIPLANTA_UPLOADS_DIR = original;
+  });
+
+  it('ignora el nombre viejo UPLOADS_DIR (la costura se renombró)', () => {
+    // Se renombró a `RIPLANTA_UPLOADS_DIR` para que no colisione con otro
+    // servicio que use `UPLOADS_DIR` en el mismo entorno. El nombre viejo NO
+    // debe seguir funcionando en silencio: si alguien lo deja definido, la
+    // costura no se aplica y el test e2e escribiría en el worktree sin que
+    // nadie lo note. Que falle fuerte es lo correcto.
+    const viejo = process.env.UPLOADS_DIR;
+    process.env.UPLOADS_DIR = '/tmp/opencode/ignorado';
+
+    expect(directorioDeSubidas()).toBe(join(process.cwd(), 'var', 'uploads'));
+
+    if (viejo === undefined) delete process.env.UPLOADS_DIR;
+    else process.env.UPLOADS_DIR = viejo;
   });
 });

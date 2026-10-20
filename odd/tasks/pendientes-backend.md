@@ -138,9 +138,10 @@ Decisión del usuario: **disco local** (lo recomendado).
 - El almacenamiento queda detrás de una interfaz (`AlmacenamientoService`) para poder pasar a
   S3/R2 sin tocar los controladores.
 
-### S9 — Recuperar / nueva contraseña (diferida)
+### S9 — Recuperar / nueva contraseña (implementación futura)
 
-Decisión del usuario: **al final, porque necesita un proveedor de email** (D6).
+Decisión del usuario: **pasa a implementación futura**. Esta aplicación es sencilla y **no
+necesita proveedor de email**; mientras eso siga siendo cierto, esta feature no aporta.
 
 - Requisitos: campo `email` en `usuarios` (hoy no existe) y transporte de email.
 - Consecuencia aceptada de D1 (email deshabilitado en el registro): al implementar esta feature
@@ -187,8 +188,10 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 | T5 | Comentarios: colección, los tres endpoints y borrado solo admin | S6 | ✅ hecho | `d68590d` |
 | T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | ✅ hecho (salió junto a T3) | `44ac10b` |
 | T7 | Subida de foto a disco local con servido estático | S8 | ✅ hecho | `5b1d00a` |
-| T8 | Recuperar y nueva contraseña (diferida) | S9 | pendiente | — |
+| T8 | Recuperar y nueva contraseña (**implementación futura**) | S9 | diferida | — |
 | T9 | Documentación de los endpoints nuevos | S10 | ✅ hecho | `82b73c6` |
+| T10 | Corona idempotente (`POST` 201/200) + `DELETE /lapidas/:id/corona` + `coronadaPorMi` + espera del índice único al arrancar | S5 | ✅ hecho | `bc4c32d` |
+| T11 | Costura de test renombrada a `RIPLANTA_UPLOADS_DIR` + documentada como costura | S10 | ✅ hecho | `(este commit)` |
 
 ## Orden y dependencias
 
@@ -209,18 +212,22 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 - **Tercer usuario en el seed** — ✅ **resuelto**: `jardinera` (rol `usuario`), confirmada por
   el usuario en L7. Sin una segunda cuenta real, asesinos seriales no se puede verificar con
   más de una fila.
-- **Mínimo de caracteres de la contraseña** en el registro (propuesta: 8) — ✅ **documentado
-  en T9** como 8, con el mensaje de error que ya está en el DTO. Sigue **sin confirmar por el
-  usuario**, pero la doc y el código ya coinciden, así que no hay divergencia que resolver.
-- **Código y mensaje de la segunda corona** — ✅ **implementado, sin confirmar**: `409` con
-  mensaje técnico en español. Ver E5. T9 lo documentó tal cual; si el front prefiere un `200`
-  idempotente, siguen siendo una línea de cambio + la doc.
-- **Tope de caracteres del comentario** (propuesta: 500) — ✅ **documentado en T9** como 500.
-  Misma situación que la contraseña: código y doc coinciden.
-- **`UPLOADS_DIR`** — agregada por T7 para que los e2e no escriban en el worktree. Sigue **sin
-  documentar en `.env.example`** ni decidida como variable pública. T9 **no la documentó en el
-  README** siguiendo la recomendación de dejarla como costura de test, pero sí menciona que los
-  e2e la usan. Si se quiere poder mover las subidas en despliegue, hay que documentarla.
+- **Mínimo de caracteres de la contraseña** — ✅ **ratificado por el usuario: 8 caracteres**.
+  Ya implementado en `crear-usuario.dto.ts` (`@MinLength(8)`) y documentado en `docs/spec.md`.
+- **Código y mensaje de la segunda corona** — ✅ **cerrado (commit `bc4c32d`)**. `409` fue
+  **descartado** por el usuario en favor de **idempotencia**: el front alterna poner y quitar
+  corona con cada click, así que repetir no puede ser un error. `POST` devuelve `201`/`200` y
+  se agregó `DELETE /lapidas/:id/corona`, los dos idempotentes, más `coronadaPorMi` en las
+  respuestas.
+- **Tope de caracteres del comentario** — ✅ **ratificado por el usuario: 500 caracteres**.
+  Ya implementado en `create-comentario.dto.ts` (`@MaxLength(500)`), en el schema y documentado
+  en `docs/spec.md`.
+- **`UPLOADS_DIR`** — ✅ **cerrado**. Decisión del usuario: dejarla como **costura**, **renombrarla**
+  y **documentar la decisión**. Ahora es `RIPLANTA_UPLOADS_DIR` (el prefijo evita colisiones con
+  otro servicio que use ese nombre genérico en el mismo entorno). Se documentó en el `README.md`
+  como costura de test en su propia sección, y **se dejó fuera de `.env.example`** a propósito:
+  no es config soportada, y quien la defina creyendo que sí mueve el directorio de las fotos en
+  silencio. Un test fija que el nombre viejo se ignore, para que no quede a medias.
 - **`R3-e2e-shared-db`** — ✅ **cerrado (E10, commit `1888293`)**. Cada suite e2e corre contra su
   propia base `riplanta_e2e_<suite>_w<N>_<uuid>`, creada al arrancar y borrada en el `afterAll`.
   El `globalSetup` barre lo que dejó una corrida cortada a la mitad. T9 había dejado el aviso en
@@ -723,3 +730,57 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   `build` y `lint` limpios · `riplanta` intacta (6 usuarios, 10 lápidas, 6 categorías).
 
   **Commit:** `391171f`.
+
+- **E12 (2026-10-20, cierre de los pendientes ratificados — T10 y T11):**
+
+  **Corona idempotente (T10, commit `bc4c32d`).** El usuario descartó el `409` en favor de
+  **`POST` + `DELETE`, los dos idempotentes**, porque el front alterna poner y quitar con cada
+  click: un doble click o un reintento del cliente HTTP es un caso *esperable*, no excepcional,
+  y con `409` mostraba un error por algo que el usuario no hizo mal. Se agregó `coronadaPorMi`
+  a las respuestas (sin eso el front no sabe qué pintar al cargar) y el `DELETE` filtra por
+  `usuarioId`, así que nadie puede quitar la corona ajena — no hace falta middleware de dueño,
+  que además sería incorrecto: la corona es de quien la puso, no del dueño de la lápida.
+
+  **Bug real que este cambio destapó.** `lapidas.e2e-spec.ts` fallaba **determinísticamente**
+  (4 corridas, 4 fallos) al correr la suite e2e completa, y **nunca** aislado: el segundo
+  `POST /corona` devolvía `201`. La hipótesis de "carrera de índices" parecía refutada por un
+  probe aislado — pero **el probe aislado era la medición equivocada**: en una corrida aislada
+  el índice alcanza a construirse; en paralelo, no. Instrumentado en la suite completa:
+
+  ```
+  keys=[{"_id":1},{"lapidaId":1}]   unico=false
+  ```
+
+  `autoIndex` de Mongoose construye los índices **en segundo plano**: la conexión queda lista
+  y la app ya acepta escrituras antes de que el índice exista. La documentación de `giveCorona`
+  afirmaba que la unicidad la garantiza el índice, y eso **solo era cierto desde el segundo
+  usuario en adelante**. En una base nueva, la invariante "una corona por usuario y lápida"
+  **no estaba garantizada**. Ahora `onModuleInit` espera `coronaModel.init()` antes de sembrar;
+  si el índice no se puede construir, loguea el error en vez de seguir en silencio con la
+  invariante rota. **Lección:** reproducir en las mismas condiciones (suite completa paralela),
+  no aislado; un probe aislado puede «refutar» una hipótesis verdadera.
+
+  **Costura renombrada (T11).** `UPLOADS_DIR` → **`RIPLANTA_UPLOADS_DIR`** (decisión del
+  usuario). El prefijo es deliberado aunque el resto de las variables no lo lleve: `UPLOADS_DIR`
+  es un nombre genérico y colisiona con otro servicio que lo use en el mismo entorno. Se
+  documentó en el `README.md` como **costura de test**, no config de despliegue — hoy **nadie**
+  la define en producción, solo los e2e la apuntan a un temporal — y por eso se dejó **fuera de
+  `.env.example`**. Un test fija que el nombre viejo se ignore: dejar la variable vieja definida
+  deja de aplicar la costura, y eso tiene que fallar fuerte, no pasar a medias.
+
+  **README corregido de paso.** Decía que «las pruebas e2e escriben en la base de `.env`»: eso
+  dejó de ser cierto en `R3-e2e-shared-db`. Reemplazado por la verdad actual (bases aisladas por
+  suite). La tabla de middlewares tampoco mencionaba `DELETE /lapidas/:id/corona`.
+
+  **Verificación observada:** unit **82/82** (eran 81; +1 del nombre viejo) · e2e **31/31** ·
+  `build` y `lint` limpios · **el `var/uploads/` del worktree quedó vacío** tras correr los e2e
+  (la costura funciona) · sin temporales huérfanos · `riplanta` intacta (6/10/6/0/0).
+
+  **Commit:** `bc4c32d` (T10) + este (T11).
+
+- **L19 (2026-10-20, decisiones del usuario sobre los pendientes, verbatim):**
+  > Para la segunda corona, quiero lan tercera opcion, puesto que quiero que el front altere
+  > entre poner y quitar corona con cada click, El uploads_dir, hay que dejarla como costura y
+  > renombrarla, documentando la desicion, entonces ponemos la contraseña de minimo 8 caracteres
+  > y el comentario de maximo 500 caracteres, el t8, lo vamos a pasar como opcion a
+  > implementacion futura dado a que no se necesita proveedor de email para esta aplicaion sencilla

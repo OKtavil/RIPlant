@@ -21,7 +21,8 @@ inválido*.
 | POST | `/lapidas` | sesión (cualquier rol) | Crea una lápida (`201`) o `400` por payload inválido. `usuarioId` y `autor` salen de la sesión; el cuerpo no los decide |
 | PUT | `/lapidas/:id` | dueño o `admin` | Actualiza una lápida o `404`; `403` si es de otro |
 | DELETE | `/lapidas/:id` | dueño o `admin` | Elimina la lápida (`200`), `404` o `403`; borra en cascada sus comentarios, coronas y foto |
-| POST | `/lapidas/:id/corona` | sesión (cualquier rol) | Incrementa el contador (`201`) o `404`; la segunda corona del mismo usuario devuelve `409` |
+| POST | `/lapidas/:id/corona` | sesión (cualquier rol) | Da corona (`201` si la creó, `200` si ya estaba) o `404`. **Idempotente**: la segunda corona del mismo usuario no es un error. Agrega `coronadaPorMi` a la respuesta |
+| DELETE | `/lapidas/:id/corona` | sesión (cualquier rol) | Quita la corona de **este** usuario (`200`, o `404`). **Idempotente**: si no la tenía, no baja el contador. Agrega `coronadaPorMi: false`. Cada usuario solo puede quitar la suya |
 | POST | `/lapidas/:id/foto` | dueño o `admin` | Sube la foto (multipart, campo `foto`); `201`, o `400` sin archivo, `404`, `403`, `413` si supera 5 MB, `415` si no es JPEG, PNG o WebP |
 | GET | `/lapidas/:id/comentarios` | público | Comentarios de la lápida, por fecha ascendente; `404` si la lápida no existe |
 | POST | `/lapidas/:id/comentarios` | sesión (cualquier rol) | Crea un comentario (`201`); `400` si `texto` falta o supera 500 caracteres, `404` si la lápida no existe. `autor` y `usuarioId` salen de la sesión |
@@ -76,14 +77,19 @@ disco local y se sirve en `/uploads/<archivo>`.
   quince minutos responde `429` sin gastar otra comparación bcrypt, y un tope global de
   comparaciones simultáneas evita que un flood sature el event loop.
 - Crear una cuenta pide `{ username, password }` y nada más: no hay email (D1) y el rol
-  siempre es `usuario`, aunque el cuerpo intente mandar otro. El nombre `admin` y el
-  nombre `zombie` están reservados y devuelven `400`; un nombre ya registrado, `409`.
-  Al crearla, la sesión queda iniciada.
+  siempre es `usuario`, aunque el cuerpo intente mandar otro. La contraseña tiene un
+  mínimo de **8 caracteres**. El nombre `admin` y el nombre `zombie` están reservados y
+  devuelven `400`; un nombre ya registrado, `409`. Al crearla, la sesión queda iniciada.
 - Editar o borrar una lápida sin sesión devuelve `401`; con la sesión de otra persona y
   sin rol `admin`, `403`. Igual para subir la foto.
-- Una corona exige sesión y solo se puede dar una vez por usuario y lápida: la segunda
-  devuelve `409` y el contador no sube. La restricción la garantiza un índice único en
-  la colección `coronas`, no una consulta previa.
+- Una corona exige sesión y solo se puede dar una vez por usuario y lápida. **No es un
+  error repetir**: `POST` es idempotente (`201` la primera vez, `200` después) y `DELETE`
+  también, así que el frontend alterna poner y quitar con un click sin que un doble click
+  o un reintento deje el estado al revés. La restricción la garantiza un índice único en
+  la colección `coronas`, no una consulta previa; el arranque espera a que ese índice
+  exista antes de aceptar escrituras. Las respuestas traen `coronadaPorMi`, que es lo que
+  el frontend necesita para saber qué pintar. Nadie puede quitar la corona de otro: el
+  borrado filtra por `usuarioId`.
 - Un comentario exige sesión, un `texto` de hasta 500 caracteres, y lo borra solo un
   `admin`: sin sesión, `401`; con rol `usuario`, `403`.
 - La foto se guarda con un nombre generado por el servidor y validada por magic bytes;

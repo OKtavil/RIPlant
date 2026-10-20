@@ -27,9 +27,25 @@ export const TAMANIO_MAXIMO_FOTO = 5 * 1024 * 1024;
  * escribe acá y `main.ts` monta el estático desde acá. Si el servidor y el
  * estático resolvieran la ruta por separado, una configuración distinta entre
  * ambos haría que la foto se guarde donde nadie la sirve.
+ *
+ * **`RIPLANTA_UPLOADS_DIR` es una costura, no configuración de despliegue.**
+ * Hoy nadie la define en producción: existe para que los e2e apunten las fotos
+ * a un temporal y no ensucien el worktree (ver `test/lapidas.e2e-spec.ts`). Se
+ * documenta como costura en el README para no prometerla como variable
+ * soportada, y por eso **no** está en `.env.example`: quien la defina sin
+ * querer mueve el directorio de las fotos en silencio.
+ *
+ * El prefijo `RIPLANTA_` es deliberado aunque el resto de las variables
+ * (`MONGODB_URI`, `PORT`, `ADMIN_*`) no lo lleve: `UPLOADS_DIR` es un nombre
+ * genérico y colisiona con cualquier otro servicio que lo use en el mismo
+ * entorno — un `.env` compartido, un `docker-compose` con varias apps, un shell
+ * que la tenga exportada. Con el prefijo, la colisión es imposible.
  */
 export function directorioDeSubidas(): string {
-  return process.env.UPLOADS_DIR ?? join(process.cwd(), RUTA_FISICA_UPLOADS);
+  return (
+    process.env.RIPLANTA_UPLOADS_DIR ??
+    join(process.cwd(), RUTA_FISICA_UPLOADS)
+  );
 }
 
 /**
@@ -42,8 +58,9 @@ export class AlmacenamientoDiscoService implements AlmacenamientoService {
 
   /**
    * Raíz física de las subidas. Por defecto `<backend>/var/uploads`;
-   * `UPLOADS_DIR` la puede mover (los e2e la apuntan a un temporal para no
-   * escribir en el worktree).
+   * `RIPLANTA_UPLOADS_DIR` la puede mover (los e2e la apuntan a un temporal para
+   * no escribir en el worktree). Es una costura de test, no config de
+   * despliegue: ver `directorioDeSubidas()`.
    */
   private readonly directorio = directorioDeSubidas();
 
