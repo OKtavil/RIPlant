@@ -64,18 +64,37 @@ backend) y **no** por `autor`.
 
 ### S4 — Borrar lápidas desde la UI (y el caso de la edición)
 
-`PUT` y `DELETE /lapidas/:id` ya existen y están probados en el backend, pero
-`lapidas.api.ts:12-16` no tiene **ningún call site**: no hay pantalla que borre o edite
-una lápida. Hoy ninguna decisión de producto lo pide, pero el backend en curso lo acerca:
-`pendientes-backend.md` S4 define "cada usuario puede borrar su propia lápida, el admin puede
-con todas" — cuando eso aterrice, el perfil o el detalle van a necesitar el botón de borrar.
+`PUT` y `DELETE /lapidas/:id` ya existen y están probados en el backend, y
+`lapidasApi.remove` ya tenía el método — pero **ningún call site**: no había forma de
+borrar desde la UI.
 
-Riesgo técnico a resolver si hay UI de edición: `lapidas.api.ts:12` tipa el body como
+Estado 2026-10-20: **implementado** (T4). El control está en `DetallePage` (botón
+`BORRAR ESTA LÁPIDA`, variante `peligro`) y en las tarjetas del perfil
+(`GraveCard` con `onBorrar`), visible solo cuando `puedeBorrar()` lo permite: el dueño
+o un admin, espejando `dueno-o-admin-lapida.middleware.ts`.
+
+Dos hallazgos al implementar:
+
+1. **El prototipo no tiene este botón en ninguna pantalla.** Los `EDITAR`/`ELIMINAR`
+   del `.op` son todos de la página "Categorías (CRUD)", que ya estaba hecha. El
+   detalle de lápida solo tiene `DAR CORONA`, `COMENTARIOS` y el campo de comentario.
+   Se agregó por decisión explícita del usuario; **queda pendiente reflejarlo en el
+   HTML de referencia y el `.op`** (no se tocaron en este commit para no pisar a la
+   sesión de backend, que tenía `riplanta.op` abierto).
+2. **`POST /lapidas` y `POST /lapidas/:id/corona` no devuelven `duenio`**; solo
+   `GET /lapidas` lo enriquece. Comparar por `duenio.username` hacía que el botón
+   desapareciera al publicar una lápida o al darle una corona. `puedeBorrar()`
+   compara además por `usuarioId` contra `sesion.id`, que se verificó contra el
+   backend real que son el mismo ObjectId.
+
+Bug de identidad corregido de paso: `DetallePage:28` y `GraveCard:39` mostraban
+`lapida.autor` (texto libre) en vez del dueño real. En los datos reales hay lápidas
+con `autor: "Anónimo"` cuyo dueño es `@zombie`. Ahora usan `nombreDelDuenio()`.
+
+**Sigue abierta** la decisión de si **editar** lápida entra al prototipo, y el riesgo
+técnico asociado: `lapidas.api.ts:12` tipa el body del `PUT` como
 `Partial<CreateGraveInput>` pero el backend valida `CreateLapidaDto` completo con
-`forbidNonWhitelisted` (`lapidas.controller.ts:33-39`): **un PUT parcial hoy devuelve 400**.
-Alinear el tipo con lo que el backend termine exigiendo antes de escribir la UI.
-
-Decisión abierta: si **editar** lápida entra al prototipo (las 5 pantallas no lo contemplan).
+`forbidNonWhitelisted` — un PUT parcial hoy devuelve 400.
 
 ### S5 — Detalle por `GET /lapidas/:id`
 
@@ -102,7 +121,7 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
 | T1 | S1 | inline | hecho 2026-10-19 — 28 tests verdes (RED/GREEN en L6) + build + lint + verificación sin blockers (L7); review RDD APPROVED con authority burned (L8) | `0e47aba` |
 | T2 | S2 | inline | en curso: Crear cuenta conectada (T8); el resto de las filas sigue bloqueado por backend | `022c150` |
 | T3 | S3 | inline | hecho 2026-10-19 — asesinos con datos reales del endpoint (L10); cierra junto con T9 | `cb97920` |
-| T4 | S4 | inline | pendiente de decisión (borrar propio al aterrizar S4 del backend; editar = decisión de producto) | — |
+| T4 | S4 | inline | hecho 2026-10-20 — borrar propio/admin en detalle y perfil + fix de identidad (L12); prototipo pendiente | `6dee621` |
 | T5 | S5 | inline | decisión abierta (routing por URL) | — |
 | T6 | S6 | inline | decisión abierta + esquema backend | — |
 | T7 | S7 | inline | decisión abierta + definición backend | — |
@@ -206,3 +225,20 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   `.env.example` no se pudo escribir (el entorno bloquea escritura en archivos `.env*`); queda
   el contenido propuesto en la conversación para aplicación manual. Commit `3d59227`, 3
   archivos, +11/−11. Veredicto de riesgo: **item 5** (se tocó configuración de entorno).
+- **L12 (2026-10-20)** — **T4 (S4) hecho**: borrar la propia lápida. `DELETE /lapidas/:id`
+  ya existía pero sin call site. Se agregó el control en el detalle y en las tarjetas del
+  perfil, condicionado por `puedeBorrar()` (dueño o admin, espejo del middleware). Dos
+  hallazgos: (a) **el prototipo no tiene este botón en ninguna pantalla** — los
+  `EDITAR`/`ELIMINAR` del `.op` son todos de Categorías; se agregó por decisión explícita
+  del usuario y **queda pendiente reflejarlo en el HTML y el `.op`**, que no se tocaron
+  para no pisar a la sesión de backend (tenía `riplanta.op` abierto y en ese momento
+  estaba agregando `POST /lapidas/:id/foto` con 10 archivos de backend modificados);
+  (b) **`POST /lapidas` y `POST /corona` no devuelven `duenio`** — comparar solo por
+  `duenio.username` hacía desaparecer el botón al publicar o coronar, así que
+  `puedeBorrar()` compara además por `usuarioId` contra `sesion.id`. Bug de identidad
+  corregido de paso: `DetallePage:28` y `GraveCard:39` mostraban `autor` (texto libre) en
+  vez del dueño real; ahora usan `nombreDelDuenio()`. Verificación contra el backend real:
+  tercero → 403 y la lápida sobrevive; dueño → 200 y después 404; `sesion.id` y
+  `usuarioId` confirmados como el mismo ObjectId. 58 tests, build y lint en verde. Commit
+  `6dee621`, 8 archivos, +295/−10. Veredicto de riesgo: **item 3** (`puedeBorrar` codifica
+  una regla de permisos que varias pantallas consumen).
