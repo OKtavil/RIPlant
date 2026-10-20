@@ -13,23 +13,28 @@ export class CategoriasService {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    // S11: seis categorías, en el vocabulario del dominio. Los ids 1 y 2 ya
+    // existen en bases de desarrollo; $setOnInsert + upsert los deja como
+    // están y agrega las que faltan. El seed de lápidas referencia hasta la 6.
+    const sembrar = [
+      { id: 1, nombre: 'Descuido' },
+      { id: 2, nombre: 'Exceso de cariño' },
+      { id: 3, nombre: 'Olvido' },
+      { id: 4, nombre: 'Clima extremo' },
+      { id: 5, nombre: 'Plagas' },
+      { id: 6, nombre: 'Accidente' },
+    ];
+
     try {
-      await this.categoriaModel.bulkWrite([
-        {
+      await this.categoriaModel.bulkWrite(
+        sembrar.map((categoria) => ({
           updateOne: {
-            filter: { id: 1 },
-            update: { $setOnInsert: { id: 1, nombre: 'Descuido' } },
+            filter: { id: categoria.id },
+            update: { $setOnInsert: { ...categoria } },
             upsert: true,
           },
-        },
-        {
-          updateOne: {
-            filter: { id: 2 },
-            update: { $setOnInsert: { id: 2, nombre: 'Exceso de cariño' } },
-            upsert: true,
-          },
-        },
-      ]);
+        })),
+      );
     } catch (error) {
       if ((error as { code?: number }).code !== 11000) throw error;
     }

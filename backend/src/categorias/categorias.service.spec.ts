@@ -51,4 +51,23 @@ describe('CategoriasService', () => {
     await service.onModuleInit();
     expect(model.bulkWrite).toHaveBeenCalledTimes(1);
   });
+
+  it('seeds six categories so every seeded grave has one', async () => {
+    await service.onModuleInit();
+    const [operaciones] = (model.bulkWrite as jest.Mock).mock.calls[0];
+    expect(operaciones).toHaveLength(6);
+    expect(operaciones.map((op: any) => op.updateOne.filter.id)).toEqual([
+      1, 2, 3, 4, 5, 6,
+    ]);
+    expect(
+      operaciones.map((op: any) => op.updateOne.update.$setOnInsert.nombre),
+    ).toEqual([
+      'Descuido',
+      'Exceso de cariño',
+      'Olvido',
+      'Clima extremo',
+      'Plagas',
+      'Accidente',
+    ]);
+  });
 });
