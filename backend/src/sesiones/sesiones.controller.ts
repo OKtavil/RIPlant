@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Logger,
   Post,
   Req,
   Res,
@@ -22,6 +23,8 @@ import { SesionesService } from './sesiones.service';
 
 @Controller('sesiones')
 export class SesionesController {
+  private readonly logger = new Logger(SesionesController.name);
+
   constructor(private readonly sesiones: SesionesService) {}
 
   @Post()
@@ -55,7 +58,20 @@ export class SesionesController {
   ): Promise<void> {
     const token = leerCookie(req.headers.cookie, COOKIE_SESION);
     if (token) {
-      await this.sesiones.cerrar(token);
+      // R4-LOGOUT-COOKIE-AFTER-DB: el borrado en la base es best-effort, pero la
+      // cookie se borra SIEMPRE. Si `cerrar` lanzara (Mongo caído, timeout) y la
+      // excepción se propagara, `borrarCookieSesion` no correría: el servidor no
+      // borraría nada y la cookie quedaría viva en el browser, con el usuario
+      // creyendo que cerró sesión. El cierre del lado del cliente no puede
+      // depender de que la base responda. Se loguea para no perder el rastro:
+      // la sesión de la base quedará viva hasta que expire por TTL.
+      try {
+        await this.sesiones.cerrar(token);
+      } catch (error) {
+        this.logger.warn(
+          `No se pudo borrar la sesión de la base; la cookie igual se borra y la sesión expirará por TTL: ${(error as Error).message}`,
+        );
+      }
     }
     borrarCookieSesion(res);
   }

@@ -65,4 +65,23 @@ describe('SesionesMiddleware', () => {
     expect(request.sesion).toBeUndefined();
     expect(next).toHaveBeenCalledTimes(1);
   });
+
+  it('should degrade to no session when the resolver throws (R4-AUTH-OBSERVABILITY-GAP)', async () => {
+    // `SesionesMiddleware` es GLOBAL (`forRoutes('*')`). Si la base se cae, el
+    // `resolver` lanza y, sin protección, la excepción sube: TODA la app
+    // responde 500 — incluidas las rutas públicas (`GET /lapidas`,
+    // `GET /categorias`), que no necesitan base para responder. La sesión es
+    // autenticación: que no se pueda resolver no es motivo para tumbar el
+    // request. Se degrada a "sin sesión" (401 en las rutas que la exigen) y se
+    // loguea la causa, porque el modo de falla silencioso es justo lo que este
+    // hallazgo señala: sin log, un 401 masivo parece "el usuario se deslogueó"
+    // cuando en realidad hay una base caída detrás.
+    sesiones.resolver.mockRejectedValue(new Error('Mongo caído'));
+    const request = req('riplanta_sesion=abc123');
+
+    await middleware.use(request, {} as never, next);
+
+    expect(request.sesion).toBeUndefined();
+    expect(next).toHaveBeenCalledTimes(1);
+  });
 });

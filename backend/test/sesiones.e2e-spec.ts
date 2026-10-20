@@ -7,6 +7,7 @@ import { applyValidationPipe } from '../src/shared/validation-pipe';
 import { UsuariosService } from '../src/usuarios/usuarios.service';
 import { UsuarioDocumentModel } from '../src/usuarios/usuario.schema';
 import { SesionDocumentModel } from '../src/sesiones/sesion.schema';
+import { SesionesService } from '../src/sesiones/sesiones.service';
 import { abrirSesion } from './helpers/auth';
 import { borrarBaseAislada, prepararBaseAislada } from './helpers/base-datos';
 
@@ -124,6 +125,34 @@ describe('Sesiones (e2e)', () => {
 
   it('should return 401 on /sesiones/actual without a session', async () => {
     await request(app.getHttpServer()).get('/sesiones/actual').expect(401);
+  });
+
+  it('borra la cookie aunque falle el borrado en la base (R4-LOGOUT-COOKIE-AFTER-DB)', async () => {
+    // Si `cerrar` lanza (Mongo caído, timeout), la excepción saltaba por encima
+    // de `borrarCookieSesion`: el servidor no borraba nada y la cookie quedaba
+    // VIVA en el browser. El usuario cree que cerró sesión y no cerró, y el
+    // próximo request sigue autenticado. Cerrar sesión del lado del cliente no
+    // puede depender de que la base responda.
+    const cookie = await abrirSesion(app, nombreJardinero, 'clave-jardinero');
+    const sesiones = app.get(SesionesService);
+    const espiar = jest
+      .spyOn(sesiones, 'cerrar')
+      .mockRejectedValueOnce(new Error('Mongo caído'));
+
+    const respuesta = await request(app.getHttpServer())
+      .delete('/sesiones')
+      .set('Cookie', cookie);
+
+    const setCookie = String(respuesta.headers['set-cookie'] ?? '');
+    expect(setCookie).toContain('riplanta_sesion=;');
+
+    // La sesión de la base sigue viva (el borrado falló); se cierra de verdad
+    // con el mock ya restaurado, para no dejar basura en la base de la suite.
+    espiar.mockRestore();
+    await request(app.getHttpServer())
+      .delete('/sesiones')
+      .set('Cookie', cookie)
+      .expect(204);
   });
 
   it('should treat a malformed session cookie as no session instead of failing', async () => {
