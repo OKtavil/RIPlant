@@ -12,11 +12,17 @@ Red social retro donde la gente publica **lápidas** para las plantas que no sob
 - ✅ Backend funcional en NestJS con API para lápidas y categorías
 - ✅ Persistencia en MongoDB con Mongoose, Docker, semillas e índices
 - ✅ Sesiones con cookie httpOnly y CRUD de categorías protegido para administradores
+- ✅ Registro de cuentas con auto-login, comentarios, foto de la planta en disco local,
+  ranking de asesinos seriales y propiedad de la lápida (cada usuario borra la suya; el
+  `admin` puede con todas)
 
 La entrega actual prioriza tener un producto navegable de extremo a extremo. El backend
 necesita MongoDB para arrancar (ver [Cómo correrlo](#cómo-correrlo)). La API de sesiones
 ya está conectada al frontend: iniciar sesión, recuperar la sesión vigente y cerrarla
 funcionan de extremo a extremo.
+
+Queda pendiente **recuperar / restablecer contraseña**, que necesita un proveedor de
+email (ver [Recuperar contraseña](#recuperar-contraseña-pendiente)).
 
 ## Documentación de la entrega
 
@@ -44,13 +50,13 @@ funcionan de extremo a extremo.
 4. **Detalle de lápida**: epitafio, autor, categoría, causa de muerte, fecha, *Dar corona* y comentarios.
 5. **Perfil**: estadísticas (plantas asesinadas, coronas recibidas), insignias y "su cementerio".
 6. **Categorías (CRUD)**: listar, crear, editar y eliminar categorías. Solo para administradores. *Pendiente de diseñar en el prototipo.*
-7. **Autenticación**: pantallas de iniciar sesión, crear cuenta, recuperar contraseña y establecer una nueva contraseña. *Iniciar sesión está implementado; crear cuenta y recuperar/restablecer contraseña quedan pendientes de endpoints en el backend.*
+7. **Autenticación**: pantallas de iniciar sesión, crear cuenta, recuperar contraseña y establecer una nueva contraseña. *Iniciar sesión y crear cuenta están implementados; recuperar/restablecer contraseña queda pendiente de endpoints en el backend.*
 
 ### Pantallas de autenticación
 
 Estas pantallas definen el flujo visual y funcional del acceso a R.I.Planta. Iniciar
-sesión ya está implementado contra la API de sesiones; crear cuenta, recuperar contraseña
-y establecer una nueva contraseña existen como pantallas con sus campos deshabilitados,
+sesión y crear cuenta ya están implementados contra la API; recuperar contraseña y
+establecer una nueva contraseña existen como pantallas con sus campos deshabilitados,
 a la espera de que el backend exponga esos endpoints.
 
 #### 1. Iniciar sesión
@@ -71,25 +77,32 @@ Pantalla de entrada para usuarios que ya tienen una cuenta.
 
 #### 2. Crear cuenta
 
-Pantalla para registrar un nuevo jardinero.
+Pantalla para registrar un nuevo jardinero. **Implementada** contra `POST /usuarios`.
 
 - **Encabezado:** `Únete al jardín memorial`.
 - **Campos:**
-  - `Nombre de usuario` — obligatorio y único.
-  - `Correo electrónico` — obligatorio y único.
-  - `Contraseña` — obligatoria, con requisitos visibles antes de enviar.
+  - `Nombre de usuario` — obligatorio y único; máximo 50 caracteres. `admin` y `zombie`
+    están reservados.
+  - `Contraseña` — obligatoria, mínimo 8 caracteres, con los requisitos visibles antes
+    de enviar.
   - `Confirmar contraseña` — debe coincidir con la contraseña.
 - **Acciones:**
   - `Crear cuenta` — valida y registra al usuario.
   - `Ya tengo una cuenta` — vuelve a Iniciar sesión.
-- **Estados:** validación por campo, nombre de usuario o correo ya registrados, contraseñas
+- **Estados:** validación por campo, nombre de usuario ya registrado (`409`), contraseñas
   diferentes, error temporal del servidor y envío en progreso.
-- **Éxito:** muestra confirmación y lleva a Iniciar sesión, o inicia sesión directamente
-  si posteriormente se decide activar el acceso automático.
+- **Éxito:** la cuenta queda creada **y la sesión iniciada** —el backend devuelve la misma
+  cookie httpOnly que el login—, así que lleva directo al Cementerio.
 
-#### 3. Recuperar contraseña
+> **Sin correo electrónico.** El registro pide solo `username` y `password` (decisión D1).
+> El campo `Correo electrónico` que figuraba en el prototipo no se implementó: queda para
+> cuando se agregue la recuperación de contraseña.
 
-Pantalla para solicitar un enlace de recuperación sin revelar si el correo existe.
+#### 3. Recuperar contraseña (pendiente)
+
+Pantalla para solicitar un enlace de recuperación sin revelar si la cuenta existe.
+**Sin backend todavía**: necesita un proveedor de email y el campo `email` en `usuarios`,
+que hoy no existen.
 
 - **Encabezado:** `Recupera el acceso a tu jardín`.
 - **Campo:** `Correo electrónico` — obligatorio, con formato válido.
@@ -100,9 +113,10 @@ Pantalla para solicitar un enlace de recuperación sin revelar si el correo exis
 - **Éxito:** muestra siempre un mensaje neutro: "Si existe una cuenta con ese correo,
   recibirás instrucciones para recuperar el acceso".
 
-#### 4. Establecer nueva contraseña
+#### 4. Establecer nueva contraseña (pendiente)
 
-Pantalla abierta desde el enlace de recuperación.
+Pantalla abierta desde el enlace de recuperación. Sin backend todavía, por lo mismo que
+la anterior.
 
 - **Encabezado:** `Elige una nueva contraseña`.
 - **Campos:**
@@ -150,9 +164,9 @@ Se decidió **MongoDB**. El esquema original estaba pensado para una base relaci
 {
   _id, nombre, apellido,
   username,          // índice único
-  email,             // índice único
+  email,             // índice único — previsto, aún sin implementar (D1)
   passwordHash,      // hash de bcrypt, nunca la contraseña en claro
-  rol,               // 'usuario' | 'admin' (antes era un bit)
+  rol,               // 'usuario' | 'admin' | 'zombie' (antes era un bit)
   plantasAsesinadas, // contador, ver nota abajo
   creadoEn
 }
@@ -161,28 +175,32 @@ Se decidió **MongoDB**. El esquema original estaba pensado para una base relaci
 {
   _id, nombrePlanta, epitafio,
   fechaFallecimiento, fechaPublicacion,
-  autorId,           // referencia a usuarios._id
-  categoriaIds,      // referencias a categorias._id
-  causaMuerte, fotoUrl,
+  autor,             // username denormalizado al publicar
+  usuarioId,         // referencia a usuarios._id — obligatorio
+  categoriaId,       // referencia a categorias._id
+  causaMuerte,       // opcional
+  fotoUrl,           // la escribe solo POST /lapidas/:id/foto
   coronasCount       // contador, ver nota abajo
 }
 
 // categorias
-{ _id, nombre }   // nombre: índice único, máximo 20 caracteres
+{ _id, id, nombre }   // nombre: índice único, máximo 20 caracteres
 
 // coronas
-{ _id, usuarioId, lapidaId, fecha }   // índice único (usuarioId, lapidaId)
+{ _id, lapidaId, usuarioId, creadaEn }   // índice único (lapidaId, usuarioId)
 
 // comentarios
-{ _id, lapidaId, usuarioId, comentario, fecha }
+{ _id, lapidaId, usuarioId, autor, texto, creadoEn }
 ```
 
 **Por qué así**
 
-- **Una corona por usuario y lápida**: en SQL lo garantizaba la clave primaria compuesta. En Mongo lo garantiza un **índice único** sobre `(usuarioId, lapidaId)`. Sin ese índice, dos peticiones simultáneas podrían crear dos coronas.
-- **Contadores (`coronasCount`, `plantasAsesinadas`)**: los rankings se muestran en casi todas las pantallas. Calcularlos con `COUNT` o agregaciones en cada visita es caro; guardar el número y actualizarlo con `$inc` (operación atómica) es rápido. El costo es que hay que mantenerlos sincronizados al dar o quitar una corona o publicar una lápida.
+- **Una corona por usuario y lápida**: en SQL lo garantizaba la clave primaria compuesta. En Mongo lo garantiza un **índice único** sobre `(lapidaId, usuarioId)`. Sin ese índice, dos peticiones simultáneas podrían crear dos coronas.
+- **Contadores (`coronasCount`, `plantasAsesinadas`)**: los rankings se muestran en casi todas las pantallas. Calcularlos con `COUNT` o agregaciones en cada visita es caro; guardar el número y actualizarlo con `$inc` (operación atómica) es rápido. El costo es que hay que mantenerlos sincronizados al dar o quitar una corona o publicar una lápida. Nota: `coronasCount` de las lápidas sembradas es denormalizado y **no** tiene documentos en `coronas` que lo justifiquen; las coronas previas a esta función no tienen autor registrado y no se reconstruye.
+- **`usuarioId` obligatorio y `autor` denormalizado**: la lápida necesita saber quién la puede borrar, y eso no se puede resolver comparando strings de `autor`. El `autor` queda como texto de pantalla; la **fuente de verdad** para permisos y rankings es `usuarioId`.
 - **`passwordHash`**: el hash de bcrypt se guarda completo. El campo original `password varchar(60)` apuntaba a lo mismo.
 - **Categorías por referencia (no por nombre)**: como se pueden renombrar desde el CRUD, la lápida guarda el **id** de la categoría. Si guardara el nombre, renombrar una categoría obligaría a actualizar todas las lápidas que la usan. Con el id, el nombre vive en un solo lugar.
+- **`email`**: figura en el esquema pero **no se pide en el registro** (D1). Se agrega cuando se implemente la recuperación de contraseña, junto con la migración de los usuarios que ya existen.
 
 <details>
 <summary>Esquema relacional original (referencia)</summary>
@@ -365,15 +383,18 @@ Al comparar el esquema con el prototipo, estos puntos siguen sin decidir:
 
 | # | Tema | Situación |
 |---|------|-----------|
-| 1 | **Foto de la planta** | El formulario de Publicar la pide. Falta decidir dónde se guarda el archivo; la lápida solo guardaría su URL (`fotoUrl`). |
-| 2 | **Causa de muerte** | Las tarjetas y el detalle la muestran, pero el formulario de Publicar no tiene ese campo. Ya está en el documento propuesto. |
-| 3 | **Una o varias categorías** | El prototipo permite elegir **una**; el esquema original permitía **varias**. Con la lista `categoriaIds` cualquiera de las dos funciona. |
-| 4 | **Autoría** | La tabla puente original permitía varios autores por lápida. La propuesta usa un solo `autorId`, que es lo que muestra el prototipo. |
-| 5 | **Insignia Zombie** | No existe en el esquema: faltan el estado "reportada como muerta" y una forma de guardar insignias (por ejemplo, una lista `insignias` en el usuario). |
-| 6 | **Fechas** | `fechaPublicacion` debería asignarse siempre al crear. Los comentarios y las coronas sí llevan fecha en la propuesta. |
-| 7 | **Rol** | El bit original solo permite 2 valores. La propuesta usa texto (`'usuario'` o `'admin'`), que es más legible y ampliable. |
+| 1 | **Foto de la planta** | ✅ **Resuelto**: disco local bajo `backend/var/uploads/`, servida en `/uploads/`, cargada por `POST /lapidas/:id/foto`. |
+| 2 | **Causa de muerte** | ✅ **Resuelto**: es opcional. El formulario de Publicar la pide pero ya no es obligatoria. |
+| 3 | **Una o varias categorías** | El prototipo permite elegir **una**; el esquema original permitía **varias**. Implementado como una sola (`categoriaId`); pasarlo a varias tocaría el DTO, el schema y el front. |
+| 4 | **Autoría** | ✅ **Resuelto**: un solo dueño por lápida (`usuarioId`), que es lo que muestra el prototipo. |
+| 5 | **Insignia Zombie** | No existe en el esquema: faltan el estado "reportada como muerta" y una forma de guardar insignias (por ejemplo, una lista `insignias` en el usuario). **Ojo**: no confundir con el usuario reservado `zombie`, que es el dueño de las lápidas huérfanas. |
+| 6 | **Fechas** | `fechaPublicacion` se asigna al crear. Los comentarios y las coronas llevan fecha (`creadoEn`). |
+| 7 | **Rol** | ✅ **Resuelto**: texto, no bit. Hoy hay tres: `'usuario'`, `'admin'` y `'zombie'` (este último no autoriza nada). |
 | 8 | **Borrar una categoría en uso** | Si hay lápidas que la usan, hay que decidir: impedir el borrado, o quitarla de esas lápidas. |
-| 9 | **Quién administra categorías** | Se propone solo `admin`; falta confirmarlo. |
+| 9 | **Quién administra categorías** | ✅ **Resuelto**: solo `admin`, implementado con `AdminMiddleware`. |
+| 10 | **Recuperar contraseña** | Pendiente por decisión (D6): necesita un proveedor de email y el campo `email`, que el registro no pide. Al implementarlo hay que migrar los usuarios existentes. |
+| 11 | **Borrado de usuarios** | No existe. La política ya está definida —se borran sus lápidas, comentarios, coronas, sesiones y fotos— pero falta implementarla. |
+| 12 | **Correo electrónico** | Deshabilitado en el registro por decisión D1. El prototipo lo mostraba; el `POST /usuarios` no lo acepta. |
 
 ## Objetivos de aprendizaje
 
@@ -411,7 +432,7 @@ Todo funcionando con la estructura típica de Nest. Sirve para sentir el problem
 |------|------------------|----------------|
 | 0. Entorno | Repo monolito con pnpm workspace, `docker-compose.yml` con MongoDB | pnpm, Docker, git worktrees |
 | 1. Backend base | Módulos, controladores y servicios de Nest para lápidas y categorías (incluido el CRUD) | Enrutación, estructura de Nest, inyección de dependencias básica |
-| 2. Persistencia | Conexión a Mongo, colecciones e índices (incluido el único de coronas), seeds con las 4 categorías iniciales (suculentas, cactus, plantas de interior, árboles frutales) y lápidas de ejemplo | Modelado de documentos, seeds, migraciones |
+| 2. Persistencia | Conexión a Mongo, colecciones e índices (incluido el único de coronas), seeds con las 6 categorías iniciales y lápidas de ejemplo | Modelado de documentos, seeds, migraciones |
 | 3. Usuarios y seguridad | Registro, login con hash de contraseña, rutas protegidas, rol admin/usuario; solo admin crea, edita o borra categorías | Autenticación, permisos, middlewares y guards |
 | 4. Interacción | Dar corona, comentarios, rankings con contadores | `$inc` atómico, consultas ordenadas, regla de una corona por usuario |
 | 5. Frontend | Las pantallas del prototipo y la de categorías en React + Vite, consumiendo la API | Vite, rutas del cliente, consumo de API |
@@ -541,31 +562,33 @@ copia [backend/.env.example](./backend/.env.example) como `backend/.env` y edita
 `MONGODB_URI`. Las colecciones se inicializan con datos semilla automáticamente.
 Los datos sobreviven al reinicio porque Docker usa el volumen `mongo-data`.
 
+#### Datos semilla
+
+Al arrancar, el backend siembra **idempotentemente** (`$setOnInsert` + upsert, así que
+reiniciar no duplica nada):
+
+- **Usuarios**: `admin` (`rol: 'admin'`, credenciales por `ADMIN_USERNAME` /
+  `ADMIN_PASSWORD`), `jardinera` (`rol: 'usuario'`, para tener un segundo dueño real y
+  poder verificar el ranking con más de una fila) y `zombie` (`rol: 'zombie'`, dueño de
+  las lápidas huérfanas, sin contraseña utilizable).
+- **Categorías**: 6, con vocabulario del dominio.
+- **Lápidas**: 10, con `coronasCount` variado (de 0 a ~15) para que el Salón del Honor
+  tenga un orden real, y al menos dos a nombre de `zombie` para poder ver los dos estados
+  sin fabricarlos a mano.
+
+El orden importa: primero se siembra el zombie, después se migran las lápidas huérfanas a
+él, y recién entonces se siembran los datos.
+
+> **Las pruebas e2e escriben en la base de `.env`.** Hoy la suite lee `MONGODB_URI` de
+> `backend/.env`, que apunta a la base de desarrollo. Mientras eso no se separe, cada
+> corrida de `pnpm --filter backend run test:e2e` deja usuarios y lápidas de prueba en
+> `riplanta`. (Las fotos sí van a un temporal: los e2e definen `UPLOADS_DIR`.)
+
 ### Sesiones y administración
 
 El backend administra sesiones en el servidor y entrega al cliente solo un token
 opaco en una cookie **httpOnly**. La cookie no se puede leer desde JavaScript;
 en MongoDB se guarda únicamente el SHA-256 del token, nunca el token en claro.
-
-| Método | Ruta | Resultado |
-|---|---|---|
-| POST | `/sesiones` | Inicia sesión con `{ username, password }` y devuelve la cookie |
-| GET | `/sesiones/actual` | Sesión vigente o `401` |
-| DELETE | `/sesiones` | Cierra la sesión y borra la cookie (`204`) |
-
-`POST /categorias`, `PUT /categorias/:id` y `DELETE /categorias/:id` exigen rol
-`admin`: sin sesión devuelven `401`, con rol `usuario` devuelven `403`. El
-`GET /categorias` sigue siendo público. La autorización se implementa con
-`AdminMiddleware`, aplicado solo a esas tres rutas.
-
-El administrador se siembra al arrancar desde `ADMIN_USERNAME` y
-`ADMIN_PASSWORD`. Fuera de producción, si `ADMIN_PASSWORD` no está definida, se
-usa `riplanta123` y el log lo advierte. En producción es obligatoria: sin ella no
-se crea el administrador y se registra un error. La sesión dura 8 horas por
-defecto (`SESION_TTL_HORAS`). Un reinicio del backend no cierra las sesiones,
-porque viven en MongoDB y no en memoria.
-
-Prueba manual del flujo:
 
 ```bash
 # 1. Login: guarda la cookie en cookies.txt
@@ -584,6 +607,19 @@ curl -b cookies.txt -X POST http://localhost:3000/categorias \
 curl -b cookies.txt -X DELETE http://localhost:3000/sesiones
 ```
 
+| Método | Ruta | Resultado |
+|---|---|---|
+| POST | `/sesiones` | Inicia sesión con `{ username, password }` y devuelve la cookie |
+| GET | `/sesiones/actual` | Sesión vigente o `401` |
+| DELETE | `/sesiones` | Cierra la sesión y borra la cookie (`204`) |
+
+El administrador se siembra al arrancar desde `ADMIN_USERNAME` y
+`ADMIN_PASSWORD`. Fuera de producción, si `ADMIN_PASSWORD` no está definida, se
+usa `riplanta123` y el log lo advierte. En producción es obligatoria: sin ella no
+se crea el administrador y se registra un error. La sesión dura 8 horas por
+defecto (`SESION_TTL_HORAS`). Un reinicio del backend no cierra las sesiones,
+porque viven en MongoDB y no en memoria.
+
 La cookie usa `SameSite=Lax`, que frena los `POST` cross-site (mitigación básica
 de CSRF). El CORS acepta credenciales porque el frontend corre en otro puerto;
 en producción conviene reemplazar `origin: true` por una allowlist explícita. Para
@@ -592,6 +628,105 @@ que el navegador envíe y guarde la cookie, el `fetch` del frontend tiene que us
 origen (IP + usuario) en quince minutos responde `429` sin gastar otra comparación
 bcrypt, y limita a ocho las comparaciones simultáneas para que un flood no sature el
 event loop. El contador es en memoria: con varias instancias hace falta Redis.
+
+### Autorización: middlewares, no guards
+
+Toda la autorización se implementa con **middlewares** aplicados por ruta en cada
+módulo. Hay cuatro:
+
+| Middleware | Qué exige | Dónde está aplicado |
+|---|---|---|
+| `SesionesMiddleware` | Nada: resuelve `req.sesion` y no bloquea | Global (`AppModule`) |
+| `SesionRequeridaMiddleware` | Sesión iniciada, cualquier rol → si no, `401` | `POST /lapidas`, `POST /lapidas/:id/corona`, `POST /lapidas/:id/comentarios` |
+| `DuenoOAdminLapidaMiddleware` | Sesión **y** ser el dueño de la lápida o `admin`. Carga la lápida y la adjunta a la request | `PUT`/`DELETE /lapidas/:id`, `POST /lapidas/:id/foto` |
+| `AdminMiddleware` | Rol `admin` → si no, `401` sin sesión / `403` con rol `usuario` | Las tres mutaciones de `/categorias`, `DELETE /comentarios/:id` |
+
+Reglas que de ahí salen:
+
+- Los `GET` de `/lapidas`, `/lapidas/:id`, `/lapidas/asesinos`,
+  `/lapidas/:id/comentarios` y `/categorias` son **públicos**.
+- Publicar, coronar y comentar piden sesión, pero cualquier rol logueado alcanza.
+- Editar, borrar o subir la foto de una lápida piden ser su dueño o `admin`.
+- El CRUD de categorías y el borrado de comentarios son **solo `admin`**.
+
+### Propiedad de la lápida
+
+Cada lápida tiene un `usuarioId` obligatorio. **No hay lápidas sin dueño**: al arrancar,
+una migración idempotente le entrega al usuario reservado **`zombie`** las que aparezcan
+huérfanas (datos viejos o escritos directo en Mongo). No se borra ninguna.
+
+- `zombie` tiene `rol: 'zombie'`, un `passwordHash` aleatorio e intratable —nadie puede
+  iniciar sesión con él— y **no autoriza nada** en ningún endpoint.
+- `GET /lapidas` y `GET /lapidas/:id` devuelven cada lápida con
+  `duenio: { username, rol }`, resuelto contra `usuarios`. El front distingue el estado
+  zombie por `duenio.rol`, **no** comparando usernames.
+- `GET /lapidas/asesinos` excluye al zombie: no es un jugador, es el estado de una lápida.
+- No confundir con la insignia **Superviviente Zombie**, que es otra cosa.
+- `POST /usuarios` rechaza los nombres reservados `admin` y `zombie` con `400` (no es
+  `409`: no choca con un registro previo, es un nombre prohibido).
+- El borrado de usuarios **no existe todavía**. La regla "si se borra el dueño se borran
+  sus lápidas, comentarios, coronas, sesiones y archivos de foto" queda documentada como
+  la política a implementar cuando exista.
+
+### Comentarios
+
+- `GET /lapidas/:id/comentarios` es público y devuelve los comentarios por fecha
+  ascendente. Un `404` si la lápida no existe, en vez de una lista vacía: una lista vacía
+  mentiría sobre el estado del recurso.
+- `POST /lapidas/:id/comentarios` pide sesión. El `texto` tiene un tope de **500**
+  caracteres y es el **único** campo que el cliente puede mandar: `autor` y `usuarioId`
+  salen de la sesión.
+- `DELETE /comentarios/:id` es **solo para `admin`** (D5). El autor no borra el suyo.
+- No hay deduplicación: comentar dos veces la misma lápida crea dos comentarios.
+- El id expuesto es el `_id` de Mongo como string, no un contador.
+
+### Coronas
+
+- `POST /lapidas/:id/corona` exige sesión (dejó de ser anónimo) y **solo se puede dar una
+  vez por usuario y lápida** (D4): la segunda devuelve `409`. La restricción la garantiza
+  un índice único en la colección `coronas`, no una consulta previa.
+- `coronasCount` sigue denormalizado en la lápida y se incrementa solo si la corona se
+  insertó de verdad, así que el contador nunca se adelanta al registro que lo justifica.
+
+### Foto de la planta
+
+`POST /lapidas/:id/foto` (multipart, campo `foto`) es la **única** vía para cargar la
+foto: el JSON de crear/editar ignora `fotoUrl`.
+
+- El nombre del archivo lo decide el servidor: `randomUUID()` más la extensión del tipo
+  detectado. **Nunca** el nombre que manda el cliente.
+- El tipo se valida por **magic bytes** (JPEG, PNG o WebP), no por el `mimetype` ni la
+  extensión declarados. Un archivo que no es imagen → `415`.
+- Tope de **5 MB** por archivo → `413` si lo supera. Sin archivo → `400`.
+- Se guarda en `backend/var/uploads/` (ignorado por git) y se sirve estático en
+  `/uploads/<archivo>`. Al reemplazar la foto se borra la anterior, y al borrar la lápida
+  se borra la suya (ambos best-effort).
+- El almacenamiento está detrás de la interfaz `AlmacenamientoService`, para poder pasar a
+  S3/R2 sin tocar los controladores.
+
+### Registro de cuentas
+
+`POST /usuarios` crea una cuenta con `{ username, password }` y **sin email** (D1).
+
+- El `rol` **nunca** se lee del cuerpo: siempre es `usuario`. El administrador sale solo
+  del seed. `admin` y `zombie` están reservados → `400`.
+- `409` si el nombre ya está en uso, y lo decide el índice `unique` de `username` en vez
+  de una consulta previa (evita la carrera entre comprobar e insertar).
+- `password`: mínimo 8 caracteres. `username`: máximo 50.
+- **Auto-login**: devuelve la misma cookie httpOnly que el login, así que el front queda
+  logueado al crear la cuenta. Comparte el rate-limit de `POST /sesiones`.
+- La respuesta nunca incluye `passwordHash`.
+
+### Recuperar contraseña (pendiente)
+
+`POST /usuarios` y el login funcionan, pero **recuperar o restablecer la contraseña
+todavía no existe**: necesita un proveedor de email y el campo `email` en `usuarios`, que
+hoy no se pide (D1). Consecuencia aceptada: al implementarlo habrá que **migrar los
+usuarios existentes**, porque ninguno tiene email con el que recuperar la cuenta.
+
+Diseño previsto: token opaco aleatorio guardado **solo como SHA-256** (mismo patrón que
+las sesiones), TTL de 30 minutos, un solo uso, e invalidación de todas las sesiones del
+usuario al cambiar la contraseña. La respuesta sería `202` siempre, exista o no la cuenta.
 
 ## Para retomar el proyecto en otro lugar
 
