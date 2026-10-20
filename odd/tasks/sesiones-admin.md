@@ -165,10 +165,13 @@ Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
   `R4-LOGOUT-COOKIE-AFTER-DB`. `R2-001` y `R3-doc-resilience` (el texto viejo de
   L5) ya quedaron resueltos en este mismo commit de docs.
 
-  **Estado al 2026-10-20 (ver L20):** `R3-e2e-shared-db` (`1888293`),
-  `R3-null-hash-path` (`391171f`) y los dos `R4` (`e99831b`) quedaron
-  **cerrados**. Siguen abiertos: `R1-001`, `R1-002`, `R1-003`, `R2-002`,
-  `R2-003`, `R2-004`, `R2-005`, `R3-authz-put-delete`, `R3-env-leak`.
+  **Estado al 2026-10-20 (ver L20, L21):** cerrados `R3-e2e-shared-db` (`1888293`),
+  `R3-null-hash-path` (`391171f`) y los dos `R4` (`e99831b`). **Obsoletos** al
+  re-derivar desde el código actual: `R1-001`, `R2-002`, `R2-004`,
+  `R3-authz-put-delete`. **Vivos** (ninguno urgente): `R1-002` y `R1-003` son
+  **decisiones de despliegue**, no fixes; `R2-003` es endurecimiento local menor;
+  `R2-005` es una ruta desactualizada en un doc. `R3-env-leak` es **no
+  determinable y sin evidencia de fuga**. Detalle y evidencia en L21.
 - **L16** — Usuario, 2026-10-19: "ataca r3". Es `R3-cookie-malformed`
   (`cookie.ts:41`): `decodeURIComponent` sin proteger. Un valor con
   percent-encoding inválido lanza `URIError` dentro de `leerCookie`, que es un
@@ -243,3 +246,60 @@ Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
   en L14); de los `R1`/`R2` solo queda nombre + número de línea, y esos números
   ya no coinciden con el código actual, así que reconstruir el hallazgo exige
   re-derivarlo desde el código, no leerlo de la nota.
+- **L21** — Re-derivación de los hallazgos de `L15` **desde el código actual**
+  (los números de línea de la nota ya no coincidían). No hay informe de review
+  guardado: la autoridad se consumió en L14. Resultado, con evidencia:
+
+  - `R1-001` (`usuarios.service.ts:34`) — **obsoleto.** Esa línea hoy es un
+    docblock; al momento de la review era la firma de `siembraAdministrador`. El
+    path de producción lee `ADMIN_PASSWORD` del entorno, `NODE_ENV=production`
+    bloquea el fallback y la falta de la variable produce `logger.error` + `return`
+    sin crear el admin. **No hay secreto hardcodeado en producción.**
+  - `R2-002` (`usuario.schema.ts:16`) — **obsoleto.** El `enum` cubre los tres
+    roles (`usuario`, `admin`, `zombie`); `zombie` "no autoriza nada" por decisión
+    de dominio (D-008) y `DuenoOAdminLapidaMiddleware` lo trata como no-admin.
+  - `R2-004` (`sesiones.controller.ts:61-63`) — **obsoleto.** Esas líneas hoy son
+    el comentario de `R4-LOGOUT-COOKIE-AFTER-DB`, cerrado en `e99831b`.
+  - `R3-authz-put-delete` — **obsoleto, verificado contra el backend corriendo.**
+    `PUT` y `DELETE /lapidas/:id` están cerrados por `DuenoOAdminLapidaMiddleware`
+    (`lapidas.module.ts:46-52`) y devuelven **401 real** sin sesión (probado con
+    `curl`, no solo en tests). `usuarioId` y `autor` se estampan desde la sesión.
+  - `R1-002` (`main.ts:16`) — **vivo, decisión de despliegue.** `origin: true` en
+    CORS. Mitigado por `SameSite=Lax`, que ya corta el POST cross-site. En
+    producción conviene allowlist explícita. **No es un fix de código.**
+  - `R1-003` (`sesiones.controller.ts:40`) — **vivo, decisión de despliegue.**
+    `req.ip` sin `app.set('trust proxy')`: detrás de un proxy, todos los clientes
+    comparten la clave del rate-limit (5 fallos ajenos bloquean a todos con ese
+    usuario). Depende de si se confía o no en el header del proxy.
+  - `R2-003` (`iniciar-sesion.dto.ts:6`) — **vivo, endurecimiento local menor.**
+    `" "` (espacio) pasa `@IsNotEmpty` y llega al servicio. El impacto real
+    depende de que exista un `username` que normalice a `admin`, algo que el
+    registro **no puede crear** (`trim: true` en el schema, línea 9). Arreglo:
+    `@Matches(/\S/)` sobre `username`, igual que `create-categoria.dto.ts:22`.
+  - `R2-005` (`docs/architecture.md:30-31`) — **vivo, menor.** El doc dice
+    `App.tsx`; la ruta real es `frontend/src/app/App.tsx`. El contenido semántico
+    del párrafo es correcto.
+  - `R3-env-leak` — **no determinable, sin evidencia de fuga.** Sin línea ni
+    código que coincida. Barrido completo de `process.env` / `import.meta.env`:
+    ningún secreto se interpola en una respuesta. La única lectura frágil es
+    `SESION_TTL_HORAS` leído por llamada (`sesiones.service.ts:64`), que hace el
+    TTL mutable en runtime — consistencia de configuración, no fuga.
+
+  **`usuarioId` en comentarios — ANALIZADO Y DESCARTADO COMO HALLAZGO.** Lo
+  encontré al auditar (`GET /lapidas/:id/comentarios` es público y devuelve
+  `usuarioId`), pero **no es una fuga**: `GET /lapidas` es público y ya expone el
+  mismo id de cada dueño. Verificado con un probe aislado contra Mongo real
+  (base temporal, no commiteado, borrado después):
+
+  ```
+  CAMPOS: ["id","lapidaId","usuarioId","autor","texto","creadoEn"]
+  ```
+
+  El dato ya era público antes de los comentarios, así que sacarlo de un endpoint
+  y no del otro es cosmético. Además es **una decisión registrada**, no un spread
+  que se coló: está declarado en `comentario.interface.ts`, `comentario.schema.ts`
+  y fijado por `comentarios.service.spec.ts`. Decisión del usuario: **dejarlo como
+  está**, documentado en `docs/decisions.md` como **D-012** para que el próximo
+  revisor no lo levante de nuevo. **Lección de método:** mi primer análisis lo
+  llamó "el más serio" sin verificar si el dato era realmente confidencial en el
+  resto del sistema; dos `curl` al backend corriendo lo refutaron.

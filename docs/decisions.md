@@ -128,3 +128,27 @@ complejidad real.
 **Consecuencia:** el front resuelve el perfil y el estado zombie sin `GET /usuarios/:id` ni
 pedidos extra. Costo asumido: cada lápida paga un enriquecimiento en memoria; si el volumen
 creciera, se denormaliza el `username` en la lápida, no se optimiza la query.
+
+## D-012 — `usuarioId` se expone en las respuestas públicas
+
+**Decisión:** los recursos que pertenecen a un usuario exponen su `usuarioId` (un
+ObjectId-string), también en endpoints públicos como `GET /lapidas` y
+`GET /lapidas/:id/comentarios`. No se oculta ni se reemplaza por un identificador
+opaco.
+
+**Análisis:** el dato **ya era público** por `GET /lapidas` antes de los
+comentarios, así que sacarlo de un endpoint y no del otro no aporta seguridad: es
+cosmético. Esconderlo en un solo lugar daría una falsa sensación de que el id es
+confidencial cuando el mismo endpoint público lo publica al lado. El id tampoco es
+adivinable (24 hex aleatorios, no un contador incremental), y el cliente necesita
+algo estable para saber si un comentario es suyo. La alternativa —un id opaco por
+usuario— agregaría una tabla de mapeo y una indentación nueva para proteger un dato
+que la propia API publica en otra ruta.
+
+**Consecuencia:** `usuarioId` no es información sensible en este sistema, y un
+hallazgo que pida ocultarlo en un endpoint tiene que justificar por qué el resto de
+la API puede seguir publicándolo. Si alguna vez se decide dejar de exponerlo, el
+cambio es **global** (todas las respuestas a la vez, o ninguna) y toca el contrato
+de endpoints públicos. El campo está declarado en `comentario.interface.ts`,
+`comentario.schema.ts` y fijado por `comentarios.service.spec.ts`, así que
+removerlo es un cambio de contrato, no una limpieza.
