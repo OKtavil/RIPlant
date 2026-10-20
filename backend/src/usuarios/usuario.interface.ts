@@ -1,4 +1,4 @@
-export type Rol = 'usuario' | 'admin';
+export type Rol = 'usuario' | 'admin' | 'zombie';
 
 /** Usuario tal como lo ve el dominio y la API. Nunca expone `passwordHash`. */
 export interface Usuario {

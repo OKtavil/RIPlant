@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsuariosModule } from '../usuarios/usuarios.module';
 import { SesionDocumentModel, SesionSchema } from './sesion.schema';
@@ -10,7 +10,7 @@ import { SesionesService } from './sesiones.service';
     MongooseModule.forFeature([
       { name: SesionDocumentModel.name, schema: SesionSchema },
     ]),
-    UsuariosModule,
+    forwardRef(() => UsuariosModule),
   ],
   controllers: [SesionesController],
   providers: [SesionesService],

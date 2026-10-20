@@ -1,9 +1,23 @@
-import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { hashPassword, verifyPassword } from './password';
 import type { Rol, Usuario } from './usuario.interface';
 import { UsuarioDocumentModel } from './usuario.schema';
+
+/**
+ * Nombres que nadie puede registrarse. `admin` sale del seed por variables de
+ * entorno y `zombie` es el dueño reservado de las lápidas huérfanas (D-008):
+ * dejar que alguien los registre le entregaría a un tercero las lápidas sin
+ * dueño, o el panel de administración.
+ */
+const NOMBRES_RESERVADOS = ['admin', 'zombie'];
 
 @Injectable()
 export class UsuariosService implements OnModuleInit {
@@ -65,17 +79,43 @@ export class UsuariosService implements OnModuleInit {
     }
   }
 
+  /**
+   * Crea una cuenta nueva. El `rol` no se decide acá: lo elige quien llama, y
+   * `POST /usuarios` siempre pasa `'usuario'`. El administrador sale del seed.
+   *
+   * Los dos rechazos que importan:
+   * - Nombre reservado → `400`. No es `409`: no choca con un registro previo,
+   *   es un nombre prohibido.
+   * - Nombre repetido → `409`, y lo decide el índice `unique` de Mongo, no una
+   *   consulta previa. Comprobar antes e insertar después abre una carrera en
+   *   la que dos pedidos simultáneos pasan los dos.
+   */
   async crear(datos: {
     username: string;
     password: string;
     rol: Rol;
   }): Promise<Usuario> {
-    const creado = await this.usuarioModel.create({
-      username: datos.username,
-      passwordHash: await hashPassword(datos.password),
-      rol: datos.rol,
-    });
-    return this.aDominio(creado);
+    const username = datos.username.trim();
+    if (NOMBRES_RESERVADOS.includes(username.toLowerCase())) {
+      throw new BadRequestException(
+        `El nombre "${username}" está reservado y no se puede usar`,
+      );
+    }
+
+    try {
+      const creado = await this.usuarioModel.create({
+        username,
+        passwordHash: await hashPassword(datos.password),
+        rol: datos.rol,
+      });
+      return this.aDominio(creado);
+    } catch (error) {
+      // 11000 = duplicate key: el índice `unique` de `username` ya lo tiene.
+      if ((error as { code?: number }).code === 11000) {
+        throw new ConflictException('Ese nombre de usuario ya está en uso');
+      }
+      throw error;
+    }
   }
 
   /**

@@ -13,7 +13,12 @@ export class UsuarioDocumentModel {
   @Prop({ required: true })
   passwordHash: string;
 
-  @Prop({ required: true, type: String, enum: ['usuario', 'admin'], default: 'usuario' })
+  @Prop({
+    required: true,
+    type: String,
+    enum: ['usuario', 'admin', 'zombie'],
+    default: 'usuario',
+  })
   rol: Rol;
 
   @Prop({ required: true, type: Date, default: Date.now })
