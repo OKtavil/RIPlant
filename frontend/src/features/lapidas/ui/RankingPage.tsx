@@ -1,6 +1,6 @@
 import { IconoCorona } from '../../../shared/ui/iconos'
 import type { Category } from '../../categorias/model/categoria'
-import type { Asesino, Grave } from '../model/lapida'
+import { nombreDelDuenio, type Asesino, type Grave } from '../model/lapida'
 import { AvisoAsesinos, ListaAsesinos } from './ListaAsesinos'
 
 type Props = {
@@ -32,8 +32,10 @@ export function RankingPage({ lapidas, categorias, asesinos, errorAsesinos, onAb
               </span>
               <br />
               <span className="ranking__detalle">
-                @{lapida.autor} · {nombreCategoria(lapida.categoriaId) || 'Sin categoría'}
+                @{nombreDelDuenio(lapida)} · {nombreCategoria(lapida.categoriaId) || 'Sin categoría'}
               </span>
+              <br />
+              <span className="ranking__epitafio">{lapida.epitafio}</span>
             </span>
             <span className="ranking__valor">
               <IconoCorona />

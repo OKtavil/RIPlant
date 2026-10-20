@@ -34,6 +34,8 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
         “{lapida.nombrePlanta}”
       </button>
 
+      <p className="lapida__epitafio">{lapida.epitafio}</p>
+
       <p className="lapida__meta">
         {categoria || 'Sin categoría'} · {lapida.causaMuerte}
       </p>
