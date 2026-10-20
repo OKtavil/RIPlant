@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { LapidasController } from './lapidas.controller';
 import { LapidasService } from './lapidas.service';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ComentarioDocumentModel, ComentarioSchema } from '../comentarios/comentario.schema';
 import { CoronaDocumentModel, CoronaSchema } from './corona.schema';
 import { LapidaDocumentModel, LapidaSchema } from './lapida.schema';
 import { UsuarioDocumentModel, UsuarioSchema } from '../usuarios/usuario.schema';
@@ -15,6 +16,8 @@ import { SesionesModule } from '../sesiones/sesiones.module';
       { name: LapidaDocumentModel.name, schema: LapidaSchema },
       { name: UsuarioDocumentModel.name, schema: UsuarioSchema },
       { name: CoronaDocumentModel.name, schema: CoronaSchema },
+      // S6: al borrar una lápida se borran sus comentarios (cascada).
+      { name: ComentarioDocumentModel.name, schema: ComentarioSchema },
     ]),
     SesionesModule,
   ],

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { ComentarioDocument, ComentarioDocumentModel } from '../comentarios/comentario.schema';
 import { UsuarioDocumentModel } from '../usuarios/usuario.schema';
 import { CoronaDocument, CoronaDocumentModel } from './corona.schema';
 import { CreateLapidaDto } from './create-lapida.dto';
@@ -29,6 +30,8 @@ export class LapidasService {
     private readonly usuarioModel: Model<any>,
     @InjectModel(CoronaDocumentModel.name)
     private readonly coronaModel: Model<CoronaDocument>,
+    @InjectModel(ComentarioDocumentModel.name)
+    private readonly comentarioModel: Model<ComentarioDocument>,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -309,6 +312,11 @@ export class LapidasService {
   async remove(id: number): Promise<Lapida> {
     const lapida = await this.lapidaModel.findOneAndDelete({ id }).lean();
     if (!lapida) throw new NotFoundException('Lápida no encontrada');
+    // S6: borrar una lápida borra también sus comentarios. Sin esta cascada
+    // quedan documentos huérfanos que reaparecerían en cualquier lápida que
+    // reutilice ese id — los ids de lápida se asignan como máximo + 1, así que
+    // borrar la última y crear otra repite el número.
+    await this.comentarioModel.deleteMany({ lapidaId: id });
     return lapida;
   }
 

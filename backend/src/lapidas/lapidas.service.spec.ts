@@ -44,15 +44,20 @@ describe('LapidasService', () => {
   const coronaModel = {
     create: jest.fn(),
   };
+  const comentarioModel = {
+    deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+  };
   let service: LapidasService;
 
   beforeEach(() => {
     jest.clearAllMocks();
     coronaModel.create.mockResolvedValue({ lapidaId: 1, usuarioId: 'u1' });
+    comentarioModel.deleteMany.mockResolvedValue({ deletedCount: 1 });
     service = new LapidasService(
       model as never,
       model as never,
       coronaModel as never,
+      comentarioModel as never,
     );
   });
 
@@ -111,6 +116,11 @@ describe('LapidasService', () => {
     await expect(service.giveCorona(1, sesion)).rejects.toMatchObject({
       status: 409,
     });
+  });
+
+  it('removes every comment when the grave is removed (S6 cascade)', async () => {
+    await expect(service.remove(1)).resolves.toEqual(grave);
+    expect(comentarioModel.deleteMany).toHaveBeenCalledWith({ lapidaId: 1 });
   });
 
   it('seeds only an empty collection', async () => {
