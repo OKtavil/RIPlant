@@ -29,8 +29,15 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
   return (
     <div className="pantalla__contenido">
       <section className="detalle__info">
-        <div className="detalle__foto" style={{ background: colorDeFoto(lapida.id) }}>
-          <IconoHoja size={96} />
+        <div
+          className="detalle__foto"
+          style={lapida.fotoUrl ? undefined : { background: colorDeFoto(lapida.id) }}
+        >
+          {lapida.fotoUrl ? (
+            <img className="detalle__foto-img" src={lapida.fotoUrl} alt="" />
+          ) : (
+            <IconoHoja size={96} />
+          )}
         </div>
 
         <div className="detalle__card">

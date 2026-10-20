@@ -299,6 +299,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* La foto real tapa el recuadro entero; el icono es solo el placeholder. */
+  overflow: hidden;
 }
 
 .lapida__foto--alta {
@@ -307,6 +309,12 @@
 
 .lapida__foto--baja {
   height: 70px;
+}
+
+.lapida__foto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .lapida__nombre {
@@ -610,6 +618,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* La foto real tapa el recuadro entero; el icono es solo el placeholder. */
+  overflow: hidden;
+}
+
+.detalle__foto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .detalle__card {

@@ -1,4 +1,4 @@
-import { request } from '../../../shared/api/client'
+import { request, subirArchivo } from '../../../shared/api/client'
 import type { Asesino, CreateGraveInput, Grave } from '../model/lapida'
 
 export const lapidasApi = {
@@ -29,4 +29,15 @@ export const lapidasApi = {
    */
   quitarCorona: (id: number) =>
     request<Grave>(`/lapidas/${id}/corona`, { method: 'DELETE' }),
+
+  /**
+   * Sube (o reemplaza) la foto de una lápida ya creada. Solo el dueño o un
+   * admin: la autorización la resuelve `DuenoOAdminLapidaMiddleware`.
+   *
+   * Va en dos pasos porque el endpoint cuelga de `:id`: primero se crea la
+   * lápida con `create`, después se le adjunta la foto con su id. El tope de
+   * 5 MB lo aplica multer; la UI lo chequea antes para no gastar la subida.
+   */
+  subirFoto: (id: number, archivo: File) =>
+    subirArchivo<Grave>(`/lapidas/${id}/foto`, 'foto', archivo),
 }

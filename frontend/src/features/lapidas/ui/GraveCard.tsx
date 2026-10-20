@@ -23,11 +23,15 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
     <article className="lapida">
       <button
         className={`lapida__foto ${tamano === 'baja' ? 'lapida__foto--baja' : 'lapida__foto--alta'}`}
-        style={{ background: colorDeFoto(lapida.id) }}
+        style={lapida.fotoUrl ? undefined : { background: colorDeFoto(lapida.id) }}
         onClick={() => onAbrir(lapida)}
         aria-label={`Ver la lápida de ${lapida.nombrePlanta}`}
       >
-        <IconoHoja />
+        {lapida.fotoUrl ? (
+          <img className="lapida__foto-img" src={lapida.fotoUrl} alt="" />
+        ) : (
+          <IconoHoja />
+        )}
       </button>
 
       <button className="lapida__nombre" onClick={() => onAbrir(lapida)}>

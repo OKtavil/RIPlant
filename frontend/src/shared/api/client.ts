@@ -74,3 +74,33 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 
   return (await response.json()) as T
 }
+
+/**
+ * Subida multipart.
+ *
+ * Vive aparte de `request` porque `FormData` no se puede JSON-serializar: el
+ * `Content-Type` lo tiene que poner el browser, que además agrega el `boundary`
+ * del multipart. Fijarlo a mano dejaría el body ilegible para multer.
+ */
+export async function subirArchivo<T>(path: string, campo: string, archivo: File): Promise<T> {
+  const cuerpo = new FormData()
+  cuerpo.append(campo, archivo)
+
+  let response: Response
+  try {
+    response = await fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      credentials: 'include',
+      body: cuerpo,
+    })
+  } catch {
+    throw new ApiError(0, 'sin-conexion', 'No se pudo conectar con el servidor.')
+  }
+
+  if (!response.ok) {
+    const { codigo, mensaje } = clasificar(response.status)
+    throw new ApiError(response.status, codigo, mensaje)
+  }
+
+  return (await response.json()) as T
+}

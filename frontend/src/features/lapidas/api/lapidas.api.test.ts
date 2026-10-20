@@ -99,6 +99,23 @@ describe('lapidasApi', () => {
     expect(init.body).toBe(JSON.stringify({ epitafio: 'Nuevo epitafio' }))
   })
 
+  it('subirFoto hace POST /lapidas/:id/foto con el archivo en el campo "foto"', async () => {
+    conRespuesta(Response.json({ id: 7, fotoUrl: '/uploads/abc.png' }))
+    const archivo = new File(['bytes'], 'planta.png', { type: 'image/png' })
+
+    const actualizada = await lapidasApi.subirFoto(7, archivo)
+
+    expect(actualizada.fotoUrl).toBe('/uploads/abc.png')
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe(`${BASE}/lapidas/7/foto`)
+    expect(init.method).toBe('POST')
+    const cuerpo = init.body as FormData
+    expect(cuerpo).toBeInstanceOf(FormData)
+    expect(cuerpo.get('foto')).toBe(archivo)
+    // El boundary lo pone el browser: fijar el Content-Type rompería el multipart.
+    expect(init.headers).toBeUndefined()
+  })
+
   it('remove hace DELETE /lapidas/:id sin cuerpo y devuelve undefined', async () => {
     conRespuesta(new Response(null, { status: 204 }))
 

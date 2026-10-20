@@ -98,6 +98,14 @@ describe('DetallePage', () => {
     expect(screen.getByRole('button', { name: /dar una corona/i })).toBeTruthy()
   })
 
+  it('muestra la foto real cuando la lápida tiene fotoUrl', () => {
+    const { container } = montar({ lapida: lapida({ fotoUrl: '/uploads/abc.png' }) })
+
+    const img = container.querySelector('.detalle__foto-img') as HTMLImageElement
+    expect(img).toBeTruthy()
+    expect(img.getAttribute('src')).toBe('/uploads/abc.png')
+  })
+
   it('deja todos los datos en la columna izquierda', () => {
     const { container } = montar({ sesion: sesionDuenia })
 

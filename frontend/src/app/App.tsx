@@ -110,9 +110,26 @@ export default function App() {
     navegar(rutaDeVista('inicio'))
   }
 
-  async function publicar(input: CreateGraveInput) {
+  async function publicar(input: CreateGraveInput, foto?: File) {
     const creada = await lapidasApi.create(input)
     setLapidas((items) => [creada, ...items])
+
+    // La foto va en un segundo paso porque su endpoint cuelga del id que
+    // devuelve el create. Si falla, la lápida ya está publicada: se avisa y se
+    // sigue, en vez de dejar la publicación a medias sin explicación.
+    if (foto) {
+      try {
+        const conFoto = await lapidasApi.subirFoto(creada.id, foto)
+        setLapidas((items) => items.map((item) => (item.id === conFoto.id ? conFoto : item)))
+      } catch (fallo) {
+        setAviso(
+          fallo instanceof ApiError
+            ? `La lápida se publicó, pero la foto no: ${fallo.message}`
+            : 'La lápida se publicó, pero la foto no se pudo subir.',
+        )
+      }
+    }
+
     navegar(rutaDeVista('inicio'))
   }
 

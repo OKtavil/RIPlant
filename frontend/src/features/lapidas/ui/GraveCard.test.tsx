@@ -75,4 +75,23 @@ describe('GraveCard', () => {
 
     expect(onCorona).toHaveBeenCalledWith(conCorona)
   })
+
+  it('muestra la foto real cuando la lápida tiene fotoUrl', () => {
+    const { container } = render(
+      <GraveCard lapida={lapida({ fotoUrl: '/uploads/abc.png' })} onAbrir={vi.fn()} />,
+    )
+
+    const img = container.querySelector('.lapida__foto-img') as HTMLImageElement
+    expect(img).toBeTruthy()
+    expect(img.getAttribute('src')).toBe('/uploads/abc.png')
+  })
+
+  it('cae al placeholder cuando no hay fotoUrl', () => {
+    const { container } = render(
+      <GraveCard lapida={lapida({ fotoUrl: '' })} onAbrir={vi.fn()} />,
+    )
+
+    expect(container.querySelector('.lapida__foto-img')).toBeNull()
+    expect(container.querySelector('.lapida__foto svg')).toBeTruthy()
+  })
 })
