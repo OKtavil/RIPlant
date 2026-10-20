@@ -18,20 +18,28 @@ import { RegistroPage } from '../features/sesiones/ui/RegistroPage'
 import { RestablecerPage } from '../features/sesiones/ui/RestablecerPage'
 import { sesionesApi } from '../features/sesiones/api/sesiones.api'
 import type { Credenciales, Session, VistaAuth } from '../features/sesiones/model/sesion'
+import { rutaDeDetalle, rutaDeVista } from './ruta'
+import { useRuta } from './useRuta'
 
 const MENU: Vista[] = ['inicio', 'ranking', 'publicar']
 
 export default function App() {
-  const [vista, setVista] = useState<Vista>('inicio')
+  const { ruta, navegar } = useRuta()
   const [vistaAuth, setVistaAuth] = useState<VistaAuth | null>(null)
   const [lapidas, setLapidas] = useState<Grave[]>([])
   const [categorias, setCategorias] = useState<Category[]>([])
   const [asesinos, setAsesinos] = useState<Asesino[]>([])
   const [errorAsesinos, setErrorAsesinos] = useState('')
-  const [seleccionada, setSeleccionada] = useState<Grave | null>(null)
   const [sesion, setSesion] = useState<Session | null>(null)
   const [cargando, setCargando] = useState(true)
   const [aviso, setAviso] = useState('')
+
+  // La URL es la fuente de verdad de qué se muestra. El detalle se resuelve
+  // contra la lista ya cargada; si el id no está (link viejo, lápida borrada),
+  // cae al inicio en vez de dejar la pantalla vacía.
+  const detalleId = ruta.tipo === 'detalle' ? ruta.id : null
+  const vista: Vista = ruta.tipo === 'vista' ? ruta.vista : 'inicio'
+  const seleccionada = detalleId ? lapidas.find((l) => l.id === detalleId) ?? null : null
 
   useEffect(() => {
     let vigente = true
@@ -85,7 +93,7 @@ export default function App() {
     const actual = await sesionesApi.iniciar(credenciales)
     setSesion(actual)
     setVistaAuth(null)
-    setVista('inicio')
+    navegar(rutaDeVista('inicio'))
   }
 
   /** El backend registra y deja la cookie puesta: entra logueado, igual que el login. */
@@ -93,26 +101,25 @@ export default function App() {
     const actual = await sesionesApi.registrar(credenciales)
     setSesion(actual)
     setVistaAuth(null)
-    setVista('inicio')
+    navegar(rutaDeVista('inicio'))
   }
 
   async function cerrarSesion() {
     await sesionesApi.cerrar()
     setSesion(null)
-    setVista('inicio')
+    navegar(rutaDeVista('inicio'))
   }
 
   async function publicar(input: CreateGraveInput) {
     const creada = await lapidasApi.create(input)
     setLapidas((items) => [creada, ...items])
-    setVista('inicio')
+    navegar(rutaDeVista('inicio'))
   }
 
   async function darCorona(lapida: Grave) {
     try {
       const actualizada = await lapidasApi.giveCorona(lapida.id)
       setLapidas((items) => items.map((item) => (item.id === actualizada.id ? actualizada : item)))
-      setSeleccionada((actual) => (actual?.id === actualizada.id ? actualizada : actual))
     } catch (fallo) {
       setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo dar la corona.')
     }
@@ -122,7 +129,9 @@ export default function App() {
     try {
       await lapidasApi.remove(lapida.id)
       setLapidas((items) => items.filter((item) => item.id !== lapida.id))
-      setSeleccionada((actual) => (actual?.id === lapida.id ? null : actual))
+      // Si se borró la que estaba abierta, la URL apunta a algo que ya no
+      // existe: se vuelve al inicio para no quedar en un detalle fantasma.
+      if (detalleId === lapida.id) navegar(rutaDeVista('inicio'))
       // Borrar cambia el ranking de asesinos: se recarga en vez de recalcularlo
       // en cliente, que daría una cuenta distinta a la del backend.
       const ranking = await lapidasApi.asesinos()
@@ -150,6 +159,14 @@ export default function App() {
   const navItems = useMemo(() => MENU, [])
   const vistaActiva: Vista | null = vistaAuth ? null : vista
 
+  /** Navegar por el menú escribe la URL de esa vista. */
+  const irAVista = useCallback((destino: Vista) => navegar(rutaDeVista(destino)), [navegar])
+  /** Abrir una lápida escribe la URL del detalle. */
+  const abrirDetalle = useCallback(
+    (lapida: Grave) => navegar(rutaDeDetalle(lapida.id)),
+    [navegar],
+  )
+
   if (vistaAuth) {
     return (
       <div className="pantalla">
@@ -166,12 +183,12 @@ export default function App() {
 
   return (
     <div className="pantalla">
-      <Nav activa={vistaActiva} items={navItems} onNavegar={setVista} />
+      <Nav activa={vistaActiva} items={navItems} onNavegar={irAVista} />
 
       <div className="pantalla__acciones">
         {sesion ? (
           <>
-            <button className="nav__item" onClick={() => setVista('perfil')}>
+            <button className="nav__item" onClick={() => irAVista('perfil')}>
               @{sesion.username}
             </button>
             <button className="nav__item" onClick={() => void cerrarSesion()}>
@@ -196,7 +213,7 @@ export default function App() {
           sesion={sesion}
           onCorona={darCorona}
           onBorrar={borrarLapida}
-          onVolver={() => setSeleccionada(null)}
+          onVolver={() => irAVista('inicio')}
         />
       ) : (
         <>
@@ -206,9 +223,9 @@ export default function App() {
               categorias={categorias}
               asesinos={asesinos}
               errorAsesinos={errorAsesinos}
-              onAbrir={setSeleccionada}
+              onAbrir={abrirDetalle}
               onCorona={(l) => void darCorona(l)}
-              onPublicar={() => setVista('publicar')}
+              onPublicar={() => irAVista('publicar')}
             />
           )}
           {vista === 'ranking' && (
@@ -217,7 +234,7 @@ export default function App() {
               categorias={categorias}
               asesinos={asesinos}
               errorAsesinos={errorAsesinos}
-              onAbrir={setSeleccionada}
+              onAbrir={abrirDetalle}
             />
           )}
           {vista === 'publicar' && <PublicarPage categorias={categorias} onPublicar={publicar} />}
@@ -227,8 +244,8 @@ export default function App() {
               lapidas={lapidas}
               categorias={categorias}
               asesinos={asesinos}
-              onAbrir={setSeleccionada}
-              onPublicar={() => setVista('publicar')}
+              onAbrir={abrirDetalle}
+              onPublicar={() => irAVista('publicar')}
               onBorrar={borrarLapida}
               onIniciarSesion={() => setVistaAuth('login')}
             />
@@ -247,7 +264,7 @@ export default function App() {
       )}
 
       {!seleccionada && sesion?.rol === 'admin' && vista !== 'categorias' && (
-        <button className="nav__item" onClick={() => setVista('categorias')}>
+        <button className="nav__item" onClick={() => irAVista('categorias')}>
           ADMINISTRAR CATEGORÍAS
         </button>
       )}
