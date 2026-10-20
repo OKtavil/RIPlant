@@ -184,7 +184,7 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 | T2 | `POST /usuarios` con auto-login y `rol` forzado | S3 | ✅ hecho | `398ce55` |
 | T3 | `usuarioId` obligatorio + middlewares de sesión y de dueño-o-admin en `/lapidas` + usuario `zombie`, migración de huérfanas y datos semilla ampliados | S4, S4.1, S11 | ✅ **cerrado** | `44ac10b` + `e1edbae` |
 | T4 | Coronas: colección `coronas`, índice único y sesión requerida | S5 | ✅ hecho | `aea9790` |
-| T5 | Comentarios: colección, los tres endpoints y borrado solo admin | S6 | pendiente | — |
+| T5 | Comentarios: colección, los tres endpoints y borrado solo admin | S6 | ✅ hecho | `d68590d` |
 | T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | ✅ hecho (salió junto a T3) | `44ac10b` |
 | T7 | Subida de foto a disco local con servido estático | S8 | pendiente | — |
 | T8 | Recuperar y nueva contraseña (diferida) | S9 | pendiente | — |
@@ -436,3 +436,71 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   `git commit -- <rutas propias>`: el commit volvió a `e1edbae` con solo mis dos archivos
   y los suyos quedaron staged como estaban. **Regla para este worktree: nunca
   `git commit` a pelo; siempre con `-- <rutas>`.**
+  (Corrección de E7: `-- <rutas>` **no alcanza para archivos nuevos**, se omite
+  lo que no está trackeado. La regla real es `git add <rutas propias>` →
+  `git diff --cached` → `git commit` sin pathspec.)
+
+- **E7 (2026-10-20, comentarios implementados — T5/S6):**
+
+  **Qué entró:** colección `comentarios` (`lapidaId` indexado, `usuarioId`, `autor`, `texto`,
+  `creadoEn`) y los tres endpoints: `GET /lapidas/:id/comentarios` público y ascendente,
+  `POST /lapidas/:id/comentarios` con sesión de cualquier rol, y `DELETE /comentarios/:id`
+  solo admin (D5). El `autor` y el `usuarioId` salen de la sesión, nunca del cuerpo.
+
+  **Decisiones que la spec dejaba abiertas:**
+  - **Id expuesto = `_id` de Mongo como string.** S6 lista los campos del comentario sin
+    ningún id numérico, y un contador `max + 1` como el de `lapidas` y `categorias` es una
+    carrera real acá: es un recurso que crea cualquiera con sesión y dos creaciones
+    simultáneas se pisarían. `usuarioId` ya es ObjectId-string en este API, así que no se
+    introduce una segunda convención.
+  - **`texto` máximo 500** con `@MaxLength` (la propuesta decía 500; ahora está en código y
+    en el mensaje de error, así que el front puede mostrarlo tal cual).
+  - **404 en vez de lista vacía** para una lápida que no existe: una lista vacía mentiría
+    sobre el estado del recurso.
+  - **Sin deduplicación.** Comentar dos veces la misma lápida crea dos comentarios (probado).
+    Lo que bloquea contenido repetido es el rol admin, no un índice único: la restricción de
+    una corona por usuario (D4) es específica de coronas.
+  - **Rutas en dos colecciones distintas** (`/lapidas/:id/comentarios` y `/comentarios/:id`),
+    así que el controller va **sin prefijo de módulo**: un `@Controller('lapidas')` no puede
+    servir las segundas. No choca con `LapidasController` porque `lapidas/:id` exige un solo
+    segmento.
+
+  **Bug encontrado y corregido durante la verificación en vivo:** `borrar()` usaba
+  `findOneAndDelete({ _id: id }).lean()`. Con el `_id` como string, Mongoose **borra el
+  documento y `lean()` devuelve `null`**, así que el endpoint borraba el comentario y
+  respondía **404 igual**, dejando al admin creyendo que no había borrado nada. Se ve en el
+  humo: `DELETE → 404` con `countDocuments` bajando de 1 a 0. Pasado a `deleteOne` +
+  `deletedCount`, que es el único resultado que dice la verdad. Test de regresión agregado.
+  **El unit test no lo detectaba** porque el mock devolvía un documento; lo cazó el humo
+  contra Mongo real. Moraleja: los mocks de Mongoose no reproducen el casteo de `_id`.
+
+  **Verificación observada:**
+  - RED observado en los dos frentes: el módulo no existía (`Cannot find module`) y la
+    cascada no estaba implementada.
+  - `pnpm run test` 47/47 · `build` y `lint` limpios.
+  - Humo en vivo contra base scratch (nunca la del usuario), con Mongo real:
+    `GET` público **200** · lápida fantasma **404** · `POST` sin cookie **401** ·
+    texto vacío **400** · texto de 501 **400** · `POST` en lápida fantasma **404** ·
+    `DELETE` sin cookie **401** · id inválido **400** · admin **200** con Mongo 1→0 ·
+    repetido **404** · dos comentarios del mismo usuario: **2 filas** · cascada:
+    `DELETE /lapidas/1` → Mongo 2→0 y la lápida nueva que reutiliza el id 11 arranca con 0.
+  - 0 errores en el log del servidor.
+
+  **Cambio del entorno que importa (lo hizo otra sesión, no yo):** apareció
+  `backend/src/shared/validation-pipe.ts` con **`whitelist` + `forbidNonWhitelisted`**, y eso
+  hace que **`POST /lapidas/:id/comentarios` devuelva `400` si el cliente manda campos de
+  más** (p. ej. `autor`). Es el comportamiento correcto y refuerza S6: el único campo que el
+  cliente puede mandar es `texto`. El front debe mandar `{ texto }` y nada más.
+  **Lo cazó el humo, no los tests**: mi unit test pasa un `autor` falso al servicio, que es
+  correcto para probar que se ignora, pero nunca ejerce el pipe HTTP.
+
+- **Nota de coordinación (2026-10-20):** este worktree tiene **un actor concurrente activo**.
+  Mientras corría T4/T5 aparecieron commits suyos entrelazados (`022c150`, `1cb09ef`,
+  `cb97920`, `e7bad15`, `17b0fb4`) y el pipeline de validación cambió bajo mis pies. Hay dos
+  identidades de git: `Octavio <octaviocastillon@no-reply.com>` (la otra máquina) y
+  `OKtavil <octavio@no-reply.com>` (**compartida**: yo commiteo con ella, y `17b0fb4` con esa
+  identidad no es mío). Consecuencia práctica: **no se puede atribuir un commit por autor**;
+  hay que mirar el contenido. Protocolo que funcionó: `git add <rutas propias>` exactas,
+  verificar `git diff --cached --name-status` antes de commitear, y **nunca** `git add -A` ni
+  `git commit` sin haber revisado el índice. El contenedor de Mongo y el puerto 3000 son
+  compartidos: no bajarlos sin avisar.
