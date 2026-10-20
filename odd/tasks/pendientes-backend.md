@@ -186,7 +186,7 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 | T4 | Coronas: colección `coronas`, índice único y sesión requerida | S5 | ✅ hecho | `aea9790` |
 | T5 | Comentarios: colección, los tres endpoints y borrado solo admin | S6 | ✅ hecho | `d68590d` |
 | T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | ✅ hecho (salió junto a T3) | `44ac10b` |
-| T7 | Subida de foto a disco local con servido estático | S8 | pendiente | — |
+| T7 | Subida de foto a disco local con servido estático | S8 | ✅ hecho | `5b1d00a` |
 | T8 | Recuperar y nueva contraseña (diferida) | S9 | pendiente | — |
 | T9 | Documentación de los endpoints nuevos | S10 | pendiente | — |
 
@@ -213,6 +213,12 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 - **Código y mensaje de la segunda corona** — ✅ **implementado, sin confirmar**: `409` con
   mensaje técnico en español. Ver E5.
 - **Tope de caracteres del comentario** (propuesta: 500, **sin confirmar**).
+- **`UPLOADS_DIR`** — agregada por T7 para que los e2e no escriban en el worktree. **No está
+  documentada en `.env.example`** ni decidida como variable pública: hoy es una costura de
+  test. Si se quiere poder mover las subidas en despliegue, hay que documentarla; si no,
+  conviene dejarla fuera de los docs y asumir `var/uploads`.
+- **`R3-e2e-shared-db`** — los e2e escriben en la base real de `.env`. T7 lo confirmó en vivo
+  (ver E8). Sin arreglar, cada corrida ensucia `riplanta`.
 - **Entrega del frontend** (`P1` del documento del frontend). La divergencia de rama de L4
   **ya no existe**: verificado en E3, la rama está en `ahead 0 / behind 0` con el remoto.
 
@@ -504,3 +510,73 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   verificar `git diff --cached --name-status` antes de commitear, y **nunca** `git add -A` ni
   `git commit` sin haber revisado el índice. El contenedor de Mongo y el puerto 3000 son
   compartidos: no bajarlos sin avisar.
+
+- **E8 (2026-10-20, foto de la lápida implementada — T7/S8):**
+
+  **Qué entró:** `POST /lapidas/:id/foto` (multipart, campo `foto`, sesión dueño-o-admin)
+  guarda en `backend/var/uploads/` con nombre `randomUUID()` y extensión derivada del **tipo
+  real detectado por magic bytes** (jpeg, png, webp). La ruta relativa `/uploads/<archivo>`
+  queda en `fotoUrl` y el estático se sirve desde `main.ts`.
+
+  **Dependencias: cero nuevas descargas, pero una declaración nueva.** S8 pedía sumar
+  `@types/multer` y decía que `@nestjs/serve-static` no hacía falta. Verificado en el código
+  instalado: **ninguna de las dos hizo falta**, y el motivo es distinto del que suponía la spec:
+  - `app.useStaticAssets()` ya viene en `NestExpressApplication`, el tipo que devuelve
+    `NestFactory.create<NestExpressApplication>()`. `@nestjs/serve-static` es para otro caso.
+  - Los tipos de multer los trae `@nestjs/platform-express` (`MulterOptions`, y el
+    `FileTypeValidator` de `@nestjs/common`), así que `@types/multer` no se usa.
+  - **`FileTypeValidator` de `@nestjs/common` ya valida por magic bytes** con `file-type`
+    (dependencia real de `@nestjs/common`, verificada en el lockfile). Se probó en vivo antes
+    de escribir código: PNG/JPEG/WebP `true`, GIF y texto plano `false`.
+  - Aun así, `file-type` se declaró como dependencia explícita de `backend`, pineada a
+    `22.1.1`. Hasta ahora llegaba **por hoisting**, y depender de la dependencia transitiva de
+    otro paquete es exactamente la fragilidad que rompe un `pnpm dedupe`. El lockfile cambia 3
+    líneas y no mueve ningún otro paquete.
+
+  **Bug encontrado en el humo, y que los tests no podían ver:** `main.ts` resolvía el
+  directorio de subidas por su cuenta (`process.cwd()/var/uploads`) y el servicio por la suya
+  (`UPLOADS_DIR` si estaba definida). Con `UPLOADS_DIR` seteado, la foto se **guardaba** en un
+  directorio y el estático la **buscaba** en otro: `201` al subir y `404` al pedirla. Se
+  unificó en `directorioDeSubidas()`, que usan los dos, con test de regresión. Apareció porque
+  el humo usa una carpeta temporal; con la config por defecto los dos caminos coincidían y el
+  bug era invisible.
+  **Moraleja:** el e2e monta la app con `Test.createTestingModule`, que **no ejecuta `main.ts`**,
+  así que el estático nunca se ejerce en los tests. Sin el humo, esto llegaba a `main`.
+
+  **Segundo hallazgo, ajeno a T7:** el e2e de coronas (`lapidas.e2e-spec.ts:72`) posteaba sin
+  sesión y esperaba `201`. T4 (`aea9790`) le puso `SesionRequeridaMiddleware` a esa ruta y
+  empezó a responder `401`, pero el test no se actualizó en ese commit. Como la suite e2e
+  necesita Mongo, la falla quedó tapada hasta que T7 la corrió. Se arregló en commit aparte
+  (`66034ee`), porque no tiene nada que ver con la foto.
+
+  **Decisión de contrato:** `fotoUrl` salió del JSON de crear/editar (S8). El DTO sigue
+  declarando el campo para que `forbidNonWhitelisted` no devuelva un `400` confuso, pero el
+  servicio lo ignora: la única vía es el endpoint de subida.
+
+  **Contaminación de la base del usuario, encontrada y revertida:** los e2e corren contra
+  `MONGODB_URI` de `backend/.env`, que apunta a la base real `riplanta`. Las dos corridas de
+  este task escribieron **4 usuarios y 16 lápidas** ahí. Se borraron exactamente esos (y la
+  corona asociada), verificando por sufijo de timestamp y no por patrón amplio, para no tocar
+  ni la semilla ni las tres cuentas del otro actor. Estado final de `riplanta`: 10 lápidas
+  (ids 1-10, la semilla), 6 categorías, 0 comentarios, 0 coronas. **Esto es el hallazgo
+  `R3-e2e-shared-db` mordiendo en vivo**: mientras siga así, cada corrida de e2e ensucia la
+  base de desarrollo compartida.
+
+  **Verificación observada:**
+  - `pnpm run test` **62/62** (eran 47) · `pnpm run test:e2e` **29/29** (eran 24) · `build` y
+    `lint` limpios.
+  - Humo en vivo contra base scratch y directorio de subidas temporal, con Mongo real:
+    registro `201` · lápida propia `201` · foto sin cookie **401** · PNG válido **201** con
+    `fotoUrl=/uploads/<uuid>.png` · **`GET /uploads/<archivo>` 200 con el archivo byte a byte
+    idéntico al subido** (la prueba real de que el estático está bien montado) · GIF renombrado
+    a `.png` y con `type=image/png` **415** (manda el contenido, no lo que declara el cliente) ·
+    texto plano igual **415** · 6 MB **413** · sin archivo **400** · reemplazo `201` con la foto
+    anterior **borrada del disco** y extensión `.jpg` sacada del contenido · lápida inexistente
+    **404** · lápida ajena siendo otra usuaria **403** · borrar la lápida **200** con su foto
+    borrada. **0 errores** en el log del servidor.
+  - Base del usuario y contenedor de Mongo: intactos después de revertir la contaminación.
+
+  **Nota de método:** los tests del almacenamiento salieron **verdes en la primera corrida**, no
+  hubo RED observado: escribí la implementación antes que el test. Los tests igual valen porque
+  ejercen magic bytes reales contra el filesystem real, pero no se registran como evidencia RED
+  porque no se observó.
