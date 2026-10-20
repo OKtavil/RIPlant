@@ -118,6 +118,20 @@ export default function App() {
     }
   }
 
+  async function borrarLapida(lapida: Grave) {
+    try {
+      await lapidasApi.remove(lapida.id)
+      setLapidas((items) => items.filter((item) => item.id !== lapida.id))
+      setSeleccionada((actual) => (actual?.id === lapida.id ? null : actual))
+      // Borrar cambia el ranking de asesinos: se recarga en vez de recalcularlo
+      // en cliente, que daría una cuenta distinta a la del backend.
+      const ranking = await lapidasApi.asesinos()
+      setAsesinos(ranking)
+    } catch (fallo) {
+      setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo borrar la lápida.')
+    }
+  }
+
   async function crearCategoria(nombre: string) {
     const creada = await categoriasApi.create(nombre)
     setCategorias((items) => [...items, creada])
@@ -179,7 +193,9 @@ export default function App() {
         <DetallePage
           lapida={seleccionada}
           categorias={categorias}
+          sesion={sesion}
           onCorona={darCorona}
+          onBorrar={borrarLapida}
           onVolver={() => setSeleccionada(null)}
         />
       ) : (
@@ -213,6 +229,7 @@ export default function App() {
               asesinos={asesinos}
               onAbrir={setSeleccionada}
               onPublicar={() => setVista('publicar')}
+              onBorrar={borrarLapida}
               onIniciarSesion={() => setVistaAuth('login')}
             />
           )}

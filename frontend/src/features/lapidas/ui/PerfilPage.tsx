@@ -4,8 +4,8 @@ import { IconoInsignia, IconoPersona } from '../../../shared/ui/iconos'
 import type { Session } from '../../sesiones/model/sesion'
 import type { Category } from '../../categorias/model/categoria'
 import type { Asesino, Grave } from '../model/lapida'
+import { puedeBorrar } from '../model/lapida'
 import { GraveCard, GraveCardNueva } from './GraveCard'
-
 type Props = {
   sesion: Session | null
   lapidas: Grave[]
@@ -13,6 +13,7 @@ type Props = {
   asesinos: Asesino[]
   onAbrir: (lapida: Grave) => void
   onPublicar: () => void
+  onBorrar: (lapida: Grave) => Promise<void>
   onIniciarSesion: () => void
 }
 
@@ -23,6 +24,7 @@ export function PerfilPage({
   asesinos,
   onAbrir,
   onPublicar,
+  onBorrar,
   onIniciarSesion,
 }: Props) {
   // La identidad sale de `duenio.username` (resuelto por el backend contra
@@ -90,6 +92,7 @@ export function PerfilPage({
             tamano="baja"
             categoria={nombreCategoria(lapida.categoriaId)}
             onAbrir={onAbrir}
+            {...(puedeBorrar(lapida, sesion) ? { onBorrar } : {})}
           />
         ))}
         <GraveCardNueva tamano="baja" texto="Nueva lápida" onClick={onPublicar} />

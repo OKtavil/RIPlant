@@ -331,6 +331,22 @@
   color: var(--madera);
 }
 
+/* Botón de borrar de la tarjeta, en la grilla del perfil. */
+.lapida__borrar {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--fuente-pixel);
+  font-size: 8px;
+  color: var(--rojo);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.lapida__borrar:hover {
+  color: var(--texto-fuerte);
+}
+
 /* Celda punteada "Publica tu lápida" / "Nueva lápida" */
 .lapida--nueva {
   background: var(--menta);
@@ -603,6 +619,18 @@
 
 .detalle__corona {
   align-self: flex-start;
+  font-size: 10px;
+  padding: 10px 16px;
+}
+
+.detalle__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.detalle__borrar {
   font-size: 10px;
   padding: 10px 16px;
 }

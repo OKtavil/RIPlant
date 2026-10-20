@@ -1,5 +1,5 @@
 import { IconoCorona, IconoHoja, IconoMas } from '../../../shared/ui/iconos'
-import { colorDeFoto, type Grave } from '../model/lapida'
+import { colorDeFoto, nombreDelDuenio, type Grave } from '../model/lapida'
 
 /**
  * Tarjeta de lápida del prototipo.
@@ -14,9 +14,11 @@ type Props = {
   categoria?: string
   onAbrir: (lapida: Grave) => void
   onCorona?: (lapida: Grave) => void
+  /** Cuando se pasa, la tarjeta muestra el botón de borrar. */
+  onBorrar?: (lapida: Grave) => void
 }
 
-export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCorona }: Props) {
+export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCorona, onBorrar }: Props) {
   return (
     <article className="lapida">
       <button
@@ -36,7 +38,7 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
         {categoria || 'Sin categoría'} · {lapida.causaMuerte}
       </p>
 
-      <p className="lapida__autor">por @{lapida.autor}</p>
+      <p className="lapida__autor">por @{nombreDelDuenio(lapida)}</p>
 
       {tamano === 'alta' ? (
         <button className="lapida__coronas" onClick={() => onCorona?.(lapida)} disabled={!onCorona}>
@@ -48,6 +50,16 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
           <IconoCorona />
           <span>{lapida.coronasCount} coronas</span>
         </p>
+      )}
+
+      {onBorrar && (
+        <button
+          className="lapida__borrar"
+          onClick={() => onBorrar(lapida)}
+          aria-label={`Borrar la lápida de ${lapida.nombrePlanta}`}
+        >
+          BORRAR
+        </button>
       )}
     </article>
   )
