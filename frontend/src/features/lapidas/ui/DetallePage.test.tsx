@@ -1,8 +1,21 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Session } from '../../sesiones/model/sesion'
 import type { Grave } from '../model/lapida'
 import { DetallePage } from './DetallePage'
+
+/**
+ * `DetallePage` monta `ListaComentarios`, que sale a la red al montar. Se
+ * mockea acá para que estos tests sean de la ficha y no del cliente HTTP: sin
+ * esto dependen de que haya un backend vivo en `localhost:3000`.
+ */
+beforeEach(() => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json([])))
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 function lapida(parcial: Partial<Grave> = {}): Grave {
   return {
@@ -91,12 +104,24 @@ describe('DetallePage', () => {
 
     const derecha = container.querySelector('.detalle__comentarios')!
     expect(derecha).toBeTruthy()
+    // La lista real de comentarios está montada ahí, no un placeholder.
+    expect(derecha.querySelector('.detalle__comentarios-titulo')!.textContent).toBe('COMENTARIOS')
+    expect(derecha.querySelector('input')).toBeTruthy()
     // El resto de la información no se cuela en la columna de comentarios.
     expect(derecha.querySelector('.detalle__titulo')).toBeNull()
     expect(derecha.querySelector('.detalle__datos')).toBeNull()
     expect(derecha.querySelector('.detalle__corona')).toBeNull()
     expect(derecha.querySelector('.detalle__borrar')).toBeNull()
     expect(derecha.querySelector('.detalle__epitafio')).toBeNull()
+  })
+
+  it('pide los comentarios de la lápida que está mostrando', () => {
+    const fetchMock = vi.fn().mockResolvedValue(Response.json([]))
+    vi.stubGlobal('fetch', fetchMock)
+
+    montar({ lapida: lapida({ id: 42 }) })
+
+    expect(fetchMock.mock.calls[0][0]).toContain('/lapidas/42/comentarios')
   })
 
   it('la foto también vive en la columna izquierda', () => {

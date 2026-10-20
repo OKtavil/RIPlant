@@ -111,6 +111,11 @@ disco local y se sirve en `/uploads/<archivo>`.
 - La **barra de navegación** lleva el logo (sin fondo propio, se ve el café del nav) y,
   a la derecha, el menú con las acciones de sesión: `INICIAR SESIÓN` sin sesión,
   y `@usuario` con `SALIR` cuando hay una. El prototipo no traía esas acciones.
+- Los **comentarios** del detalle se leen y se escriben contra la API real
+  (`GET`/`POST /lapidas/:id/comentarios`). La lista es pública; el formulario
+  solo aparece con sesión y sin ella se invita a entrar. **Borrar un comentario
+  todavía no está en la UI**: el backend lo permite solo a `admin`, y el autor
+  no puede borrar el suyo.
 
 ## Casos de uso ODD
 

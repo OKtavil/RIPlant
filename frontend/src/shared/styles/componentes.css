@@ -682,8 +682,17 @@
   font-weight: 700;
 }
 
-.detalle__comentarios input {
+/* El formulario es el hijo directo del flex, así que el `auto` que lo ancla al
+   fondo va acá; el input solo se estira a lo ancho. */
+.detalle__comentario-form {
   margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.detalle__comentarios input {
+  flex: 1;
+  min-width: 0;
   font-family: var(--fuente-cuerpo);
   font-size: 11px;
   padding: 8px;

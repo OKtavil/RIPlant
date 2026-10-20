@@ -174,3 +174,39 @@ Supuestos:
     `INICIAR SESIÓN`. Se rehízo filtrando por "todo text que no sea el logo" y se verificó
     que ningún par de textos se solape.
   - **Suite**: **90/90 tests, build ✓, lint ✓**.
+
+## Comentarios (S6) — leer y escribir
+
+- **L24 (2026-10-20)** — Pedido del usuario (verbatim): "hora de continuar con el frontend" +
+  "recuerda no pisar la otra sesion". Al preguntar cómo partíamos los comentarios, eligió
+  **"Leer y escribir primero"**: el borrado admin queda para un segundo slice.
+  - **Hallazgo**: `DetallePage` mostraba `AvisoNoDisponible` con el texto *"los comentarios
+    todavía no tienen endpoint"*, y **eso era falso**: el backend ya tiene los tres
+    endpoints. El aviso estaba desactualizado, no bloqueado.
+  - **Trampa de la ruta**: el `DELETE` vive en `/comentarios/:id`, **no** bajo
+    `/lapidas/:id` (`comentarios.controller.ts` no lleva prefijo justamente porque S6 pide
+    rutas en dos colecciones). Un `DELETE /lapidas/:id/comentarios/:cid` daría `404`.
+  - **Trampa del `id`**: en comentarios el `id` es **string** (el `_id` de Mongo), no el
+    entero que usan `lapidas` y `categorias`. La razón está en `comentario.interface.ts`:
+    un contador `max + 1` sería una carrera real, porque comenta cualquiera con sesión.
+  - **Trampa del `autor`**: viene **sin `@`** (es el `username` pelado). El `@` lo pone la
+    UI, igual que con `nombreDelDuenio()`.
+  - **Feature nueva** (`features/comentarios/`, scream): `model/comentario.ts` (tipo,
+    `LARGO_MAXIMO_TEXTO = 500`, `esTextoValido()`), `api/comentarios.api.ts`
+    (`listar`/`crear`), `ui/ListaComentarios.tsx` + su test.
+  - **Estado local, no en `App`**: los comentarios son de una sola pantalla; subirlos
+    obligaría a pasar dos props más por todo el árbol sin ganar nada.
+  - **`key={lapida.id}`** en el `ListaComentarios` de `DetallePage`: remonta al cambiar de
+    lápida, para que no se arrastre el texto a medio escribir. Esto además sacó el
+    `setState` sincrónico del effect, que oxlint marcaba como
+    `react(set-state-in-effect)`.
+  - **Verificación RED→GREEN**: `ListaComentarios.test.tsx` es nuevo (6 tests: lista con
+    autor y texto, lista vacía, sin sesión invita a entrar, con sesión agrega el comentario,
+    no envía vacío, recarga al cambiar de lápida). `comentarios.api.test.ts` (2 tests).
+  - **Contaminación evitada**: `DetallePage` monta `ListaComentarios`, que sale a la red al
+    montar. Los 12 tests de `DetallePage` pasaban **sin mockear `fetch`** y dependían de que
+    hubiera un backend vivo en `localhost:3000`. Se agregó el mock global y una aserción de
+    que la lista real está montada (`/lapidas/42/comentarios`).
+  - **Convención respetada**: `@testing-library/user-event` **no está instalado**; se usó
+    `fireEvent`, que es lo que ya usan `LoginPage.test.tsx` y el resto.
+  - **Suite**: **99/99 tests, build ✓, lint ✓**.

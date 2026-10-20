@@ -1,7 +1,7 @@
-import { AvisoNoDisponible } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { IconoCorona, IconoHoja } from '../../../shared/ui/iconos'
 import type { Category } from '../../categorias/model/categoria'
+import { ListaComentarios } from '../../comentarios/ui/ListaComentarios'
 import type { Session } from '../../sesiones/model/sesion'
 import { colorDeFoto, formatearFecha, nombreDelDuenio, puedeBorrar, type Grave } from '../model/lapida'
 
@@ -79,13 +79,9 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
         </div>
       </section>
 
-      <div className="detalle__comentarios">
-        <h2 className="detalle__comentarios-titulo">COMENTARIOS</h2>
-        <AvisoNoDisponible>
-          Los comentarios todavía no tienen endpoint, así que no se pueden leer ni escribir.
-        </AvisoNoDisponible>
-        <input type="text" placeholder="Escribe un comentario..." disabled />
-      </div>
+      {/* La `key` remonta la lista al cambiar de lápida, para que el estado
+          (texto a medio escribir, comentarios cargados) no se arrastre. */}
+      <ListaComentarios key={lapida.id} lapidaId={lapida.id} sesion={sesion} />
     </div>
   )
 }
