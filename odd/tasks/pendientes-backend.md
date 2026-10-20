@@ -183,7 +183,7 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 | T1 | `causaMuerte` opcional (DTO, schema y tests) | S2 | ✅ hecho | `65eae81` |
 | T2 | `POST /usuarios` con auto-login y `rol` forzado | S3 | ✅ hecho | `398ce55` |
 | T3 | `usuarioId` obligatorio + middlewares de sesión y de dueño-o-admin en `/lapidas` + usuario `zombie`, migración de huérfanas y datos semilla ampliados | S4, S4.1, S11 | ✅ hecho | (este commit) |
-| T4 | Coronas: colección `coronas`, índice único y sesión requerida | S5 | pendiente | — |
+| T4 | Coronas: colección `coronas`, índice único y sesión requerida | S5 | ✅ hecho | `aea9790` |
 | T5 | Comentarios: colección, los tres endpoints y borrado solo admin | S6 | pendiente | — |
 | T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | ✅ hecho (salió junto a T3) | (este commit) |
 | T7 | Subida de foto a disco local con servido estático | S8 | pendiente | — |
@@ -210,8 +210,8 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   el usuario en L7. Sin una segunda cuenta real, asesinos seriales no se puede verificar con
   más de una fila.
 - **Mínimo de caracteres de la contraseña** en el registro (propuesta: 8, **sin confirmar**).
-- **Código y mensaje de la segunda corona** (propuesta: `409` con mensaje técnico en español,
-  **sin confirmar**).
+- **Código y mensaje de la segunda corona** — ✅ **implementado, sin confirmar**: `409` con
+  mensaje técnico en español. Ver E5.
 - **Tope de caracteres del comentario** (propuesta: 500, **sin confirmar**).
 - **Entrega del frontend** (`P1` del documento del frontend). La divergencia de rama de L4
   **ya no existe**: verificado en E3, la rama está en `ahead 0 / behind 0` con el remoto.
@@ -364,3 +364,47 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   en 2, pero el de lápidas ya referencia `categoriaId` 3, 4, 5 y 6. Hasta que se amplíe el seed
   de categorías a 6, esas lápidas apuntan a categorías inexistentes. Es lo próximo a cerrar.
   Tampoco entra todavía T4: `giveCorona` sigue incrementando sin el índice único de `coronas`.
+  Eso quedó cerrado en `aea9790`; ver E5.
+
+- **E5 (2026-10-19, verificación de T4 al implementarlo):**
+
+  **Qué entró:** colección `coronas` (`lapidaId` numérico, `usuarioId`, `creadaEn`) con índice
+  compuesto único `lapidaId + usuarioId`. `POST /lapidas/:id/corona` exige sesión, registra la
+  corona primero y recién entonces incrementa `coronasCount`, de modo que el contador nunca se
+  adelante al registro que lo justifica.
+
+  **Corrección que arrastra T3:** `POST /lapidas` lanzaba `new Error('Sesión requerida')` desde el
+  controlador. `Error` no es un `HttpException`, así que Nest respondía **500** en vez del `401`
+  que pide S4. Se reemplazó por middleware —`SesionRequeridaMiddleware`, autenticación pura sin
+  mirar rol— que cubre ahora `POST /lapidas` y `POST /lapidas/:id/corona`. La autorización por
+  dueño sigue siendo laburo de `DuenoOAdminLapidaMiddleware`; no se mezclan las dos
+  responsabilidades. Es también la instrucción explícita del usuario: middleware, no guards.
+
+  **Decisión asumida, sin confirmar:** la segunda corona responde `409` con el mensaje técnico
+  «Este usuario ya corono esta lápida». Si el front prefería un `200` idempotente, es un cambio de
+  una línea. El front ya muestra el mensaje del `ApiError` en `App.tsx:93`, así que el aviso
+  aparece sin tocar nada del lado cliente.
+
+  **Impacto en el contrato:** `POST /lapidas/:id/corona` dejó de ser anónimo. Verificado contra el
+  front: `frontend/src/shared/api/client.ts:56` manda `credentials: 'include'` en **cada**
+  petición y hay test que lo fija (`client.test.ts:27`), así que el flujo sigue funcionando y no
+  hizo falta cambiar nada del lado cliente. Ese era el riesgo concreto de T4 y está cerrado con
+  evidencia.
+
+  **Verificación observada:**
+  - RED observado antes de implementar: 1 test rojo, 40 en verde.
+  - `pnpm run test` 41/41 · `pnpm run build` sin errores · `pnpm run lint` sin warnings.
+  - Humo en vivo contra una **base scratch** (`riplant_smoke_t4`), nunca contra la del usuario:
+    `GET /lapidas` `200` público · `POST /lapidas/1/corona` sin cookie `401` ·
+    `POST /lapidas` sin cookie `401` (antes `500`) · login `201` · 1ª corona `201` con
+    `coronasCount` 12→13 · 2ª corona del mismo usuario `409` y el contador **seguía en 13**, que es
+    la prueba real de que el índice único está creado. Sin errores en el log del servidor.
+  - El contenedor de Mongo estaba apagado hace 9 horas; se levantó para el humo y se bajó de
+    vuelta. La base del usuario quedó con sus 4 colecciones sin tocar; la scratch se dropeó.
+
+  **Inconsistencia conocida y aceptada (S5):** `coronasCount` de las lápidas sembradas (12, 8, 5,
+  3, 15, 0, 2, 1, 7, 9) es denormalizado y no tiene documentos en `coronas` que lo justifiquen. No
+  se reconstruye; queda documentado.
+
+  **Brecha que sigue abierta (E4):** el seed de categorías sigue en 2 y hay lápidas que
+  referencian `categoriaId` 3, 4, 5 y 6. Es lo próximo a cerrar.
