@@ -364,3 +364,45 @@ Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
 
   **Estado de los hallazgos de `L15`: los nueve están cerrados, obsoletos o
   documentados como no determinables.** No queda ninguno pendiente.
+- **L23** — Assess del slice `20da1b9..HEAD` (10 commits) y estado del worktree
+  compartido. Corrido con la frontera **verificada antes** (`git rev-list --count`
+  = 10; `git diff --stat` = 33 archivos), que es la lección de L21.
+
+  ```
+  risk:              medium
+  changed_paths:     33
+  changed_lines:     2206
+  review_due:        false
+  review_due_reason: under_budget
+  ```
+
+  `under_budget` → **la frontera no avanza**; los commits del slice quedan
+  pendientes, no "ya revisados". La única razón del `medium` es
+  `executable_change` sobre `R.I.Planta - Diseño retro.html`, que **no es
+  trabajo mío**.
+
+  **El slice está entrelazado con el actor concurrente.** Los 10 commits son
+  `bc4c32d`, `5c7141e`, `e99831b`, `9ee803d`, `abf5454`, `d4af22a`, `469524e`
+  (míos) y `ee4878e`, `ca47904`, `86421d4` (suyos). Los `changed_lines: 2206` no
+  son mi aporte real (~460): la mayoría es del actor. **El slice no es revisable
+  como una unidad mía** — si se pide review nativa, los cuatro lentes miran 33
+  archivos de dos actores que no se vieron.
+
+  **Colisión aparente en `docs/spec.md` — verificada, NO es un pisado.** Mi
+  primer análisis la marcó como colisión (un script de `sed` mal formado la
+  reportó). Al verificarla: `5c7141e` (mío) tocó la sección de la costura de
+  almacenamiento (~13 líneas) y `86421d4` (suyo) la de la tarjeta y el detalle
+  (~9 líneas). **Secciones distintas, secciones independientes, git las mergeó
+  sin conflicto.** Es el caso que el protocolo de Parallel writers ya cubre: no
+  hubo violación porque no comparten líneas.
+
+  **Lección de método (tercera vez esta sesión):** un script de análisis es una
+  etiqueta, y una etiqueta no es evidencia. Antes fue `d3c79e9` y el `usuarioId`;
+  ahora un `comm -12` sobre un `sed` mal formado. Las tres veces la verificación
+  era trivial y las tres veces habría reportado un problema inexistente.
+
+  **Worktree:** el actor dejó 8 archivos staged en el índice. El commit de L22
+  (`469524e`) se hizo con `git commit -F <msg> -- <ruta>`, que ignora el resto
+  del índice: **solo entró mi archivo** y el índice ajeno quedó intacto
+  (verificado con `diff` contra un backup de `git diff --cached --binary`). Queda
+  `frontend/vite.config.ts` modificado sin stagear, suyo. **Nada pusheado.**
