@@ -90,7 +90,7 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
 
 | ID | S# | Ruta | Estado | Commit |
 |---|---|---|---|---|
-| T1 | S1 | inline | hecho 2026-10-19 — 28 tests verdes (RED/GREEN en L6) + build + lint + verificación sin blockers (L7) | — |
+| T1 | S1 | inline | hecho 2026-10-19 — 28 tests verdes (RED/GREEN en L6) + build + lint + verificación sin blockers (L7); review RDD en curso (L8) | `0e47aba` |
 | T2 | S2 | inline | bloqueado por backend (una tarea por fila al llegar cada endpoint) | — |
 | T3 | S3 | inline | bloqueado por endpoint de conteo en backend | — |
 | T4 | S4 | inline | pendiente de decisión (borrar propio al aterrizar S4 del backend; editar = decisión de producto) | — |
@@ -130,3 +130,15 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   de tests confirmado con error inyectado, `dependencies` intacto (solo react/react-dom),
   `dist` sin rastros de tooling de test, lockfile +554/−0 y `--frozen-lockfile` en verde, peers
   limpios con vite 8 / React 19 / TS 6. Spot check del parent tras la verificación: 28/28.
+- **L8 (2026-10-19)** — T1 commiteado como `0e47aba`. RDD global evaluó el candidato desde el
+  branch point `6650cdd` (101 paths, 28.850 líneas) como `high_risk`, pero el review nativo lo
+  rechazó con `lens_context_budget_exceeded` y ordenó partirlo en candidados más chicos. Se
+  acotó al work-unit propio (`--base-ref 398ce55`, 12 paths, 955 líneas), que quedó `high_risk`
+  por `configuration_change` en `frontend/package.json` + item 5; consentimiento relayado al
+  usuario (granted) y ciclo iniciado con la línea `review-e71bd9f374d851f3`. Lentes congeladas:
+  risk, readability, reliability. Las tres lentes volvieron con cero hallazgos causales por
+  candidato (~10 WARNING/SUGGESTION, todos advisories no bloqueantes). **Ciclo cerró APPROVED
+  con `authority: burned`** (línea `review-e71bd9f374d851f3`). Advisory principal: fixture
+  `admin`/`riplanta123` en texto plano (`sesiones.api.test.ts:36`) — verificar si es un admin
+  seed real; si lo es, rotarla. Mientras corría el review, la otra sesión commiteó `44ac10b`
+  (backend `/lapidas`) y movió HEAD, pero no tocó esta línea ya aprobada.
