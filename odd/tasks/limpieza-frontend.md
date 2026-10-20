@@ -141,3 +141,13 @@ lápida, y volver a tocar debe quitarla.
   (`limpieza-frontend.md`), sin implementar todavía: verifiqué en el código que el enlace
   seguía en `LoginPage.tsx:41`, la ayuda en `:58` y el campo correo en `RegistroPage.tsx:75`.
   Nada de lo pedido estaba hecho.
+
+- **L8 (2026-10-20)** — Cierre del work unit `b18aaae` (8 archivos, **+77/−121**). Assess de
+  RDD desde el boundary revisado (`0e47aba`): `medium` por `executable_change` en el HTML del
+  prototipo, 94 paths / 7.633 líneas — pero **`review_due: false`, `under_budget`**: el rango
+  incluye los 34 commits de la otra máquina y no alcanza el presupuesto de revisión, así que
+  no dispara ciclo nativo. La línea `review-e71bd9f374d851f3` de T1 sigue sellada e intacta.
+  Verificación del parent: `101/101` tests, `build` y `lint` limpios, y `git diff --numstat`
+  del HTML en **1/1** (el formato de reempaquetado de L13 se sostiene).
+  **Riesgo: item 3** — el prototipo es el contrato de referencia del frontend, y este commit
+  lo modifica en las dos representaciones.
