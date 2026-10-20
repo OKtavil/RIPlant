@@ -78,9 +78,9 @@ Dos hallazgos al implementar:
 1. **El prototipo no tiene este botón en ninguna pantalla.** Los `EDITAR`/`ELIMINAR`
    del `.op` son todos de la página "Categorías (CRUD)", que ya estaba hecha. El
    detalle de lápida solo tiene `DAR CORONA`, `COMENTARIOS` y el campo de comentario.
-   Se agregó por decisión explícita del usuario; **queda pendiente reflejarlo en el
-   HTML de referencia y el `.op`** (no se tocaron en este commit para no pisar a la
-   sesión de backend, que tenía `riplanta.op` abierto).
+   Se agregó por decisión explícita del usuario. El prototipo se actualizó después,
+   en `325bff3`: botón `BORRAR ESTA LÁPIDA` en el detalle, con el rojo del sistema
+   (`#C0392B`), en las dos representaciones (`.op` y el HTML empaquetado).
 2. **`POST /lapidas` y `POST /lapidas/:id/corona` no devuelven `duenio`**; solo
    `GET /lapidas` lo enriquece. Comparar por `duenio.username` hacía que el botón
    desapareciera al publicar una lápida o al darle una corona. `puedeBorrar()`
@@ -230,9 +230,10 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   perfil, condicionado por `puedeBorrar()` (dueño o admin, espejo del middleware). Dos
   hallazgos: (a) **el prototipo no tiene este botón en ninguna pantalla** — los
   `EDITAR`/`ELIMINAR` del `.op` son todos de Categorías; se agregó por decisión explícita
-  del usuario y **queda pendiente reflejarlo en el HTML y el `.op`**, que no se tocaron
-  para no pisar a la sesión de backend (tenía `riplanta.op` abierto y en ese momento
-  estaba agregando `POST /lapidas/:id/foto` con 10 archivos de backend modificados);
+  del usuario y **reflejado después en el HTML y el `.op`** (commit `325bff3`; en el
+  commit original no se tocaron para no pisar a la sesión de backend, que tenía
+  `riplanta.op` abierto y en ese momento estaba agregando `POST /lapidas/:id/foto`
+  con 10 archivos de backend modificados);
   (b) **`POST /lapidas` y `POST /corona` no devuelven `duenio`** — comparar solo por
   `duenio.username` hacía desaparecer el botón al publicar o coronar, así que
   `puedeBorrar()` compara además por `usuarioId` contra `sesion.id`. Bug de identidad
@@ -242,3 +243,23 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   `usuarioId` confirmados como el mismo ObjectId. 58 tests, build y lint en verde. Commit
   `6dee621`, 8 archivos, +295/−10. Veredicto de riesgo: **item 3** (`puedeBorrar` codifica
   una regla de permisos que varias pantallas consumen).
+- **L13 (2026-10-20)** — **prototipo actualizado con el botón de borrar** (S4). El `.op`
+  pasó a ser de esta sesión por decisión del usuario ("no encontré el agente que lo usaba").
+  Primero se commiteó el ajuste que estaba sin commitear: `p77` (panel "Insignia especial:
+  Superviviente Zombie" de la página Inicio) bajaba de 70 a 51.1 de alto, para que el texto
+  de dos líneas dejara de desbordar — solo geometría, commit `2677689`.
+  Después, el botón: `.op` con un frame nuevo `p362` clonado de la geometría de `p176`
+  (`DAR CORONA`), y el HTML con el botón como hermano de la caja de comentarios, dentro de
+  la columna de info (que es `flex-direction: column; gap: 14px`, así que cae debajo sin
+  romper nada). Texto `BORRAR ESTA LÁPIDA`, color del sistema `#C0392B` = `--rojo`.
+  **Hallazgo de tooling importante**: el HTML de referencia **no contiene el diseño** — es
+  un contenedor de 10 `<section class="board">`, cada uno con un `<iframe src="about:blank#<uuid>">`.
+  Los diseños viven en un `<script type="__bundler/manifest">` de una sola línea (1.45M de
+  chars, línea 476): JSON → base64 → gzip → HTML. Para editarlo hay que desempacar la
+  entrada del uuid, editar y reempaquetar con el mismo formato. **Trampa**: el `json.dump`
+  por defecto (o `indent=1`, o un `\n` final) reescribe el archivo entero — el diff pasó de
+  45 líneas a 7.421 inserciones/7.376 borrados. El formato correcto es `indent=2` **sin**
+  newline final. Verificado tras el arreglo: solo cambió la entrada del detalle
+  (`15d196a6...`); las otras 9 quedaron idénticas, y el balance de tags del board sigue
+  cerrado (19/19 divs, 2/2 buttons). Commit `325bff3`, 2 archivos, +46/−1. Riesgo: **item 3**
+  (el prototipo es el contrato de referencia del frontend).
