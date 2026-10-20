@@ -72,6 +72,14 @@ export default function App() {
     setVista('inicio')
   }
 
+  /** El backend registra y deja la cookie puesta: entra logueado, igual que el login. */
+  async function registrar(credenciales: Credenciales) {
+    const actual = await sesionesApi.registrar(credenciales)
+    setSesion(actual)
+    setVistaAuth(null)
+    setVista('inicio')
+  }
+
   async function cerrarSesion() {
     await sesionesApi.cerrar()
     setSesion(null)
@@ -117,7 +125,9 @@ export default function App() {
       <div className="pantalla">
         <Nav activa={null} items={[]} onNavegar={() => setVistaAuth(null)} />
         {vistaAuth === 'login' && <LoginPage onIngresar={ingresar} onNavegar={setVistaAuth} />}
-        {vistaAuth === 'registro' && <RegistroPage onNavegar={setVistaAuth} />}
+        {vistaAuth === 'registro' && (
+          <RegistroPage onRegistrar={registrar} onNavegar={setVistaAuth} />
+        )}
         {vistaAuth === 'recuperar' && <RecuperarPage onNavegar={setVistaAuth} />}
         {vistaAuth === 'restablecer' && <RestablecerPage onNavegar={setVistaAuth} />}
       </div>

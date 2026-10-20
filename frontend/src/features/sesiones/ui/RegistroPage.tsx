@@ -1,18 +1,54 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { AvisoNoDisponible } from '../../../shared/ui/Aviso'
+import { ApiError } from '../../../shared/api/client'
+import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton, EnlaceBoton } from '../../../shared/ui/Boton'
 import { CampoTexto } from '../../../shared/ui/Campo'
-import type { VistaAuth } from '../model/sesion'
+import type { Credenciales, VistaAuth } from '../model/sesion'
 import { AlternarMostrar, AuthTarjeta } from './AuthTarjeta'
 
+type Props = {
+  onRegistrar: (credenciales: Credenciales) => Promise<void>
+  onNavegar: (vista: VistaAuth) => void
+}
+
 /**
- * Crear cuenta no tiene endpoint en el backend: la UI es fiel al prototipo pero
- * queda deshabilitada, sin simular un registro que en realidad no ocurre.
+ * Crear cuenta ya tiene endpoint (`POST /usuarios`, con auto-login). El correo
+ * queda deshabilitado a propósito: el backend todavía no guarda email y el
+ * registro no lo pide, así que no se simula un campo que no llega a ningún lado.
  */
 
-export function RegistroPage({ onNavegar }: { onNavegar: (vista: VistaAuth) => void }) {
+const MINIMO_PASSWORD = 8
+
+export function RegistroPage({ onRegistrar, onNavegar }: Props) {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmar, setConfirmar] = useState('')
   const [verPassword, setVerPassword] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState('')
+
+  async function manejarEnvio(evento: FormEvent) {
+    evento.preventDefault()
+    setError('')
+
+    if (password.length < MINIMO_PASSWORD) {
+      setError(`La contraseña necesita al menos ${MINIMO_PASSWORD} caracteres.`)
+      return
+    }
+    if (password !== confirmar) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+
+    setEnviando(true)
+    try {
+      await onRegistrar({ username: username.trim(), password })
+    } catch (fallo) {
+      setError(fallo instanceof ApiError ? fallo.message : 'No se pudo crear la cuenta.')
+      setEnviando(false)
+    }
+  }
 
   return (
     <AuthTarjeta
@@ -25,22 +61,50 @@ export function RegistroPage({ onNavegar }: { onNavegar: (vista: VistaAuth) => v
         </>
       }
     >
-      <form className="auth__form" onSubmit={(e: FormEvent) => e.preventDefault()}>
-        <CampoTexto id="registro-usuario" etiqueta="NOMBRE DE USUARIO" placeholder="@tu_usuario" disabled />
-        <CampoTexto id="registro-correo" etiqueta="CORREO ELECTRÓNICO" type="email" placeholder="tu@correo.com" disabled />
+      <form className="auth__form" onSubmit={manejarEnvio}>
+        <CampoTexto
+          id="registro-usuario"
+          etiqueta="NOMBRE DE USUARIO"
+          placeholder="@tu_usuario"
+          autoComplete="username"
+          required
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <CampoTexto
+          id="registro-correo"
+          etiqueta="CORREO ELECTRÓNICO"
+          type="email"
+          placeholder="tu@correo.com"
+          disabled
+          ayuda="El registro todavía no pide correo; se habilita cuando exista la recuperación de contraseña."
+        />
         <CampoTexto
           id="registro-password"
           etiqueta="CONTRASEÑA"
           type={verPassword ? 'text' : 'password'}
-          disabled
+          autoComplete="new-password"
+          required
+          minLength={MINIMO_PASSWORD}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           accion={<AlternarMostrar visible={verPassword} onAlternar={() => setVerPassword((v) => !v)} />}
         />
-        <CampoTexto id="registro-confirmar" etiqueta="CONFIRMAR CONTRASEÑA" type="password" disabled />
+        <CampoTexto
+          id="registro-confirmar"
+          etiqueta="CONFIRMAR CONTRASEÑA"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={MINIMO_PASSWORD}
+          value={confirmar}
+          onChange={(e) => setConfirmar(e.target.value)}
+        />
 
-        <AvisoNoDisponible>El registro todavía no tiene endpoint en el backend.</AvisoNoDisponible>
+        {error && <Aviso tono="error">{error}</Aviso>}
 
-        <Boton type="submit" bloque disabled>
-          CREAR CUENTA
+        <Boton type="submit" bloque disabled={enviando}>
+          {enviando ? 'CREANDO…' : 'CREAR CUENTA'}
         </Boton>
       </form>
     </AuthTarjeta>

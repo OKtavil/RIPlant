@@ -5,14 +5,14 @@
  * - La sesión viaja en cookie httpOnly, por eso todas las llamadas mandan
  *   `credentials: 'include'`.
  * - Un error HTTP se traduce a `ApiError` con el código de estado para que la
- *   UI decida la copia (401, 403, 429, 400, 404 o caída de red).
+ *   UI decida la copia (401, 403, 404, 409, 429, 400 o caída de red).
  */
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export class ApiError extends Error {
   readonly status: number
-  readonly codigo: 'sin-conexion' | 'no-autorizado' | 'prohibido' | 'limite' | 'invalido' | 'no-encontrado' | 'desconocido'
+  readonly codigo: 'sin-conexion' | 'no-autorizado' | 'prohibido' | 'limite' | 'conflicto' | 'invalido' | 'no-encontrado' | 'desconocido'
 
   constructor(status: number, codigo: ApiError['codigo'], mensaje: string) {
     super(mensaje)
@@ -32,6 +32,8 @@ function clasificar(status: number): { codigo: ApiError['codigo']; mensaje: stri
       return { codigo: 'prohibido', mensaje: 'Tu cuenta no tiene permiso para esta acción.' }
     case 404:
       return { codigo: 'no-encontrado', mensaje: 'El recurso solicitado no existe.' }
+    case 409:
+      return { codigo: 'conflicto', mensaje: 'Ese registro ya existe.' }
     case 429:
       return { codigo: 'limite', mensaje: 'Demasiados intentos. Esperá un momento antes de reintentar.' }
     default:

@@ -64,6 +64,7 @@ describe('request — errores HTTP', () => {
     [401, 'no-autorizado', 'Necesitás iniciar sesión.'],
     [403, 'prohibido', 'Tu cuenta no tiene permiso para esta acción.'],
     [404, 'no-encontrado', 'El recurso solicitado no existe.'],
+    [409, 'conflicto', 'Ese registro ya existe.'],
     [429, 'limite', 'Demasiados intentos. Esperá un momento antes de reintentar.'],
     [500, 'desconocido', 'Ocurrió un error inesperado.'],
   ]
