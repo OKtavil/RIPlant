@@ -188,7 +188,7 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 | T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | ✅ hecho (salió junto a T3) | `44ac10b` |
 | T7 | Subida de foto a disco local con servido estático | S8 | ✅ hecho | `5b1d00a` |
 | T8 | Recuperar y nueva contraseña (diferida) | S9 | pendiente | — |
-| T9 | Documentación de los endpoints nuevos | S10 | pendiente | — |
+| T9 | Documentación de los endpoints nuevos | S10 | ✅ hecho | `82b73c6` |
 
 ## Orden y dependencias
 
@@ -209,16 +209,22 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 - **Tercer usuario en el seed** — ✅ **resuelto**: `jardinera` (rol `usuario`), confirmada por
   el usuario en L7. Sin una segunda cuenta real, asesinos seriales no se puede verificar con
   más de una fila.
-- **Mínimo de caracteres de la contraseña** en el registro (propuesta: 8, **sin confirmar**).
+- **Mínimo de caracteres de la contraseña** en el registro (propuesta: 8) — ✅ **documentado
+  en T9** como 8, con el mensaje de error que ya está en el DTO. Sigue **sin confirmar por el
+  usuario**, pero la doc y el código ya coinciden, así que no hay divergencia que resolver.
 - **Código y mensaje de la segunda corona** — ✅ **implementado, sin confirmar**: `409` con
-  mensaje técnico en español. Ver E5.
-- **Tope de caracteres del comentario** (propuesta: 500, **sin confirmar**).
-- **`UPLOADS_DIR`** — agregada por T7 para que los e2e no escriban en el worktree. **No está
-  documentada en `.env.example`** ni decidida como variable pública: hoy es una costura de
-  test. Si se quiere poder mover las subidas en despliegue, hay que documentarla; si no,
-  conviene dejarla fuera de los docs y asumir `var/uploads`.
+  mensaje técnico en español. Ver E5. T9 lo documentó tal cual; si el front prefiere un `200`
+  idempotente, siguen siendo una línea de cambio + la doc.
+- **Tope de caracteres del comentario** (propuesta: 500) — ✅ **documentado en T9** como 500.
+  Misma situación que la contraseña: código y doc coinciden.
+- **`UPLOADS_DIR`** — agregada por T7 para que los e2e no escriban en el worktree. Sigue **sin
+  documentar en `.env.example`** ni decidida como variable pública. T9 **no la documentó en el
+  README** siguiendo la recomendación de dejarla como costura de test, pero sí menciona que los
+  e2e la usan. Si se quiere poder mover las subidas en despliegue, hay que documentarla.
 - **`R3-e2e-shared-db`** — los e2e escriben en la base real de `.env`. T7 lo confirmó en vivo
-  (ver E8). Sin arreglar, cada corrida ensucia `riplanta`.
+  (ver E8). Sin arreglar, cada corrida ensucia `riplanta`. **T9 dejó el aviso en el README**,
+  que mitiga el daño (quien corre las pruebas ahora lo sabe) pero no lo arregla: el arreglo real
+  es que la suite use una base aparte.
 - **Entrega del frontend** (`P1` del documento del frontend). La divergencia de rama de L4
   **ya no existe**: verificado en E3, la rama está en `ahead 0 / behind 0` con el remoto.
 
@@ -580,3 +586,62 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   hubo RED observado: escribí la implementación antes que el test. Los tests igual valen porque
   ejercen magic bytes reales contra el filesystem real, pero no se registran como evidencia RED
   porque no se observó.
+
+- **E9 (2026-10-20, documentación de los endpoints — T9/S10):**
+
+  **Qué entró:** `README.md` y `docs/spec.md` alineados con el contrato real. El cambio más
+  grande es la tabla de endpoints de `docs/spec.md`, que pasó de tres columnas a cuatro: se
+  agregó **Acceso** (público / sesión / dueño-o-admin / solo `admin`) porque el contrato ya no
+  se entiende sin ella — con T3, T4, T5 y T7 la misma ruta cambió de dueño y una tabla que solo
+  lista el resultado esconde justo la parte que importa.
+
+  **Contrato documentado, verificado contra el código antes de escribirlo** (no contra la
+  memoria de los tasks): rutas de los cuatro controllers, los cuatro middlewares y sus rutas
+  exactas (`app.module.ts`, `lapidas.module.ts`, `comentarios.module.ts`), el DTO de registro
+  (mínimo 8, máximo 50, nombres reservados), los `409` de corona y de username duplicado, y el
+  `413`/`415` de la foto.
+
+  **Decisiones que la doc hace explícitas** y que antes se deducían del código:
+  - `413` (más de 5 MB) y `415` (no es JPEG/PNG/WebP): `413` **no** está manejado en el código,
+    lo produce multer con `LIMIT_FILE_SIZE`; se documenta porque E8 lo observó en vivo.
+  - La **insignia** Superviviente Zombie y el **usuario** `zombie` son cosas distintas. El
+    README los tenía a un renglón de distancia; ahora hay una advertencia explícita en los dos
+    lados.
+  - Se documenta que **no hay** endpoint de borrado de usuarios, y que la política de
+    cascada al borrar un dueño está definida pero sin implementar.
+
+  **Correcciones de documentación que la implementación dejó obsoletas** (no son features
+  nuevas, son la doc mintiendo):
+  - El esquema de documentos mostraba `email` en `usuarios` sin aclarar que no se pide, y
+    `categoriaIds` en plural cuando es `categoriaId` singular. También `coronas` y `comentarios`
+    con nombres de campo que no existen (`fecha`, `comentario`).
+  - La pantalla **Crear cuenta** listaba `Correo electrónico` como campo obligatorio, y el
+    backend no lo acepta (D1). Peor: decía que al crear la cuenta se vuelve al login "si
+    posteriormente se decide activar el acceso automático" cuando el auto-login **ya está
+    implementado**. Las dos cosas quedaron corregidas, con el campo de correo marcado como no
+    implementado.
+  - `Estado actual` no mencionaba ninguna de las capacidades nuevas.
+  - La tabla de decisiones abiertas seguía listando como pendientes la foto, la causa de muerte,
+    la autoría y el rol: las cuatro están resueltas. Se marcaron, y se agregaron tres decisiones
+    realmente abiertas (recuperación, borrado de usuarios, email).
+  - Los e2e escriben en la base de `.env` (`R3-e2e-shared-db`): ahora está **avisado en el
+    README**, que es un dato que cualquiera que corra las pruebas necesita saber y hasta ahora
+    vivía solo en este documento.
+
+  **Lo que deliberadamente NO se tocó:** el bloque "Para retomar el proyecto en otro lugar"
+  dice "no hay código", que es falso desde hace varios commits. Queda afuera de S10 y se anota
+  acá: arreglarlo es reescribir un resumen para pegar en otra conversación, no documentar la
+  API.
+
+  **Verificación observada:** los dos anchors internos del README resuelven a headings que
+  existen (`#cómo-correrlo`, `#recuperar-contraseña-pendiente`); las cuatro filas de la tabla de
+  middlewares se contrastaron una por una contra el código; `git status` con solo mis dos
+  archivos (`README.md`, `docs/spec.md`) staged y commiteados. No hay build ni test: es
+  documentación, y S10 no pide un cambio de comportamiento.
+
+  **Nota de método:** esta task es documentación pura, así que el "test" fue releer el código y
+  no la doc anterior. Cada afirmación de la tabla salió de un archivo, no de un task previo —
+  precisamente porque los tasks previos eran el lugar donde ya había quedado escrito el
+  contrato en su versión vieja.
+
+  **Commit:** `82b73c6`.
