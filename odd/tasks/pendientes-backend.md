@@ -182,10 +182,10 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 |---|---|---|---|---|
 | T1 | `causaMuerte` opcional (DTO, schema y tests) | S2 | ✅ hecho | `65eae81` |
 | T2 | `POST /usuarios` con auto-login y `rol` forzado | S3 | ✅ hecho | `398ce55` |
-| T3 | `usuarioId` obligatorio + middlewares de sesión y de dueño-o-admin en `/lapidas` + usuario `zombie`, migración de huérfanas y datos semilla ampliados | S4, S4.1, S11 | ✅ hecho | (este commit) |
+| T3 | `usuarioId` obligatorio + middlewares de sesión y de dueño-o-admin en `/lapidas` + usuario `zombie`, migración de huérfanas y datos semilla ampliados | S4, S4.1, S11 | ✅ **cerrado** | `44ac10b` + `e1edbae` |
 | T4 | Coronas: colección `coronas`, índice único y sesión requerida | S5 | ✅ hecho | `aea9790` |
 | T5 | Comentarios: colección, los tres endpoints y borrado solo admin | S6 | pendiente | — |
-| T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | ✅ hecho (salió junto a T3) | (este commit) |
+| T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | ✅ hecho (salió junto a T3) | `44ac10b` |
 | T7 | Subida de foto a disco local con servido estático | S8 | pendiente | — |
 | T8 | Recuperar y nueva contraseña (diferida) | S9 | pendiente | — |
 | T9 | Documentación de los endpoints nuevos | S10 | pendiente | — |
@@ -408,3 +408,31 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
 
   **Brecha que sigue abierta (E4):** el seed de categorías sigue en 2 y hay lápidas que
   referencian `categoriaId` 3, 4, 5 y 6. Es lo próximo a cerrar.
+
+- **E6 (2026-10-19, cierre de T3 con S11):**
+
+  **Qué entró:** el seed de categorías pasó de 2 a 6 con vocabulario del dominio —
+  `Olvido`, `Clima extremo`, `Plagas` y `Accidente` junto a las dos que ya existían.
+  De las diez lápidas sembradas, seis apuntaban a `categoriaId` 3, 4, 5 o 6: esas
+  categorías no existían, así que el filtro del front recibía el id crudo. Con esto
+  **T3 queda cerrado** (`44ac10b` + `e1edbae`) y **T6 apunta al mismo commit `44ac10b`**:
+  el agregado por dueño ya funcionaba, lo que faltaba era el catálogo que lo acompañaba.
+
+  **Verificación observada:**
+  - RED observado antes de implementar: el test nuevo esperaba 6 categorías y recibía 2.
+  - `pnpm run test` 42/42 · `build` y `lint` limpios.
+  - Humo en vivo contra base scratch **pre-sembrada con las 2 categorías previas** (el
+    camino real de la base existente, no una base vacía): tras el boot, 6 documentos con
+    `id` 1 y 2 **intactos, sin renombrar**. Tres boots seguidos sobre la misma base:
+    `2 → 6 → 6 → 6`, sin duplicados — `$setOnInsert` + upsert sigue siendo idempotente.
+  - `GET /lapidas` cruzado contra `GET /categorias`: **0 huérfanas**.
+  - El contenedor de Mongo se levantó y se bajó igual que en E5; la base del usuario no
+    se tocó.
+
+  **Incidente de proceso (importante para lo que sigue):** este worktree tiene un
+  **actor concurrente**. Al hacer `git add` de mis dos archivos y `git commit`, el commit
+  barrió **7 archivos del frontend del otro actor que ya estaban en el índice**, en un
+  commit cuyo mensaje no los describía. Se corrigió con `git reset --soft HEAD~1` +
+  `git commit -- <rutas propias>`: el commit volvió a `e1edbae` con solo mis dos archivos
+  y los suyos quedaron staged como estaban. **Regla para este worktree: nunca
+  `git commit` a pelo; siempre con `-- <rutas>`.**
