@@ -14,18 +14,18 @@ describe('RegistroPage', () => {
     const onRegistrar = vi.fn().mockResolvedValue(undefined)
     const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
 
-    completar(container, 'riplanta123', 'riplanta123')
+    completar(container, 'clave-de-prueba', 'clave-de-prueba')
     fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
 
     expect(onRegistrar).toHaveBeenCalledTimes(1)
-    expect(onRegistrar).toHaveBeenCalledWith({ username: 'pepe', password: 'riplanta123' })
+    expect(onRegistrar).toHaveBeenCalledWith({ username: 'pepe', password: 'clave-de-prueba' })
   })
 
   it('no llama a la API y avisa cuando las contraseñas no coinciden', () => {
     const onRegistrar = vi.fn()
     const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
 
-    completar(container, 'riplanta123', 'otra-cosa')
+    completar(container, 'clave-de-prueba', 'otra-cosa')
     fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
 
     expect(onRegistrar).not.toHaveBeenCalled()
@@ -49,7 +49,7 @@ describe('RegistroPage', () => {
       .mockRejectedValue(new ApiError(409, 'conflicto', 'Ese nombre de usuario ya está en uso.'))
     const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
 
-    completar(container, 'riplanta123', 'riplanta123')
+    completar(container, 'clave-de-prueba', 'clave-de-prueba')
     fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
 
     expect(await screen.findByText('Ese nombre de usuario ya está en uso.')).toBeTruthy()

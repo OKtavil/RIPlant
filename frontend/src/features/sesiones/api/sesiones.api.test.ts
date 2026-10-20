@@ -33,13 +33,13 @@ describe('sesionesApi', () => {
       Response.json({ id: 1, username: 'admin', rol: 'admin', expiraEn: '2026-10-20T00:00:00.000Z' }),
     )
 
-    await sesionesApi.iniciar({ username: 'admin', password: 'riplanta123' })
+    await sesionesApi.iniciar({ username: 'admin', password: 'clave-de-prueba' })
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(url).toBe(`${BASE}/sesiones`)
     expect(init.method).toBe('POST')
     expect(init.headers).toEqual({ 'Content-Type': 'application/json' })
-    expect(init.body).toBe(JSON.stringify({ username: 'admin', password: 'riplanta123' }))
+    expect(init.body).toBe(JSON.stringify({ username: 'admin', password: 'clave-de-prueba' }))
   })
 
   it('registrar hace POST /usuarios con las credenciales y devuelve la sesión', async () => {
@@ -47,7 +47,7 @@ describe('sesionesApi', () => {
       Response.json({ id: 2, username: 'pepe', rol: 'usuario', expiraEn: '2026-10-20T00:00:00.000Z' }),
     )
 
-    const sesion = await sesionesApi.registrar({ username: 'pepe', password: 'riplanta123' })
+    const sesion = await sesionesApi.registrar({ username: 'pepe', password: 'clave-de-prueba' })
 
     expect(sesion).toMatchObject({ username: 'pepe', rol: 'usuario' })
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
@@ -55,13 +55,13 @@ describe('sesionesApi', () => {
     expect(init.method).toBe('POST')
     expect(init.credentials).toBe('include')
     expect(init.headers).toEqual({ 'Content-Type': 'application/json' })
-    expect(init.body).toBe(JSON.stringify({ username: 'pepe', password: 'riplanta123' }))
+    expect(init.body).toBe(JSON.stringify({ username: 'pepe', password: 'clave-de-prueba' }))
   })
 
   it('un 409 en registrar se propaga como ApiError conflicto', async () => {
     conRespuesta(Response.json({ statusCode: 409 }, { status: 409 }))
 
-    await expect(sesionesApi.registrar({ username: 'pepe', password: 'riplanta123' })).rejects.toMatchObject({
+    await expect(sesionesApi.registrar({ username: 'pepe', password: 'clave-de-prueba' })).rejects.toMatchObject({
       status: 409,
       codigo: 'conflicto',
     })

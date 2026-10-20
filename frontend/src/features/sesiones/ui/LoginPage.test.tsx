@@ -10,11 +10,11 @@ describe('LoginPage', () => {
     const { container } = render(<LoginPage onIngresar={onIngresar} onNavegar={onNavegar} />)
 
     fireEvent.change(container.querySelector('#login-identidad')!, { target: { value: '  admin  ' } })
-    fireEvent.change(container.querySelector('#login-password')!, { target: { value: 'riplanta123' } })
+    fireEvent.change(container.querySelector('#login-password')!, { target: { value: 'clave-de-prueba' } })
     fireEvent.click(screen.getByRole('button', { name: 'ENTRAR' }))
 
     expect(onIngresar).toHaveBeenCalledTimes(1)
-    expect(onIngresar).toHaveBeenCalledWith({ username: 'admin', password: 'riplanta123' })
+    expect(onIngresar).toHaveBeenCalledWith({ username: 'admin', password: 'clave-de-prueba' })
     expect(onNavegar).not.toHaveBeenCalled()
   })
 
