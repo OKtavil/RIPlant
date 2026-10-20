@@ -1,10 +1,13 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import type { AlmacenamientoService } from '../almacenamiento/almacenamiento.interface';
+import { ALMACENAMIENTO } from '../almacenamiento/almacenamiento.token';
 import { ComentarioDocument, ComentarioDocumentModel } from '../comentarios/comentario.schema';
 import { UsuarioDocumentModel } from '../usuarios/usuario.schema';
 import { CoronaDocument, CoronaDocumentModel } from './corona.schema';
@@ -32,6 +35,8 @@ export class LapidasService {
     private readonly coronaModel: Model<CoronaDocument>,
     @InjectModel(ComentarioDocumentModel.name)
     private readonly comentarioModel: Model<ComentarioDocument>,
+    @Inject(ALMACENAMIENTO)
+    private readonly almacenamiento: AlmacenamientoService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -284,7 +289,8 @@ export class LapidasService {
       usuarioId: sesion.usuario.id,
       categoriaId: dto.categoriaId,
       causaMuerte: dto.causaMuerte ?? '',
-      fotoUrl: dto.fotoUrl || '',
+      // S8: la foto solo entra por POST /lapidas/:id/foto; el cuerpo se ignora.
+      fotoUrl: '',
       coronasCount: 0,
     });
     return lapida.toObject();
@@ -300,13 +306,42 @@ export class LapidasService {
           fechaFallecimiento: dto.fechaFallecimiento,
           categoriaId: dto.categoriaId,
           causaMuerte: dto.causaMuerte ?? '',
-          fotoUrl: dto.fotoUrl ?? '',
+          // S8: actualizar la lápida no toca la foto; para eso está el endpoint.
         },
         { new: true, runValidators: true },
       )
       .lean();
     if (!lapida) throw new NotFoundException('Lápida no encontrada');
     return lapida;
+  }
+
+  /**
+   * S8: guarda los bytes de la foto con el almacenamiento configurado y
+   * persiste la ruta pública en `fotoUrl`. La foto anterior se borra después
+   * de persistir la nueva, best-effort: si el borrado falla, la lápida ya
+   * apunta al archivo correcto y queda un huérfano en disco, que es el modo de
+   * falla inocuo.
+   */
+  async asignarFoto(id: number, buffer: Buffer): Promise<Lapida> {
+    const lapida = await this.lapidaModel.findOne({ id }).lean();
+    if (!lapida) throw new NotFoundException('Lápida no encontrada');
+
+    const fotoAnterior = (lapida as { fotoUrl?: string }).fotoUrl;
+    const imagen = await this.almacenamiento.guardar(buffer);
+
+    const actualizada = await this.lapidaModel
+      .findOneAndUpdate(
+        { id },
+        { fotoUrl: imagen.rutaPublica },
+        { new: true, runValidators: true },
+      )
+      .lean();
+
+    if (fotoAnterior && fotoAnterior !== imagen.rutaPublica) {
+      await this.almacenamiento.borrar(fotoAnterior);
+    }
+
+    return actualizada as Lapida;
   }
 
   async remove(id: number): Promise<Lapida> {
@@ -317,6 +352,8 @@ export class LapidasService {
     // reutilice ese id — los ids de lápida se asignan como máximo + 1, así que
     // borrar la última y crear otra repite el número.
     await this.comentarioModel.deleteMany({ lapidaId: id });
+    // S8: la foto también se va con la lápida, best-effort.
+    await this.almacenamiento.borrar((lapida as { fotoUrl?: string }).fotoUrl);
     return lapida;
   }
 

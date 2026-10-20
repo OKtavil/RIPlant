@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
 } from 'class-validator';
 
@@ -30,8 +29,14 @@ export class CreateLapidaDto {
   @MaxLength(80)
   causaMuerte: string;
 
+  /**
+   * S8: la foto ya no se acepta por el JSON de crear/editar, solo por
+   * `POST /lapidas/:id/foto`. Se declara igual para que `forbidNonWhitelisted`
+   * no rechace el campo con un 400: el servicio lo ignora y la ruta real es el
+   * endpoint de subida.
+   */
   @IsOptional()
-  @IsUrl({ require_tld: false })
+  @IsString()
   fotoUrl?: string;
 
   @IsOptional()

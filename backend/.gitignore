@@ -1,6 +1,9 @@
 # Compilación
 /dist
 
+# Subidas locales de fotos (S8): contenido de runtime, nunca versionado
+/var
+
 # Dependencias
 /node_modules
 

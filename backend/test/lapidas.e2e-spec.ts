@@ -1,10 +1,18 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { applyValidationPipe } from '../src/shared/validation-pipe';
 import { UsuariosService } from '../src/usuarios/usuarios.service';
 import { abrirSesion } from './helpers/auth';
+
+// S8: las fotos de los e2e van a un temporal, nunca al worktree. Se define
+// antes de importar AppModule para que el servicio lo lea al construirse.
+const uploadsScratch = mkdtempSync(join(tmpdir(), 'riplanta-e2e-uploads-'));
+process.env.UPLOADS_DIR = uploadsScratch;
 
 describe('Lapidas (e2e)', () => {
   let app: INestApplication;
@@ -32,6 +40,7 @@ describe('Lapidas (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
+    rmSync(uploadsScratch, { recursive: true, force: true });
   });
 
   it('lists, creates and crowns a grave', async () => {
@@ -113,5 +122,90 @@ describe('Lapidas (e2e)', () => {
       })
       .expect(201);
     expect(vacia.body.causaMuerte).toBe('');
+  });
+
+  describe('POST /lapidas/:id/foto (S8)', () => {
+    const PNG = Buffer.from(
+      '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489',
+      'hex',
+    );
+    const GIF = Buffer.from('474946383961', 'hex');
+
+    /** Crea una lápida propia y devuelve su id. */
+    async function crearLapida(): Promise<number> {
+      const res = await request(app.getHttpServer())
+        .post('/lapidas')
+        .set('Cookie', cookie)
+        .send({
+          nombrePlanta: 'Foto',
+          epitafio: 'Para la foto.',
+          fechaFallecimiento: '2025-04-04',
+          categoriaId: 1,
+        })
+        .expect(201);
+      return res.body.id;
+    }
+
+    it('sube una foto y devuelve la ruta pública en fotoUrl', async () => {
+      const id = await crearLapida();
+
+      const subida = await request(app.getHttpServer())
+        .post(`/lapidas/${id}/foto`)
+        .set('Cookie', cookie)
+        .attach('foto', PNG, 'foto.png')
+        .expect(201);
+
+      expect(subida.body.fotoUrl).toMatch(/^\/uploads\/[0-9a-f-]{36}\.png$/);
+    });
+
+    it('rechaza la subida sin sesión', async () => {
+      const id = await crearLapida();
+
+      await request(app.getHttpServer())
+        .post(`/lapidas/${id}/foto`)
+        .attach('foto', PNG, 'foto.png')
+        .expect(401);
+    });
+
+    it('rechaza un archivo que no es una imagen permitida', async () => {
+      const id = await crearLapida();
+
+      await request(app.getHttpServer())
+        .post(`/lapidas/${id}/foto`)
+        .set('Cookie', cookie)
+        .attach('foto', GIF, 'animado.gif')
+        .expect(415);
+    });
+
+    it('rechaza la petición sin archivo', async () => {
+      const id = await crearLapida();
+
+      await request(app.getHttpServer())
+        .post(`/lapidas/${id}/foto`)
+        .set('Cookie', cookie)
+        .field('foto', 'esto-no-es-un-archivo')
+        .expect(400);
+    });
+
+    it('404 en lápida inexistente y 403 en lápida ajena', async () => {
+      await request(app.getHttpServer())
+        .post('/lapidas/999999/foto')
+        .set('Cookie', cookie)
+        .attach('foto', PNG, 'foto.png')
+        .expect(404);
+
+      // Otra usuaria no puede subir foto a la lápida de `nombreUsuario`.
+      const id = await crearLapida();
+      const otra = `foto-ajena-${sufijo}`;
+      const usuarios = app.get(UsuariosService);
+      await usuarios.crear({ username: otra, password: 'clave-larga-1', rol: 'usuario' });
+      const cookieAjena = await abrirSesion(app, otra, 'clave-larga-1');
+
+      await request(app.getHttpServer())
+        .post(`/lapidas/${id}/foto`)
+        .set('Cookie', cookieAjena)
+        .attach('foto', PNG, 'foto.png')
+        .expect(403);
+    });
   });
 });

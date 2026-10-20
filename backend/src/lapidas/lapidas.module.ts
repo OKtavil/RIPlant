@@ -44,6 +44,7 @@ export class LapidasModule implements NestModule {
       .forRoutes(
         { path: 'lapidas/:id', method: RequestMethod.PUT },
         { path: 'lapidas/:id', method: RequestMethod.DELETE },
+        { path: 'lapidas/:id/foto', method: RequestMethod.POST },
       );
   }
 }

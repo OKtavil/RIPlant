@@ -47,17 +47,29 @@ describe('LapidasService', () => {
   const comentarioModel = {
     deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }),
   };
+  const almacenamiento = {
+    guardar: jest.fn(),
+    borrar: jest.fn().mockResolvedValue(undefined),
+  };
   let service: LapidasService;
 
   beforeEach(() => {
     jest.clearAllMocks();
     coronaModel.create.mockResolvedValue({ lapidaId: 1, usuarioId: 'u1' });
     comentarioModel.deleteMany.mockResolvedValue({ deletedCount: 1 });
+    almacenamiento.guardar.mockResolvedValue({
+      nombreArchivo: 'nuevo.png',
+      rutaPublica: '/uploads/nuevo.png',
+      tipo: 'image/png',
+      bytes: 4,
+    });
+    almacenamiento.borrar.mockResolvedValue(undefined);
     service = new LapidasService(
       model as never,
       model as never,
       coronaModel as never,
       comentarioModel as never,
+      almacenamiento as never,
     );
   });
 
@@ -121,6 +133,69 @@ describe('LapidasService', () => {
   it('removes every comment when the grave is removed (S6 cascade)', async () => {
     await expect(service.remove(1)).resolves.toEqual(grave);
     expect(comentarioModel.deleteMany).toHaveBeenCalledWith({ lapidaId: 1 });
+  });
+
+  it('stores the photo and persists its public path (S8)', async () => {
+    model.findOne = jest.fn(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ ...grave, fotoUrl: '' }),
+      }),
+      lean: jest.fn().mockResolvedValue({ ...grave, fotoUrl: '' }),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, fotoUrl: '/uploads/nuevo.png' }),
+    }) as any;
+
+    const buffer = Buffer.from('bytes-de-la-foto');
+    const resultado = await service.asignarFoto(1, buffer);
+
+    expect(almacenamiento.guardar).toHaveBeenCalledWith(buffer);
+    expect(model.findOneAndUpdate).toHaveBeenCalledWith(
+      { id: 1 },
+      { fotoUrl: '/uploads/nuevo.png' },
+      { new: true, runValidators: true },
+    );
+    expect(resultado).toMatchObject({ fotoUrl: '/uploads/nuevo.png' });
+  });
+
+  it('borra la foto anterior al reemplazarla (S8, best-effort)', async () => {
+    model.findOne = jest.fn(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ ...grave, fotoUrl: '/uploads/viejo.png' }),
+      }),
+      lean: jest.fn().mockResolvedValue({ ...grave, fotoUrl: '/uploads/viejo.png' }),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, fotoUrl: '/uploads/nuevo.png' }),
+    }) as any;
+
+    await service.asignarFoto(1, Buffer.from('x'));
+
+    expect(almacenamiento.borrar).toHaveBeenCalledWith('/uploads/viejo.png');
+  });
+
+  it('borra la foto cuando se borra la lápida (S8, best-effort)', async () => {
+    model.findOneAndDelete = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, fotoUrl: '/uploads/la-foto.png' }),
+    }) as any;
+
+    await service.remove(1);
+
+    expect(almacenamiento.borrar).toHaveBeenCalledWith('/uploads/la-foto.png');
+  });
+
+  it('sin foto previa no hay archivo que borrar', async () => {
+    model.findOneAndDelete = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, fotoUrl: '' }),
+    }) as any;
+
+    await service.remove(1);
+
+    // El servicio delega siempre; es el almacenamiento el que decide que
+    // una ruta vacía no es un archivo (cubierto en su propio spec).
+    expect(almacenamiento.borrar).toHaveBeenCalledWith('');
   });
 
   it('seeds only an empty collection', async () => {

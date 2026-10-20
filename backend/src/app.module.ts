@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AlmacenamientoModule } from './almacenamiento/almacenamiento.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { ComentariosModule } from './comentarios/comentarios.module';
 import { LapidasModule } from './lapidas/lapidas.module';
@@ -28,6 +29,7 @@ import { UsuariosModule } from './usuarios/usuarios.module';
     }),
     UsuariosModule,
     SesionesModule,
+    AlmacenamientoModule,
     LapidasModule,
     CategoriasModule,
     ComentariosModule,
