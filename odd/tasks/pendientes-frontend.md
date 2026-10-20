@@ -45,13 +45,22 @@ en él). Se abre una tarea por fila cuando el endpoint correspondiente exista.
 
 ### S3 — Asesinos Seriales y contador de plantas asesinadas por usuario
 
-`InicioPage.tsx:62`, `RankingPage.tsx:76` y `PerfilPage.tsx:68` muestran aviso: "La API
-todavía no expone un contador de plantas asesinadas por persona." / "…todavía no existe en
-la API."
+`GET /lapidas/asesinos` **ya existe** (`pendientes-backend.md` S7, entregado como T6 del
+backend) y devuelve `[{ username, muertes }]`, agrupado por `usuarioId` y ordenado de mayor a
+menor, con el nombre resuelto contra `usuarios.username`.
 
-Requiere **endpoint nuevo** en el backend (incluido en `pendientes-backend.md` S1 como
-"asesinos seriales"). Mientras no exista, el front no puede calcularlo de forma confiable
-salvo agregando en cliente, que sería simular la capacidad.
+Estado 2026-10-19: **implementado** (T9). `InicioPage`, `RankingPage` y `PerfilPage` consumen el
+endpoint vía `lapidasApi.asesinos()` y un componente compartido `ListaAsesinos` (variantes
+`sidebar` y `fila`).
+
+El cálculo anterior en cliente agrupaba por `lapida.autor`, que es **texto libre**, y daba
+cuentas falsas: sobre los datos reales producía `Jardinera 3, Rosa Verde 3, Tito Maceta 2,
+Anónimo 1, Desconocido 1` cuando la cuenta verdadera es `jardinera 4, admin 2`. Por eso el
+ranking dejó de calcularse en cliente. Ese fue un bug de datos, no una capacidad faltante: el
+aviso de "no disponible" convivía con una lista que ya mostraba números inventados.
+
+Identidad: `PerfilPage` filtra las lápidas propias por `duenio.username` (resuelto por el
+backend) y **no** por `autor`.
 
 ### S4 — Borrar lápidas desde la UI (y el caso de la edición)
 
@@ -92,13 +101,13 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
 |---|---|---|---|---|
 | T1 | S1 | inline | hecho 2026-10-19 — 28 tests verdes (RED/GREEN en L6) + build + lint + verificación sin blockers (L7); review RDD APPROVED con authority burned (L8) | `0e47aba` |
 | T2 | S2 | inline | en curso: Crear cuenta conectada (T8); el resto de las filas sigue bloqueado por backend | `022c150` |
-| T3 | S3 | inline | pendiente: `GET /lapidas/asesinos` ya existe (ver T9) | — |
+| T3 | S3 | inline | hecho 2026-10-19 — asesinos con datos reales del endpoint (L10); cierra junto con T9 | `cb97920` |
 | T4 | S4 | inline | pendiente de decisión (borrar propio al aterrizar S4 del backend; editar = decisión de producto) | — |
 | T5 | S5 | inline | decisión abierta (routing por URL) | — |
 | T6 | S6 | inline | decisión abierta + esquema backend | — |
 | T7 | S7 | inline | decisión abierta + definición backend | — |
 | T8 | S2 | inline | hecho 2026-10-19 — registro conectado y verificado contra el backend real (L9) | `022c150` |
-| T9 | S3 | inline | pendiente — el endpoint ya existe; falta conectar Inicio/Ranking/Perfil | — |
+| T9 | S3 | inline | hecho 2026-10-19 — `GET /lapidas/asesinos` consumido en las tres pantallas (L10) | `cb97920` |
 
 ## Log
 
@@ -164,3 +173,19 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   sesión de backend. Regla aplicada: stagear **solo** los archivos propios, nunca `git add -A`,
   y verificar el contenido del commit antes de cerrarlo. HEAD se movió dos veces en esta sesión
   (`593ccbf`, `e1edbae`) sin conflicto.
+- **L10 (2026-10-19)** — **T3/T9 (S3) hechos**: `GET /lapidas/asesinos` ya existía (el backend
+  lo entregó como su T6, ver `db16f63`), así que las tres pantallas se conectaron vía
+  `lapidasApi.asesinos()` + el componente compartido `ListaAsesinos` (variantes `sidebar` para
+  la barra de Inicio y `fila` para Ranking y Perfil). **Hallazgo principal**: el ranking que ya
+  se mostraba en `RankingPage` estaba **mal calculado**, no ausente. Agrupaba por `lapida.autor`
+  (texto libre) mientras el endpoint agrupa por `usuarioId` y resuelve contra
+  `usuarios.username`; sobre los datos reales el cálculo viejo daba cinco usuarios falsos
+  (`Jardinera 3, Rosa Verde 3, Tito Maceta 2, Anónimo 1, Desconocido 1`) contra la cuenta real
+  `jardinera 4, admin 2`. Es decir: un aviso de "no disponible" conviviendo con números
+  inventados. También se corrigió `PerfilPage`, que identificaba las lápidas propias por
+  `autor`; ahora usa `duenio.username` y su stat sale del ranking real. Verificación contra el
+  backend real con un render SSR desechable (borrado después, sin quedar en el worktree):
+  puestos `["1. @jardinera","2. @admin"]`, valores `["4","2"]`, y ni "Rosa Verde" ni "Anónimo"
+  aparecen. 42 tests, `build` y `lint` en verde. Commit `cb97920`, 9 archivos, +225/−47.
+  Veredicto de riesgo: **item 3** (`Grave` cambia de forma y la consumen las tres pantallas del
+  feature).
