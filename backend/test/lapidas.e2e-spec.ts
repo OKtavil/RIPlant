@@ -78,6 +78,67 @@ describe('Lapidas (e2e)', () => {
       .set('Cookie', cookie)
       .expect(201);
     expect(crowned.body.coronasCount).toBe(1);
+    expect(crowned.body.coronadaPorMi).toBe(true);
+
+    // Idempotente: la segunda corona del mismo usuario no es un error.
+    const again = await request(app.getHttpServer())
+      .post(`/lapidas/${created.body.id}/corona`)
+      .set('Cookie', cookie)
+      .expect(200);
+    expect(again.body.coronasCount).toBe(1);
+    expect(again.body.coronadaPorMi).toBe(true);
+  });
+
+  it('alternates the corona with POST and DELETE, both idempotent', async () => {
+    const creada = await request(app.getHttpServer())
+      .post('/lapidas')
+      .set('Cookie', cookie)
+      .send({
+        nombrePlanta: 'Toggle',
+        epitafio: 'Una corona y otra no.',
+        fechaFallecimiento: '2025-04-04',
+        categoriaId: 1,
+      })
+      .expect(201);
+    const id = creada.body.id;
+    const ruta = `/lapidas/${id}/corona`;
+
+    // Poner: 201, corona presente.
+    const puesta = await request(app.getHttpServer())
+      .post(ruta)
+      .set('Cookie', cookie)
+      .expect(201);
+    expect(puesta.body).toMatchObject({ coronasCount: 1, coronadaPorMi: true });
+
+    // Quitar: 200, contador en cero.
+    const quitada = await request(app.getHttpServer())
+      .delete(ruta)
+      .set('Cookie', cookie)
+      .expect(200);
+    expect(quitada.body).toMatchObject({ coronasCount: 0, coronadaPorMi: false });
+
+    // Quitar de nuevo: idempotente, el contador NO baja de cero.
+    const otraVez = await request(app.getHttpServer())
+      .delete(ruta)
+      .set('Cookie', cookie)
+      .expect(200);
+    expect(otraVez.body).toMatchObject({ coronasCount: 0, coronadaPorMi: false });
+
+    // Poner de nuevo: vuelve a 1, sin haber quedado desfasado.
+    const repuesta = await request(app.getHttpServer())
+      .post(ruta)
+      .set('Cookie', cookie)
+      .expect(201);
+    expect(repuesta.body).toMatchObject({ coronasCount: 1, coronadaPorMi: true });
+  });
+
+  it('requires a session to crown or uncrown', async () => {
+    await request(app.getHttpServer())
+      .post('/lapidas/1/corona')
+      .expect(401);
+    await request(app.getHttpServer())
+      .delete('/lapidas/1/corona')
+      .expect(401);
   });
 
   it('rejects invalid grave payloads and missing resources', async () => {

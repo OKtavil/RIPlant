@@ -43,6 +43,9 @@ describe('LapidasService', () => {
   };
   const coronaModel = {
     create: jest.fn(),
+    deleteOne: jest.fn(),
+    exists: jest.fn(),
+    init: jest.fn(),
   };
   const comentarioModel = {
     deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }),
@@ -56,6 +59,10 @@ describe('LapidasService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     coronaModel.create.mockResolvedValue({ lapidaId: 1, usuarioId: 'u1' });
+    coronaModel.deleteOne.mockResolvedValue({ deletedCount: 1 });
+    // Por defecto la corona existe: es el estado que sigue a un `giveCorona`.
+    coronaModel.exists.mockResolvedValue({ _id: 'c1' });
+    coronaModel.init.mockResolvedValue(undefined);
     comentarioModel.deleteMany.mockResolvedValue({ deletedCount: 1 });
     almacenamiento.guardar.mockResolvedValue({
       nombreArchivo: 'nuevo.png',
@@ -71,6 +78,38 @@ describe('LapidasService', () => {
       comentarioModel as never,
       almacenamiento as never,
     );
+  });
+
+  it('waits for the corona index before seeding, so the unique constraint is enforced', async () => {
+    // El orden importa: `onModuleInit` siembra datos, y si siembra antes de que
+    // el índice exista, la invariante "una corona por usuario y lápida" no está
+    // garantizada mientras la app ya acepta escrituras. Este test fija el orden.
+    const orden: string[] = [];
+    coronaModel.init.mockImplementation(async () => {
+      orden.push('init-corona');
+    });
+    const updateOneOriginal = model.updateOne as jest.Mock;
+    updateOneOriginal.mockImplementation(async () => {
+      orden.push('siembra');
+      return {};
+    });
+
+    await service.onModuleInit();
+
+    expect(coronaModel.init).toHaveBeenCalled();
+    expect(orden[0]).toBe('init-corona');
+    expect(orden).toContain('siembra');
+  });
+
+  it('keeps booting when the corona index cannot be built, but logs the broken invariant', async () => {
+    // Si el índice no se puede construir (por ejemplo, ya hay duplicados
+    // históricos), la app NO debe morir: se avisa y sigue. Morir sería peor
+    // para el usuario; el silencio también, porque la invariante queda rota sin
+    // que nadie se entere.
+    const error = new Error('duplicate key');
+    coronaModel.init.mockRejectedValue(error);
+
+    await expect(service.onModuleInit()).resolves.toBeUndefined();
   });
 
   it('lists and finds graves', async () => {
@@ -108,15 +147,16 @@ describe('LapidasService', () => {
     await expect(service.update(1, grave)).resolves.toMatchObject({ id: 1 });
     await expect(
       service.giveCorona(1, { usuario: { id: 'u1', username: 'Jardinero' } } as any),
-    ).resolves.toMatchObject({ coronasCount: 1 });
+    ).resolves.toMatchObject({ lapida: { coronasCount: 1 } });
     await expect(service.remove(1)).resolves.toEqual(grave);
   });
 
-  it('records one corona per user and rejects the second', async () => {
+  it('records one corona per user (idempotent, no 409)', async () => {
     const sesion = { usuario: { id: 'u1', username: 'Jardinero' } } as any;
 
     await expect(service.giveCorona(1, sesion)).resolves.toMatchObject({
-      coronasCount: 1,
+      creada: true,
+      lapida: { coronasCount: 1, coronadaPorMi: true },
     });
     expect(coronaModel.create).toHaveBeenCalledWith({
       lapidaId: 1,
@@ -124,10 +164,44 @@ describe('LapidasService', () => {
       creadaEn: expect.any(Date),
     });
 
+    // La segunda corona del mismo usuario NO es un error: el front alterna con
+    // un click, así que reintentar no puede romper. No se inserta de nuevo y el
+    // contador no se mueve.
     coronaModel.create.mockRejectedValueOnce({ code: 11000 });
-    await expect(service.giveCorona(1, sesion)).rejects.toMatchObject({
-      status: 409,
+    model.findOneAndUpdate = jest.fn() as any;
+    await expect(service.giveCorona(1, sesion)).resolves.toMatchObject({
+      creada: false,
+      lapida: { coronadaPorMi: true },
     });
+    expect(coronaModel.create).toHaveBeenCalledTimes(2);
+    // Lo que importa: el segundo intento no incrementó el contador.
+    expect(model.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('takes the corona away, and is idempotent when there was none', async () => {
+    const sesion = { usuario: { id: 'u1', username: 'Jardinero' } } as any;
+
+    // Quitar cuando existe: borra el registro y baja el contador.
+    coronaModel.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 1 });
+    // Después del borrado la corona ya no existe, que es lo que el helper
+    // consulta: por eso `coronadaPorMi` sale `false`.
+    coronaModel.exists = jest.fn().mockResolvedValue(null);
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, coronasCount: 0 }),
+    }) as any;
+    await expect(service.removeCorona(1, sesion)).resolves.toMatchObject({
+      coronasCount: 0,
+      coronadaPorMi: false,
+    });
+
+    // Quitar cuando NO existe: no toca el contador. Si lo bajara igual, dos
+    // clicks rápidos lo dejarían en negativo.
+    coronaModel.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 0 });
+    model.findOneAndUpdate = jest.fn() as any;
+    await expect(service.removeCorona(1, sesion)).resolves.toMatchObject({
+      coronadaPorMi: false,
+    });
+    expect(model.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
   it('removes every comment when the grave is removed (S6 cascade)', async () => {

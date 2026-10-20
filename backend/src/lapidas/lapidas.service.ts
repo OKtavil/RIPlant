@@ -1,7 +1,7 @@
 import {
-  ConflictException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -26,6 +26,8 @@ type DuenioInfo = { username: string; rol: string } | undefined;
 
 @Injectable()
 export class LapidasService {
+  private readonly logger = new Logger(LapidasService.name);
+
   constructor(
     @InjectModel(LapidaDocumentModel.name)
     private readonly lapidaModel: Model<LapidaDocument>,
@@ -40,9 +42,48 @@ export class LapidasService {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    await this.esperarIndicesDeCorona();
     await this.sembrarUsuarioZombie();
     await this.migrarHuerfanasAlZombie();
     await this.sembrarDatos();
+  }
+
+  /**
+   * Espera a que el índice único de `coronas` esté construido **antes** de que
+   * la aplicación acepte escrituras.
+   *
+   * **Por qué (bug real, no teórico).** `autoIndex` de Mongoose es `true` por
+   * defecto, pero construye los índices **en segundo plano**: la conexión queda
+   * lista y la app empieza a recibir requests mientras el índice todavía se
+   * está creando. `giveCorona` documenta que la unicidad la garantiza el índice
+   * —no una consulta previa, que tiene carrera entre leer y escribir— y esa
+   * afirmación **solo es cierta si el índice ya existe**.
+   *
+   * Se manifiesta de verdad: en una base **nueva**, dos `POST /lapidas/:id/corona`
+   * del mismo usuario pueden llegar antes de que el índice esté listo. La
+   * segunda inserción no da `11000` y se guarda una corona duplicada. No es
+   * hipotético: es lo que hacía fallar `lapidas.e2e-spec.ts` de forma
+   * determinista cuando las cinco suites e2e corrían en paralelo (medido: al
+   * momento del primer `POST` existían `_id` y `lapidaId`, pero todavía **no**
+   * el compuesto `{lapidaId, usuarioId}`).
+   *
+   * `Model.init()` espera a que terminen de construirse los índices de ese
+   * modelo; a diferencia de `syncIndexes()`, no compara ni borra índices
+   * existentes, así que no toca nada de la base en cada arranque.
+   */
+  private async esperarIndicesDeCorona(): Promise<void> {
+    try {
+      await this.coronaModel.init();
+    } catch (error) {
+      // Si el índice no se puede construir (por ejemplo, ya hay duplicados
+      // históricos que lo violan), no se tumba el arranque: se avisa fuerte y
+      // la app sigue. Antes esta situación pasaba **en silencio**, que es peor:
+      // la invariante quedaba rota sin que nadie se enterara.
+      this.logger.error(
+        'No se pudo construir el índice único de coronas: la unicidad "una corona por usuario y lápida" NO está garantizada',
+        error instanceof Error ? error.stack : String(error),
+      );
+    }
   }
 
   private async sembrarUsuarioZombie(): Promise<void> {
@@ -358,11 +399,19 @@ export class LapidasService {
   }
 
   /**
-   * Una corona por usuario y lápida (D4). La unicidad la garantiza el índice
-   * compuesto `lapidaId + usuarioId`, no una consulta previa: una consulta
-   * previa tiene una carrera entre leer y escribir y el índice no. Si este
-   * usuario ya corona, la inserción falla con el código 11000 y el contador no
-   * se mueve.
+   * Da una corona. **Idempotente**: si este usuario ya coronó esta lápida, no
+   * inserta de nuevo y devuelve el estado actual en vez de un `409`.
+   *
+   * Por qué idempotente y no `409` (decisión del usuario): el front alterna
+   * entre poner y quitar corona con un click, así que un doble click o un
+   * reintento del cliente HTTP es un caso *esperable*, no excepcional. Con
+   * `409`, el segundo request mostraba un error por algo que el usuario no hizo
+   * mal.
+   *
+   * La unicidad la garantiza el índice compuesto `lapidaId + usuarioId`, no una
+   * consulta previa: una consulta previa tiene una carrera entre leer y
+   * escribir y el índice no. El código 11000 es la señal de "ya estaba", que
+   * ahora se traduce a un `200` con el estado actual.
    *
    * Primero se registra la corona y recién después se incrementa
    * `coronasCount`, para que el contador nunca se adelante al registro que lo
@@ -375,7 +424,7 @@ export class LapidasService {
   async giveCorona(
     id: number,
     sesion: { usuario: { id: string; username: string } },
-  ): Promise<Lapida> {
+  ): Promise<{ lapida: Lapida; creada: boolean }> {
     const lapida = await this.lapidaModel.findOne({ id }).lean();
     if (!lapida) throw new NotFoundException('Lápida no encontrada');
 
@@ -387,7 +436,12 @@ export class LapidasService {
       });
     } catch (error) {
       if ((error as { code?: number }).code === 11000) {
-        throw new ConflictException('Este usuario ya corono esta lápida');
+        // Ya tenía corona: no se inserta ni se incrementa. Se devuelve el
+        // estado actual, que es lo que el front necesita para pintar.
+        return {
+          lapida: await this.conEstadoDeCorona(id, sesion.usuario.id),
+          creada: false,
+        };
       }
       throw error;
     }
@@ -395,7 +449,73 @@ export class LapidasService {
     const coronada = await this.lapidaModel
       .findOneAndUpdate({ id }, { $inc: { coronasCount: 1 } }, { new: true })
       .lean();
-    return coronada as Lapida;
+    return {
+      lapida: await this.marcarCoronadaPorMi(
+        coronada as Lapida,
+        sesion.usuario.id,
+      ),
+      creada: true,
+    };
+  }
+
+  /**
+   * Quita la corona de este usuario. **Idempotente**: si no la tenía, no toca
+   * `coronasCount` y devuelve el estado actual.
+   *
+   * El filtro incluye `usuarioId`, así que un usuario solo puede borrar **su**
+   * corona por construcción: no hace falta un middleware de dueño, que además
+   * sería incorrecto (la corona es de quien la puso, no del dueño de la lápida).
+   *
+   * Se usa `deleteOne` y no `findOneAndDelete(...).lean()` porque con `_id`
+   * como string, `findOneAndDelete` borra pero devuelve `null`: no habría forma
+   * de saber si borró algo. `deletedCount` sí lo dice, y de eso depende no bajar
+   * el contador de más — dos clicks rápidos sobre una corona inexistente lo
+   * dejarían en negativo.
+   */
+  async removeCorona(
+    id: number,
+    sesion: { usuario: { id: string; username: string } },
+  ): Promise<Lapida> {
+    const lapida = await this.lapidaModel.findOne({ id }).lean();
+    if (!lapida) throw new NotFoundException('Lápida no encontrada');
+
+    const { deletedCount } = await this.coronaModel.deleteOne({
+      lapidaId: id,
+      usuarioId: sesion.usuario.id,
+    });
+
+    if (deletedCount === 0) {
+      // No tenía corona: el contador no se toca.
+      return this.marcarCoronadaPorMi(lapida as Lapida);
+    }
+
+    const sinCorona = await this.lapidaModel
+      .findOneAndUpdate({ id }, { $inc: { coronasCount: -1 } }, { new: true })
+      .lean();
+    return this.marcarCoronadaPorMi(sinCorona as Lapida);
+  }
+
+  /** Agrega `coronadaPorMi` para que el front sepa si pintar la corona. */
+  private async marcarCoronadaPorMi(
+    lapida: Lapida,
+    usuarioId?: string,
+  ): Promise<Lapida> {
+    if (!usuarioId) return { ...lapida, coronadaPorMi: false };
+    const existe = await this.coronaModel.exists({
+      lapidaId: lapida.id,
+      usuarioId,
+    });
+    return { ...lapida, coronadaPorMi: Boolean(existe) };
+  }
+
+  /** La lápida con `coronadaPorMi` resuelto para este usuario. */
+  private async conEstadoDeCorona(
+    id: number,
+    usuarioId: string,
+  ): Promise<Lapida> {
+    const lapida = await this.lapidaModel.findOne({ id }).lean();
+    if (!lapida) throw new NotFoundException('Lápida no encontrada');
+    return this.marcarCoronadaPorMi(lapida as Lapida, usuarioId);
   }
 
   async findById(id: number): Promise<LapidaDocument | null> {

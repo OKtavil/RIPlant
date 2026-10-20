@@ -9,10 +9,12 @@ import {
   Post,
   Put,
   Req,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 import { CreateLapidaDto } from './create-lapida.dto';
 import { LapidasService } from './lapidas.service';
 import type { RequestConSesion } from '../sesiones/sesion.interface';
@@ -57,12 +59,35 @@ export class LapidasController {
   }
 
   @Post(':id/corona')
-  giveCorona(
+  async giveCorona(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: RequestConSesion,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // SesionRequeridaMiddleware ya corrió: sin sesión la petición no llega acá.
+    // Idempotente: `201` cuando la corona se creó, `200` cuando ya existía. El
+    // front alterna con un click, así que un reintento no puede ser un error.
+    const { lapida, creada } = await this.lapidasService.giveCorona(
+      id,
+      req.sesion!,
+    );
+    res.status(creada ? 201 : 200);
+    return lapida;
+  }
+
+  /**
+   * Quita la corona de **este** usuario. Idempotente: `200` siempre, tenga o no
+   * corona. El filtro por `usuarioId` en el servicio hace que nadie pueda
+   * quitarle la corona a otro, así que no hace falta un middleware de dueño
+   * (que además sería incorrecto: la corona es de quien la puso, no del dueño
+   * de la lápida).
+   */
+  @Delete(':id/corona')
+  removeCorona(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: RequestConSesion,
   ) {
-    // SesionRequeridaMiddleware ya corrió: sin sesión la petición no llega acá.
-    return this.lapidasService.giveCorona(id, req.sesion!);
+    return this.lapidasService.removeCorona(id, req.sesion!);
   }
 
   /**
