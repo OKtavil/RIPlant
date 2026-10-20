@@ -164,6 +164,11 @@ Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
   `R3-null-hash-path` (`password.ts:31`), `R4-AUTH-OBSERVABILITY-GAP` y
   `R4-LOGOUT-COOKIE-AFTER-DB`. `R2-001` y `R3-doc-resilience` (el texto viejo de
   L5) ya quedaron resueltos en este mismo commit de docs.
+
+  **Estado al 2026-10-20 (ver L20):** `R3-e2e-shared-db` (`1888293`),
+  `R3-null-hash-path` (`391171f`) y los dos `R4` (`e99831b`) quedaron
+  **cerrados**. Siguen abiertos: `R1-001`, `R1-002`, `R1-003`, `R2-002`,
+  `R2-003`, `R2-004`, `R2-005`, `R3-authz-put-delete`, `R3-env-leak`.
 - **L16** — Usuario, 2026-10-19: "ataca r3". Es `R3-cookie-malformed`
   (`cookie.ts:41`): `decodeURIComponent` sin proteger. Un valor con
   percent-encoding inválido lanza `URIError` dentro de `leerCookie`, que es un
@@ -188,3 +193,53 @@ Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
   queda pendiente dentro del slice hasta que un commit posterior llegue al
   presupuesto de review. No se abrió ninguna review para `291625b`.
   Líneas pendientes acumuladas desde `d3c79e9`: 142.
+- **L20** — Cierre de los dos hallazgos `R4` no bloqueantes (commit `e99831b`).
+  El usuario, 2026-10-20: "segui" (después de "si" al assess y de que el assess
+  diera `under_budget`). Se atacaron los dos con RED primero, verificado antes
+  de escribir el fix.
+
+  **`R4-LOGOUT-COOKIE-AFTER-DB`.** En `SesionesController.cerrar`, si
+  `this.sesiones.cerrar(token)` lanzaba (Mongo caído, timeout), la excepción
+  saltaba por encima de `borrarCookieSesion(res)` y la cookie quedaba **viva en
+  el browser**: el usuario cree que cerró sesión y el próximo request sigue
+  autenticado. RED real (e2e, `test/sesiones.e2e-spec.ts`): espía
+  `SesionesService.cerrar` con `mockRejectedValueOnce`, y la respuesta no traía
+  **ningún** `Set-Cookie` — `Received string: ""`. GREEN: el borrado en la base
+  pasa a best-effort con `logger.warn`, y `borrarCookieSesion` corre siempre.
+  Cerrar sesión del lado del cliente no puede depender de que la base responda.
+
+  **`R4-AUTH-OBSERVABILITY-GAP`.** `SesionesMiddleware` es **global**
+  (`forRoutes('*')` en `app.module.ts`) y llamaba a `this.sesiones.resolver(token)`
+  sin protección. `resolver` hace **tres** llamadas a Mongo que pueden lanzar
+  (`findOne`, `deleteOne`, `encontrarPorId`). La consecuencia medida no es que
+  el usuario se desloguee en silencio — es **peor**: la excepción sube sin
+  capturar y Nest la convierte en `500` en **toda la app**, incluidas las rutas
+  públicas (`GET /lapidas`, `GET /categorias`), que no necesitan base para
+  responder. RED real (unit, `sesiones.middleware.spec.ts`): con
+  `resolver.mockRejectedValue`, la excepción `Mongo caído` salía del middleware y
+  `next()` nunca corría. GREEN: se degrada a "sin sesión" (las rutas que la
+  exigen dan `401`, las públicas siguen andando) y se **loguea la causa** — el
+  modo de falla silencioso es justo lo que el hallazgo señala: sin log, un `401`
+  masivo parece "los usuarios se desloguearon" cuando detrás hay una base caída.
+  La cookie **no** se borra por esto: un fallo transitorio no invalida la sesión.
+
+  **Un test que falló y enseñó.** El primer intento de fix agregaba un
+  early-return `if (!token)` para no llamar a `resolver` sin cookie. Dos tests
+  existentes fallaron: **fijaban que `resolver` se invoque siempre, incluso con
+  `undefined`** (su primera línea ya maneja ese caso). Era una optimización mía
+  que nadie pidió y rompía un contrato fijado; se revirtió en vez de justificarla.
+
+  **Verificación observada:** unit **83/83** (eran 82; +1 del middleware) · e2e
+  **32/32** (eran 31; +1 de la cookie) · `build` y `lint` limpios.
+
+  **Slice RDD:** la frontera sigue en `20da1b9`. Con `e99831b` el slice acumula
+  **3 commits y 619 líneas** (560 insertions + 59 deletions en 15 archivos), sin
+  llegar al presupuesto: `under_budget` no es "ya revisado" y la frontera no
+  avanza.
+
+  **Pendientes que siguen abiertos** (de L15): `R1-001`, `R1-002`, `R1-003`,
+  `R2-002`, `R2-003`, `R2-004`, `R2-005`, `R3-authz-put-delete`, `R3-env-leak`.
+  **Límite conocido:** no hay informe de review guardado (la autoridad se consumió
+  en L14); de los `R1`/`R2` solo queda nombre + número de línea, y esos números
+  ya no coinciden con el código actual, así que reconstruir el hallazgo exige
+  re-derivarlo desde el código, no leerlo de la nota.
