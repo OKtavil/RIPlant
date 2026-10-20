@@ -18,6 +18,18 @@ describe('LoginPage', () => {
     expect(onNavegar).not.toHaveBeenCalled()
   })
 
+  it('no muestra el link de recuperación de contraseña', () => {
+    render(<LoginPage onIngresar={vi.fn()} onNavegar={vi.fn()} />)
+
+    expect(screen.queryByText(/OLVIDASTE TU CONTRASEÑA/)).toBeNull()
+  })
+
+  it('no muestra la ayuda del prototipo sobre el rótulo del correo', () => {
+    render(<LoginPage onIngresar={vi.fn()} onNavegar={vi.fn()} />)
+
+    expect(screen.queryByText(/CORREO ELECTRÓNICO/)).toBeNull()
+  })
+
   it('muestra el mensaje del ApiError cuando el login falla y vuelve a habilitar el botón', async () => {
     const onIngresar = vi
       .fn()

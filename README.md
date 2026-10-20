@@ -69,7 +69,6 @@ Pantalla de entrada para usuarios que ya tienen una cuenta.
   - `Contraseña` — obligatoria, oculta por defecto y con control para mostrar u ocultar.
 - **Acciones:**
   - `Entrar` — valida los campos y envía las credenciales.
-  - `¿Olvidaste tu contraseña?` — lleva a Recuperar contraseña.
   - `Crear una cuenta` — lleva a Crear cuenta.
 - **Estados:** formulario inicial, validación de campos, credenciales incorrectas,
   usuario bloqueado o deshabilitado, error temporal del servidor y envío en progreso.
@@ -95,8 +94,9 @@ Pantalla para registrar un nuevo jardinero. **Implementada** contra `POST /usuar
   cookie httpOnly que el login—, así que lleva directo al Cementerio.
 
 > **Sin correo electrónico.** El registro pide solo `username` y `password` (decisión D1).
-> El campo `Correo electrónico` que figuraba en el prototipo no se implementó: queda para
-> cuando se agregue la recuperación de contraseña.
+> El campo `Correo electrónico` **no está en el formulario**: el backend no guarda email ni
+> lo pide en el alta, así que no se simula un campo que no llega a ningún lado. Se agregará
+> junto con la recuperación de contraseña.
 
 #### 3. Recuperar contraseña (pendiente)
 

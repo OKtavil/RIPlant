@@ -61,10 +61,10 @@ lápida, y volver a tocar debe quitarla.
 | T3 | S2 | `borrar` en `comentarios.api.ts` + botón admin en `ListaComentarios` + tests | inline | pendiente |
 | T4 | S3 | `subirFoto` en la API + input de archivo en `PublicarPage` + tests | inline | pendiente |
 | T5 | S3 | Mostrar `fotoUrl` en `GraveCard` y `DetallePage` + tests | inline | pendiente |
-| T6 | S4 | Login: fuera ayuda y enlace de recuperación + tests | inline | pendiente |
-| T7 | S5 | Registro: fuera el campo de correo + tests | inline | pendiente |
-| T8 | S6 | Prototipo HTML: login y registro | inline | pendiente |
-| T9 | S6 | Prototipo `.op`: login y registro | inline | pendiente |
+| T6 | S4 | Login: fuera ayuda y enlace de recuperación + tests | inline | hecho |
+| T7 | S5 | Registro: fuera el campo de correo + tests | inline | hecho |
+| T8 | S6 | Prototipo HTML: login y registro | inline | hecho |
+| T9 | S6 | Prototipo `.op`: login y registro | inline | hecho |
 
 ## Log
 
@@ -102,3 +102,42 @@ lápida, y volver a tocar debe quitarla.
     la UI real. La contradicción que se le planteó: hasta ahora el HTML era la fuente de
     verdad y modificarlo invierte esa jerarquía; eligió corregirlo igual, para que el
     prototipo describa lo que existe en vez de una versión vieja.
+
+- **L5 (2026-10-20)** — T6 y T7 cerrados (S4, S5), con RED observado antes de cada fix.
+  Los tres tests nuevos fallaron primero (`no muestra el link…`, `no muestra la ayuda…`,
+  `no renderiza el campo de correo`) y después pasaron: **101/101** (antes 99, +3 tests,
+  uno reemplazado). `build` (tsc -b) y `lint` (oxlint) limpios.
+  - `LoginPage.tsx`: fuera el `EnlaceBoton` a `recuperar` y su `<br/>`, y fuera la
+    `ayuda` del campo de identidad. **`RecuperarPage`, `RestablecerPage` y sus rutas
+    quedan intactas** — solo dejan de alcanzarse desde el login (decisión de L4).
+  - `RegistroPage.tsx`: fuera el `CampoTexto` `registro-correo` completo, y el comentario
+    del encabezado ya no habla de un campo deshabilitado que no existe.
+
+- **L6 (2026-10-20)** — T8 y T9 cerrados (S6): prototipo sincronizado, **2 archivos,
+  +16/−97**.
+  - **HTML** (`R.I.Planta - Diseño retro.html`): `numstat` dio **1/1**, como pide L13 —
+    el blob del manifest se reescribió compacto y solo se tocaron las entradas de los
+    dos boards (verificado: las otras 8 quedaron byte-idénticas y el orden de claves se
+    preservó). Board `Login`: `CORREO ELECTRÓNICO` → `NOMBRE DE USUARIO` (el `<input>` a
+    `type="text"` con placeholder `@tu_usuario`) y fuera el `<a href="Recuperar.dc.html">`.
+    Board `Crear cuenta`: fuera el bloque de correo. Balance de tags intacto (11/11 y 12/12
+    divs). **El board `Recuperar` no se tocó** (sigue vivo).
+  - **`.op`**: layout absoluto (`layout: none`), así que quitar bloques obliga a recolocar
+    las Y. Login: `p243` pasa a `NOMBRE DE USUARIO`, se elimina `p252`, `p253`/`p254` suben
+    y la card pasa de 454.2 a 456.4 de alto, recentrada. Registro: fuera `p266`/`p267`
+    (`p268` es hijo de `p267`), todo lo de abajo sube 79.2 y la card pasa de 582 a 501.9,
+    recentrada. Gaps verificados contra el original: la separación botón→fila-final del
+    login era 49.2 antes y es 47.0 después (el enlace ocupaba ese espacio), y el registro
+    conserva todos sus gaps de 17.0/19.8. 10 páginas intactas.
+  - Herramientas de un solo uso, **fuera del repo** (`/tmp/opencode/rdd-09793d15/proto/`):
+    `editar-html.py` y `editar-op.py`, con el formato de reempaquetado documentado arriba.
+
+- **L7 (2026-10-20)** — **Revisión de lo que vino de la otra máquina** antes de empezar
+  (pedido del usuario: "primero revísalos"). Llegó por `git pull --ff-only` hasta
+  `e7f4c26`: **35 commits**, 91 archivos, +6206/−627 — routing por URL con History API,
+  comentarios en el detalle, detalle unificado en una card, ranking con epitafio,
+  `ListaAsesinos`, foto de lápida a disco, coronas idempotentes, e2e con BDs aisladas, y
+  cuatro documentos de plan nuevos. El último commit (`e7f4c26 doc`) es **este** plan
+  (`limpieza-frontend.md`), sin implementar todavía: verifiqué en el código que el enlace
+  seguía en `LoginPage.tsx:41`, la ayuda en `:58` y el campo correo en `RegistroPage.tsx:75`.
+  Nada de lo pedido estaba hecho.

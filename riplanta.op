@@ -5245,9 +5245,9 @@
               "type": "frame",
               "id": "p239",
               "x": 375.0,
-              "y": 256.9,
+              "y": 255.8,
               "width": 530.0,
-              "height": 454.2,
+              "height": 456.4,
               "layout": "none",
               "cornerRadius": 12.0,
               "fill": [
@@ -5327,7 +5327,7 @@
                   "y": 131.8,
                   "width": 129.2,
                   "height": 13.0,
-                  "content": "CORREO ELECTRÓNICO",
+                  "content": "NOMBRE DE USUARIO",
                   "fontFamily": "Space Mono",
                   "fontSize": 11.0,
                   "fontWeight": 700,
@@ -5511,27 +5511,9 @@
                 },
                 {
                   "type": "text",
-                  "id": "p252",
-                  "x": 180.8,
-                  "y": 371.7,
-                  "width": 178.7,
-                  "height": 13.0,
-                  "content": "¿OLVIDASTE TU CONTRASEÑA?",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 700,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#C0392B"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
                   "id": "p253",
                   "x": 133.7,
-                  "y": 403.9,
+                  "y": 401.7,
                   "width": 164.6,
                   "height": 13.0,
                   "content": "¿AÚN NO TIENES CUENTA?",
@@ -5549,7 +5531,7 @@
                   "type": "text",
                   "id": "p254",
                   "x": 292.6,
-                  "y": 403.9,
+                  "y": 401.7,
                   "width": 115.1,
                   "height": 13.0,
                   "content": "CREAR UNA CUENTA",
@@ -5663,9 +5645,9 @@
               "type": "frame",
               "id": "p259",
               "x": 375.0,
-              "y": 193.0,
+              "y": 233.1,
               "width": 530.0,
-              "height": 582.0,
+              "height": 501.9,
               "layout": "none",
               "cornerRadius": 12.0,
               "fill": [
@@ -5803,72 +5785,9 @@
                 },
                 {
                   "type": "text",
-                  "id": "p266",
-                  "x": 35.0,
-                  "y": 211.8,
-                  "width": 129.2,
-                  "height": 13.0,
-                  "content": "CORREO ELECTRÓNICO",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 700,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#3B2A1A"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "p267",
-                  "x": 35.0,
-                  "y": 233.1,
-                  "width": 460.0,
-                  "height": 41.8,
-                  "layout": "none",
-                  "cornerRadius": 6.0,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#FFFFFF"
-                    }
-                  ],
-                  "stroke": {
-                    "thickness": 2.0,
-                    "fill": [
-                      {
-                        "type": "solid",
-                        "color": "#8B4513"
-                      }
-                    ]
-                  },
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "p268",
-                      "x": 12.0,
-                      "y": 11.9,
-                      "width": 436.0,
-                      "height": 18.0,
-                      "content": "tu@correo.com",
-                      "fontFamily": "Space Mono",
-                      "fontSize": 12.0,
-                      "fontWeight": 400,
-                      "fill": [
-                        {
-                          "type": "solid",
-                          "color": "#777777"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
                   "id": "p269",
                   "x": 35.0,
-                  "y": 291.9,
+                  "y": 211.8,
                   "width": 72.7,
                   "height": 13.0,
                   "content": "CONTRASEÑA",
@@ -5886,7 +5805,7 @@
                   "type": "frame",
                   "id": "p270",
                   "x": 35.0,
-                  "y": 313.1,
+                  "y": 233.0,
                   "width": 460.0,
                   "height": 41.8,
                   "layout": "none",
@@ -5931,7 +5850,7 @@
                   "type": "text",
                   "id": "p272",
                   "x": 452.2,
-                  "y": 359.9,
+                  "y": 279.8,
                   "width": 47.0,
                   "height": 11.0,
                   "content": "MOSTRAR",
@@ -5949,7 +5868,7 @@
                   "type": "text",
                   "id": "p273",
                   "x": 35.0,
-                  "y": 390.7,
+                  "y": 310.6,
                   "width": 143.4,
                   "height": 13.0,
                   "content": "CONFIRMAR CONTRASEÑA",
@@ -5967,7 +5886,7 @@
                   "type": "frame",
                   "id": "p274",
                   "x": 35.0,
-                  "y": 412.0,
+                  "y": 331.9,
                   "width": 460.0,
                   "height": 41.8,
                   "layout": "none",
@@ -6012,7 +5931,7 @@
                   "type": "frame",
                   "id": "p276",
                   "x": 35.0,
-                  "y": 469.8,
+                  "y": 389.7,
                   "width": 460.0,
                   "height": 45.0,
                   "layout": "none",
@@ -6057,7 +5976,7 @@
                   "type": "text",
                   "id": "p278",
                   "x": 143.8,
-                  "y": 531.8,
+                  "y": 451.7,
                   "width": 157.5,
                   "height": 13.0,
                   "content": "YA TENGO UNA CUENTA ·",
@@ -6075,7 +5994,7 @@
                   "type": "text",
                   "id": "p279",
                   "x": 295.9,
-                  "y": 531.8,
+                  "y": 451.7,
                   "width": 101.0,
                   "height": 13.0,
                   "content": "INICIAR SESIÓN",

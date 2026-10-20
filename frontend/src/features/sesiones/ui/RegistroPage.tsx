@@ -14,8 +14,7 @@ type Props = {
 
 /**
  * Crear cuenta ya tiene endpoint (`POST /usuarios`, con auto-login). El correo
- * queda deshabilitado a propósito: el backend todavía no guarda email y el
- * registro no lo pide, así que no se simula un campo que no llega a ningún lado.
+ * no se muestra: el backend no lo guarda ni lo pide en el registro.
  */
 
 const MINIMO_PASSWORD = 8
@@ -70,14 +69,6 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
           required
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-        />
-        <CampoTexto
-          id="registro-correo"
-          etiqueta="CORREO ELECTRÓNICO"
-          type="email"
-          placeholder="tu@correo.com"
-          disabled
-          ayuda="El registro todavía no pide correo; se habilita cuando exista la recuperación de contraseña."
         />
         <CampoTexto
           id="registro-password"

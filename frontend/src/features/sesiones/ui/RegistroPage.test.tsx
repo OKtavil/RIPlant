@@ -56,10 +56,10 @@ describe('RegistroPage', () => {
     expect(screen.getByRole('button', { name: 'CREAR CUENTA' })).toBeTruthy()
   })
 
-  it('mantiene el correo deshabilitado mientras el backend no lo pida', () => {
+  it('no renderiza el campo de correo', () => {
     const { container } = render(<RegistroPage onRegistrar={vi.fn()} onNavegar={vi.fn()} />)
 
-    expect(container.querySelector('#registro-correo')).toHaveProperty('disabled', true)
+    expect(container.querySelector('#registro-correo')).toBeNull()
     expect(container.querySelector('#registro-usuario')).toHaveProperty('disabled', false)
   })
 })

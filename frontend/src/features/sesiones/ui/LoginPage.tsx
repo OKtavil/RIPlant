@@ -37,10 +37,6 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
       subtitulo="Inicia sesión para cuidar tus recuerdos."
       pie={
         <>
-          <EnlaceBoton tono="rojo" onClick={() => onNavegar('recuperar')}>
-            ¿OLVIDASTE TU CONTRASEÑA?
-          </EnlaceBoton>
-          <br />
           ¿AÚN NO TIENES CUENTA?{' '}
           <EnlaceBoton onClick={() => onNavegar('registro')}>CREAR UNA CUENTA</EnlaceBoton>
         </>
@@ -55,7 +51,6 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
           required
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          ayuda="El prototipo rotula este campo “CORREO ELECTRÓNICO”, pero la API autentica por usuario."
         />
 
         <CampoTexto
