@@ -60,6 +60,7 @@ describe('Lapidas (e2e)', () => {
 
     const crowned = await request(app.getHttpServer())
       .post(`/lapidas/${created.body.id}/corona`)
+      .set('Cookie', cookie)
       .expect(201);
     expect(crowned.body.coronasCount).toBe(1);
   });
