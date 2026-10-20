@@ -33,7 +33,7 @@ campo y conectando el handler:
 
 | Pantalla | Evidencia | Aviso en código (literal) | Contrato que espera |
 |---|---|---|---|
-| Crear cuenta | `RegistroPage.tsx:29-42` | "El registro todavía no tiene endpoint en el backend." | `POST /usuarios` de `pendientes-backend.md` S3 (con auto-login) |
+| Crear cuenta | `RegistroPage.tsx` | — (conectada, ver T8) | `POST /usuarios` de `pendientes-backend.md` S3 (con auto-login) — **entregado** |
 | Recuperar contraseña | `RecuperarPage.tsx:18-24` | "La recuperación de contraseña todavía no tiene endpoint en el backend." | `pendientes-backend.md` S1 |
 | Nueva contraseña | `RestablecerPage.tsx:25-34` | "El cambio de contraseña todavía no tiene endpoint en el backend." | `pendientes-backend.md` S1 |
 | Comentarios | `DetallePage.tsx:56` | "Los comentarios todavía no tienen endpoint, así que no se pueden leer ni escribir." | `pendientes-backend.md` S1 |
@@ -90,13 +90,15 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
 
 | ID | S# | Ruta | Estado | Commit |
 |---|---|---|---|---|
-| T1 | S1 | inline | hecho 2026-10-19 — 28 tests verdes (RED/GREEN en L6) + build + lint + verificación sin blockers (L7); review RDD en curso (L8) | `0e47aba` |
-| T2 | S2 | inline | bloqueado por backend (una tarea por fila al llegar cada endpoint) | — |
-| T3 | S3 | inline | bloqueado por endpoint de conteo en backend | — |
+| T1 | S1 | inline | hecho 2026-10-19 — 28 tests verdes (RED/GREEN en L6) + build + lint + verificación sin blockers (L7); review RDD APPROVED con authority burned (L8) | `0e47aba` |
+| T2 | S2 | inline | en curso: Crear cuenta conectada (T8); el resto de las filas sigue bloqueado por backend | `022c150` |
+| T3 | S3 | inline | pendiente: `GET /lapidas/asesinos` ya existe (ver T9) | — |
 | T4 | S4 | inline | pendiente de decisión (borrar propio al aterrizar S4 del backend; editar = decisión de producto) | — |
 | T5 | S5 | inline | decisión abierta (routing por URL) | — |
 | T6 | S6 | inline | decisión abierta + esquema backend | — |
 | T7 | S7 | inline | decisión abierta + definición backend | — |
+| T8 | S2 | inline | hecho 2026-10-19 — registro conectado y verificado contra el backend real (L9) | `022c150` |
+| T9 | S3 | inline | pendiente — el endpoint ya existe; falta conectar Inicio/Ranking/Perfil | — |
 
 ## Log
 
@@ -142,3 +144,23 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   `admin`/`riplanta123` en texto plano (`sesiones.api.test.ts:36`) — verificar si es un admin
   seed real; si lo es, rotarla. Mientras corría el review, la otra sesión commiteó `44ac10b`
   (backend `/lapidas`) y movió HEAD, pero no tocó esta línea ya aprobada.
+- **L9 (2026-10-19)** — **T8 (S2, fila Crear cuenta) hecho**: `POST /usuarios` aterrizó en el
+  backend con auto-login (`usuarios.controller.ts:23-52`), así que la pantalla se conectó
+  (`RegistroPage.tsx` + `sesionesApi.registrar` + `registrar()` en `App.tsx`). Hallazgo al
+  implementar: el cliente HTTP **no clasificaba el 409**, que es justo el que devuelve el
+  registro con un nombre repetido; sin `case 409` un duplicado mostraba "Ocurrió un error
+  inesperado". Se agregó el código `conflicto` a `ApiError` y a `clasificar()`. El correo sigue
+  deshabilitado a propósito (el backend no guarda email y el registro no lo pide: no se simula).
+  Verificación contra el backend real (`:3000`, Mongo `:27018`, ambos reiniciados por esta
+  sesión tras encontrarlos caídos): `201` con `Set-Cookie: riplanta_sesion=...; HttpOnly;
+  SameSite=Lax` y sesión vigente en `GET /sesiones/actual`; duplicado `409`; contraseña corta
+  `400` con "La contraseña debe tener al menos 8 caracteres"; y un `rol: "admin"` inyectado en
+  el cuerpo **se ignora** (la respuesta devuelve `rol: "usuario"`). Datos de prueba revertidos
+  (2 usuarios borrados de Mongo; el de contraseña corta nunca se insertó). 36 tests, `build` y
+  `lint` en verde. Commit `022c150`, 7 archivos, +192/−18. Veredicto de riesgo: **item 3**
+  (el `ApiError` es una superficie que consume toda la app). La otra sesión commiteó `e1edbae`
+  mientras trabajaba; se stagearon solo los 7 archivos propios y sus 2 quedaron intactos.
+- **Nota de coordinación (2026-10-19)** — Este trabajo se hizo en el mismo worktree que la
+  sesión de backend. Regla aplicada: stagear **solo** los archivos propios, nunca `git add -A`,
+  y verificar el contenido del commit antes de cerrarlo. HEAD se movió dos veces en esta sesión
+  (`593ccbf`, `e1edbae`) sin conflicto.
