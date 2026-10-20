@@ -225,6 +225,10 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   propia base `riplanta_e2e_<suite>_w<N>_<uuid>`, creada al arrancar y borrada en el `afterAll`.
   El `globalSetup` barre lo que dejó una corrida cortada a la mitad. T9 había dejado el aviso en
   el README, que mitigaba el daño pero no lo arreglaba; ahora no hay daño que avisar.
+- **`R3-null-hash-path`** — ✅ **cerrado (E11, commit `391171f`)**. No era un hash nulo: ese caso
+  ya lo cubría el cebo. Era un hash **sin forma de hash** (`bcryptjs` lanza con un no-string, y
+  un string malformado tarda microsegundos en vez de ~65 ms). Ahora se valida la forma y lo que
+  no parece un hash se compara contra el cebo.
 - **Entrega del frontend** (`P1` del documento del frontend). La divergencia de rama de L4
   **ya no existe**: verificado en E3, la rama está en `ahead 0 / behind 0` con el remoto.
 
@@ -690,3 +694,32 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   no documentado de Jest.
 
   **Commit:** `1888293`.
+
+- **E11 (2026-10-20, `R3-null-hash-path` cerrado):** el hallazgo tenía el nombre equivocado y por
+  eso apuntaba al lugar equivocado. **Un `passwordHash` nulo nunca fue el problema**: `?? HASH_CEBO`
+  ya lo reemplazaba por el cebo y `compare` devolvía `false` — verificado, no razonado. Lo que
+  faltaba es un hash **sin forma de hash**, y ese caso sí es alcanzable: `@Prop({ required: true })`
+  de Mongoose rechaza `null` y `undefined` pero **acepta un número** (verificado con
+  `validateSync()`), y nada impide una escritura por fuera del modelo o un documento viejo.
+
+  **Dos consecuencias distintas, medidas:**
+  - Con un no-string (`12345`, `{}`, `[]`, `true`, `NaN`), `bcryptjs.compare` lanza
+    `Illegal arguments` → el login devolvía **500** en vez de 401. Reproducido end-to-end contra
+    Mongo real antes de tocar el código.
+  - Con un string que no es un hash (`"abc"`, `""`, un hash truncado), `compare` **no** lanza,
+    pero vuelve en **0.06 ms** contra los **~65 ms** de un hash real. Tres órdenes de magnitud:
+    eso reabre el ataque de temporización que el cebo existe para cerrar. Por eso el fix valida
+    **forma** (regex `/^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/`) y no tipo; un
+    `typeof === 'string'` habría dejado este segundo caso abierto.
+
+  **Chequeo diferencial contra el commit base (18 casos, no commiteado):** 12 idénticos y 6
+  distintos. **Los 6 distintos son exactamente los valores que antes lanzaban.** Ningún caso
+  válido cambió: hash real con la clave correcta sigue dando `true`, con la incorrecta `false`,
+  y los hashes con prefijo `$2a$` y con rounds 4/15 siguen funcionando. Se verificó además que
+  el patrón acepta los 15 hashes reales de bcryptjs (rounds 4-15), las tres variantes de prefijo
+  y el propio `HASH_CEBO` — sin falso negativo, que era el riesgo del fix.
+
+  **Verificación observada:** unit **78/78** (eran 72; +6 del caso nuevo) · e2e **29/29** ·
+  `build` y `lint` limpios · `riplanta` intacta (6 usuarios, 10 lápidas, 6 categorías).
+
+  **Commit:** `391171f`.
