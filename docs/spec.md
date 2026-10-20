@@ -108,6 +108,9 @@ disco local y se sirve en `/uploads/<archivo>`.
   categoría, causa y fecha) y al final las acciones. La card no incluye ni la foto ni los
   botones. La columna derecha queda solo para los comentarios.
 - Las pruebas cubren el camino feliz y los errores HTTP principales.
+- La **barra de navegación** lleva el logo (sin fondo propio, se ve el café del nav) y,
+  a la derecha, el menú con las acciones de sesión: `INICIAR SESIÓN` sin sesión,
+  y `@usuario` con `SALIR` cuando hay una. El prototipo no traía esas acciones.
 
 ## Casos de uso ODD
 

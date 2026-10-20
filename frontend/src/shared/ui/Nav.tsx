@@ -5,6 +5,8 @@
  * `items` vacío y solo se ve el logo.
  */
 
+import type { ReactNode } from 'react'
+
 export type Vista = 'inicio' | 'ranking' | 'publicar' | 'detalle' | 'perfil' | 'categorias'
 
 const ETIQUETAS: Record<Vista, string> = {
@@ -22,9 +24,14 @@ type Props = {
   /** Ítems visibles. Vacío en las pantallas de autenticación. */
   items?: Vista[]
   onNavegar?: (vista: Vista) => void
+  /**
+   * Acciones de sesión (entrar, perfil, salir). El prototipo no las trae, pero
+   * hacen falta; viven dentro del nav para que no queden colgando debajo.
+   */
+  acciones?: ReactNode
 }
 
-export function Nav({ activa = null, items = [], onNavegar }: Props) {
+export function Nav({ activa = null, items = [], onNavegar, acciones }: Props) {
   return (
     <nav className="nav">
       <button className="nav__logo" onClick={() => onNavegar?.('inicio')}>
@@ -44,6 +51,7 @@ export function Nav({ activa = null, items = [], onNavegar }: Props) {
           ))}
         </div>
       )}
+      {acciones && <div className="nav__acciones">{acciones}</div>}
     </nav>
   )
 }

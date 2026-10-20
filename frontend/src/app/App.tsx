@@ -183,24 +183,27 @@ export default function App() {
 
   return (
     <div className="pantalla">
-      <Nav activa={vistaActiva} items={navItems} onNavegar={irAVista} />
-
-      <div className="pantalla__acciones">
-        {sesion ? (
-          <>
-            <button className="nav__item" onClick={() => irAVista('perfil')}>
-              @{sesion.username}
+      <Nav
+        activa={vistaActiva}
+        items={navItems}
+        onNavegar={irAVista}
+        acciones={
+          sesion ? (
+            <>
+              <button className="nav__item" onClick={() => irAVista('perfil')}>
+                @{sesion.username}
+              </button>
+              <button className="nav__item" onClick={() => void cerrarSesion()}>
+                SALIR
+              </button>
+            </>
+          ) : (
+            <button className="nav__item" onClick={() => setVistaAuth('login')}>
+              INICIAR SESIÓN
             </button>
-            <button className="nav__item" onClick={() => void cerrarSesion()}>
-              SALIR
-            </button>
-          </>
-        ) : (
-          <button className="nav__item" onClick={() => setVistaAuth('login')}>
-            INICIAR SESIÓN
-          </button>
-        )}
-      </div>
+          )
+        }
+      />
 
       {aviso && <Aviso tono="error">{aviso}</Aviso>}
 

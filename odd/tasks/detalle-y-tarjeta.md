@@ -145,3 +145,32 @@ Supuestos:
     lado a lado (`p176` x=19 w=372, `p362` x=401 w=372, ambos y=629.2) y `height` de
     `p162` bajó de `710.2` a `688.2`. 386 IDs únicos, 10 páginas, JSON válido.
   - **Suite**: **86/86 tests, build ✓, lint ✓**.
+- **L23 (2026-10-20)** — Pedido del usuario (verbatim): "El titulo en el nav bar tiene que
+  tener un fondo transparente, que se vea la parte cafe de atras, el boton de iniciar
+  sesion esta debajo de publicar, muevelo dentro del navbar". Al preguntar si había que
+  llevarlo al prototipo (que no lo trae), respondió "Agregalo".
+  - **Causa del fondo**: `.nav__logo` no declaraba `background`, pero es un `<button>` y
+    heredaba el `buttonface` del user-agent. El prototipo lo dibuja como un `<div>` sin
+    fondo. Se agregó `background: none; border: 0; padding: 0; cursor: pointer`.
+  - **Causa de la posición**: las acciones vivían en `div.pantalla__acciones`, **fuera**
+    del `<Nav>`, con `justify-content: flex-end` y
+    `margin-top: calc(var(--gap-pantalla) * -1 + 6px)` — un parche que lo subía a pisar la
+    fila del nav. Se eliminó esa clase y las acciones pasaron a `Nav` vía el prop
+    `acciones`, dentro de `.nav__acciones`.
+  - **Layout del nav**: pasó de `space-between` con 2 hijos a `flex-start` con 3, y
+    `.nav__items` tomó `margin-left: auto` para que menú + acciones queden juntos a la
+    derecha (con `space-between` el menú quedaba centrado).
+  - **Tests**: `Nav.test.tsx` es nuevo (4 tests): logo sin fondo, acciones dentro del nav,
+    nav sin acciones, y orden de hijos `logo, items, acciones`. RED 1 fallo → GREEN
+    **90/90** (eran 86).
+  - **Prototipos**: el `INICIAR SESIÓN` se agregó a los **6 boards con nav** (Inicio,
+    Ranking, Publicar, Detalle, Perfil, Categorías). Los 4 de auth no lo llevan: 3 ya lo
+    tienen como enlace al pie y el board de login no puede enlazarse a sí mismo. Se cambió
+    `space-between` → `flex-start` + `margin-left: auto` en el grupo, igual que el código.
+    Diff del HTML: **1/1 línea**; las otras 4 entradas byte-idénticas. En el `.op` se
+    agregaron `p377`-`p382` (uno por nav) y se recalcularon las `x` del grupo de links.
+  - **Bug evitado**: al recalcular las `x` en Categorías, el filtro por lista de contenidos
+    no capturó `CATEGORIAS` (sin tilde en el `.op`) y quedó **solapado** encima de
+    `INICIAR SESIÓN`. Se rehízo filtrando por "todo text que no sea el logo" y se verificó
+    que ningún par de textos se solape.
+  - **Suite**: **90/90 tests, build ✓, lint ✓**.

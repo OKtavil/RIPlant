@@ -92,7 +92,7 @@
                 {
                   "type": "text",
                   "id": "p4",
-                  "x": 945.0,
+                  "x": 758.0,
                   "y": 19.0,
                   "width": 65.0,
                   "height": 11.0,
@@ -110,7 +110,7 @@
                 {
                   "type": "text",
                   "id": "p5",
-                  "x": 1031.0,
+                  "x": 849.0,
                   "y": 19.0,
                   "width": 75.5,
                   "height": 11.0,
@@ -128,11 +128,29 @@
                 {
                   "type": "text",
                   "id": "p6",
-                  "x": 1127.0,
+                  "x": 950.5,
                   "y": 19.0,
                   "width": 86.0,
                   "height": 11.0,
                   "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "p377",
+                  "x": 1062.5,
+                  "y": 19.0,
+                  "width": 150.5,
+                  "height": 11.0,
+                  "content": "INICIAR SESIÓN",
                   "fontFamily": "Press Start 2P",
                   "fontSize": 10.0,
                   "fontWeight": 400,
@@ -1790,7 +1808,7 @@
                 {
                   "type": "text",
                   "id": "p83",
-                  "x": 945.0,
+                  "x": 758.0,
                   "y": 19.0,
                   "width": 65.0,
                   "height": 11.0,
@@ -1808,7 +1826,7 @@
                 {
                   "type": "text",
                   "id": "p84",
-                  "x": 1031.0,
+                  "x": 849.0,
                   "y": 19.0,
                   "width": 75.5,
                   "height": 11.0,
@@ -1826,11 +1844,29 @@
                 {
                   "type": "text",
                   "id": "p85",
-                  "x": 1127.0,
+                  "x": 950.5,
                   "y": 19.0,
                   "width": 86.0,
                   "height": 11.0,
                   "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "p378",
+                  "x": 1062.5,
+                  "y": 19.0,
+                  "width": 150.5,
+                  "height": 11.0,
+                  "content": "INICIAR SESIÓN",
                   "fontFamily": "Press Start 2P",
                   "fontSize": 10.0,
                   "fontWeight": 400,
@@ -2872,7 +2908,7 @@
                 {
                   "type": "text",
                   "id": "p132",
-                  "x": 945.0,
+                  "x": 758.0,
                   "y": 19.0,
                   "width": 65.0,
                   "height": 11.0,
@@ -2890,7 +2926,7 @@
                 {
                   "type": "text",
                   "id": "p133",
-                  "x": 1031.0,
+                  "x": 849.0,
                   "y": 19.0,
                   "width": 75.5,
                   "height": 11.0,
@@ -2908,7 +2944,7 @@
                 {
                   "type": "text",
                   "id": "p134",
-                  "x": 1127.0,
+                  "x": 950.5,
                   "y": 19.0,
                   "width": 86.0,
                   "height": 11.0,
@@ -2920,6 +2956,24 @@
                     {
                       "type": "solid",
                       "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "p379",
+                  "x": 1062.5,
+                  "y": 19.0,
+                  "width": 150.5,
+                  "height": 11.0,
+                  "content": "INICIAR SESIÓN",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
                     }
                   ]
                 }
@@ -3445,7 +3499,7 @@
                 {
                   "type": "text",
                   "id": "p159",
-                  "x": 945.0,
+                  "x": 758.0,
                   "y": 19.0,
                   "width": 65.0,
                   "height": 11.0,
@@ -3463,7 +3517,7 @@
                 {
                   "type": "text",
                   "id": "p160",
-                  "x": 1031.0,
+                  "x": 849.0,
                   "y": 19.0,
                   "width": 75.5,
                   "height": 11.0,
@@ -3481,11 +3535,29 @@
                 {
                   "type": "text",
                   "id": "p161",
-                  "x": 1127.0,
+                  "x": 950.5,
                   "y": 19.0,
                   "width": 86.0,
                   "height": 11.0,
                   "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "p380",
+                  "x": 1062.5,
+                  "y": 19.0,
+                  "width": 150.5,
+                  "height": 11.0,
+                  "content": "INICIAR SESIÓN",
                   "fontFamily": "Press Start 2P",
                   "fontSize": 10.0,
                   "fontWeight": 400,
@@ -4200,7 +4272,7 @@
                 {
                   "type": "text",
                   "id": "p193",
-                  "x": 945.0,
+                  "x": 758.0,
                   "y": 19.0,
                   "width": 65.0,
                   "height": 11.0,
@@ -4218,7 +4290,7 @@
                 {
                   "type": "text",
                   "id": "p194",
-                  "x": 1031.0,
+                  "x": 849.0,
                   "y": 19.0,
                   "width": 75.5,
                   "height": 11.0,
@@ -4236,11 +4308,29 @@
                 {
                   "type": "text",
                   "id": "p195",
-                  "x": 1127.0,
+                  "x": 950.5,
                   "y": 19.0,
                   "width": 86.0,
                   "height": 11.0,
                   "content": "PUBLICAR",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "p381",
+                  "x": 1062.5,
+                  "y": 19.0,
+                  "width": 150.5,
+                  "height": 11.0,
+                  "content": "INICIAR SESIÓN",
                   "fontFamily": "Press Start 2P",
                   "fontSize": 10.0,
                   "fontWeight": 400,
@@ -6779,7 +6869,7 @@
                 {
                   "type": "text",
                   "id": "p316",
-                  "x": 818.9,
+                  "x": 625.0,
                   "y": 19.0,
                   "width": 65.0,
                   "height": 11.0,
@@ -6797,7 +6887,7 @@
                 {
                   "type": "text",
                   "id": "p317",
-                  "x": 905.0,
+                  "x": 716.0,
                   "y": 19.0,
                   "width": 75.5,
                   "height": 11.0,
@@ -6815,7 +6905,7 @@
                 {
                   "type": "text",
                   "id": "p318",
-                  "x": 1001.0,
+                  "x": 817.5,
                   "y": 19.0,
                   "width": 86.0,
                   "height": 11.0,
@@ -6833,7 +6923,7 @@
                 {
                   "type": "text",
                   "id": "p319",
-                  "x": 1107.0,
+                  "x": 929.5,
                   "y": 19.0,
                   "width": 107.0,
                   "height": 11.0,
@@ -6845,6 +6935,24 @@
                     {
                       "type": "solid",
                       "color": "#E8C547"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "p382",
+                  "x": 1062.5,
+                  "y": 19.0,
+                  "width": 150.5,
+                  "height": 11.0,
+                  "content": "INICIAR SESIÓN",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
                     }
                   ]
                 }

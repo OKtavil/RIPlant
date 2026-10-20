@@ -21,20 +21,14 @@
   gap: var(--gap-pantalla);
 }
 
-/* Fila de acciones de sesión, alineada a la derecha bajo la nav */
-.pantalla__acciones {
-  display: flex;
-  justify-content: flex-end;
-  gap: 18px;
-  margin-top: calc(var(--gap-pantalla) * -1 + 6px);
-}
-
 /* ── Barra de navegación ──────────────────────────────────────────────── */
 
 .nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* `flex-start` + el `margin-left: auto` de `.nav__items` deja el logo solo a
+     la izquierda y el menú con las acciones juntos a la derecha. */
+  justify-content: flex-start;
   background: var(--panel);
   border: 3px solid var(--borde-panel);
   border-radius: var(--radio-panel);
@@ -49,16 +43,32 @@
   font-size: 16px;
   letter-spacing: 1px;
   color: var(--amarillo);
+  /* El prototipo es un <div>: sin fondo propio, se ve el café del nav. */
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
 }
 
 .nav__logo:hover {
   color: var(--amarillo);
 }
 
+/* Acciones de sesión. El prototipo no las trae; van acá para no quedar
+   colgando debajo de la barra. */
+.nav__acciones {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
 .nav__items {
   display: flex;
   gap: 26px;
   flex-wrap: wrap;
+  /* Con el logo a la izquierda, el menú y las acciones van juntos a la derecha. */
+  margin-left: auto;
 }
 
 .nav__item {
