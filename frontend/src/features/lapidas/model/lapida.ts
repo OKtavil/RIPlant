@@ -17,6 +17,12 @@ export type Grave = {
   causaMuerte: string
   fotoUrl: string
   coronasCount: number
+  /**
+   * Si **este** usuario ya le dio corona. Lo agrega el backend por sesión
+   * (`lapidas.service.ts`), y viene `false` sin sesión o cuando la lápida no
+   * tiene coronas. El frontend lo usa para pintar el estado del botón.
+   */
+  coronadaPorMi?: boolean
   /** Id del usuario dueño; `''` en datos anteriores a la propiedad. */
   usuarioId: string
   /**

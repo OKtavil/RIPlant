@@ -76,6 +76,18 @@ describe('lapidasApi', () => {
     expect(init.headers).toBeUndefined()
   })
 
+  it('quitarCorona hace DELETE /lapidas/:id/corona sin body', async () => {
+    conRespuesta(Response.json({ id: 5, coronasCount: 0, coronadaPorMi: false }))
+
+    await lapidasApi.quitarCorona(5)
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe(`${BASE}/lapidas/5/corona`)
+    expect(init.method).toBe('DELETE')
+    expect(init.body).toBeUndefined()
+    expect(init.headers).toBeUndefined()
+  })
+
   it('update envía el body al PUT tal cual, sin completarlo (contrato parcial, ver F1)', async () => {
     conRespuesta(Response.json({ id: 5 }))
 

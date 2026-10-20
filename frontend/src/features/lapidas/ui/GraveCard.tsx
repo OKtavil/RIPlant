@@ -43,8 +43,18 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
       <p className="lapida__autor">por @{nombreDelDuenio(lapida)}</p>
 
       {tamano === 'alta' ? (
-        <button className="lapida__coronas" onClick={() => onCorona?.(lapida)} disabled={!onCorona}>
-          <IconoCorona />
+        <button
+          className={`lapida__coronas${lapida.coronadaPorMi ? ' lapida__coronas--puesta' : ''}`}
+          onClick={() => onCorona?.(lapida)}
+          disabled={!onCorona}
+          aria-pressed={lapida.coronadaPorMi ?? false}
+          aria-label={
+            lapida.coronadaPorMi
+              ? `Quitar la corona de ${lapida.nombrePlanta}`
+              : `Dar una corona a ${lapida.nombrePlanta}`
+          }
+        >
+          <IconoCorona stroke={lapida.coronadaPorMi ? '#E8C547' : undefined} />
           <span>{lapida.coronasCount}</span>
         </button>
       ) : (

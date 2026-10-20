@@ -118,10 +118,15 @@ export default function App() {
 
   async function darCorona(lapida: Grave) {
     try {
-      const actualizada = await lapidasApi.giveCorona(lapida.id)
+      // Toggle: si ya le di corona, volver a tocar la quita. El backend es
+      // idempotente en los dos sentidos, así que el estado local no puede
+      // desincronizarse por tocar dos veces.
+      const actualizada = lapida.coronadaPorMi
+        ? await lapidasApi.quitarCorona(lapida.id)
+        : await lapidasApi.giveCorona(lapida.id)
       setLapidas((items) => items.map((item) => (item.id === actualizada.id ? actualizada : item)))
     } catch (fallo) {
-      setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo dar la corona.')
+      setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo actualizar la corona.')
     }
   }
 

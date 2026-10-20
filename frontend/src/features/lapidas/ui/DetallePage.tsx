@@ -54,12 +54,17 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
 
         <div className="detalle__acciones">
           <Boton
-            className="detalle__corona"
+            className={`detalle__corona${lapida.coronadaPorMi ? ' detalle__corona--puesta' : ''}`}
             onClick={() => void onCorona(lapida)}
-            aria-label="Dar una corona a esta lápida"
+            aria-pressed={lapida.coronadaPorMi ?? false}
+            aria-label={
+              lapida.coronadaPorMi
+                ? 'Quitar la corona de esta lápida'
+                : 'Dar una corona a esta lápida'
+            }
           >
-            <IconoCorona size={14} />
-            DAR CORONA · {lapida.coronasCount}
+            <IconoCorona size={14} stroke={lapida.coronadaPorMi ? '#E8C547' : undefined} />
+            {lapida.coronadaPorMi ? 'QUITAR CORONA' : 'DAR CORONA'} · {lapida.coronasCount}
           </Boton>
 
           {mostrarBorrar && (

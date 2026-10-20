@@ -348,6 +348,14 @@
   color: var(--madera);
 }
 
+/* Estado "ya le di corona": el botón vuelve a quitarla, así que sube el peso
+   tipográfico para que se lea como activo. El color de la corona lo lleva el
+   propio icono (`stroke`), no el texto. */
+.lapida__coronas--puesta {
+  color: var(--madera);
+  font-weight: 700;
+}
+
 /* Botón de borrar de la tarjeta, en la grilla del perfil. */
 .lapida__borrar {
   background: none;
@@ -653,6 +661,12 @@
   padding: 10px 16px;
   border-width: 3px;
   border-radius: 8px;
+}
+
+/* La corona ya puesta: el botón pasa a quitarla, así que se marca con el
+   amarillo del sistema. El icono lleva el mismo color desde su prop `stroke`. */
+.detalle__corona--puesta {
+  border-color: var(--amarillo);
 }
 
 /* Columna derecha: solo los comentarios. */

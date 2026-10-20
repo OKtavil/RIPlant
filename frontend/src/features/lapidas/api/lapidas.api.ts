@@ -21,4 +21,12 @@ export const lapidasApi = {
   /** Incrementa el contador de coronas y devuelve la lápida actualizada. */
   giveCorona: (id: number) =>
     request<Grave>(`/lapidas/${id}/corona`, { method: 'POST' }),
+
+  /**
+   * Quita la corona de **este** usuario (no la de todos). Idempotente: `200`
+   * tenga o no corona. El filtro por `usuarioId` vive en el servicio, así que
+   * nadie puede quitarle la corona a otro.
+   */
+  quitarCorona: (id: number) =>
+    request<Grave>(`/lapidas/${id}/corona`, { method: 'DELETE' }),
 }

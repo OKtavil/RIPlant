@@ -86,6 +86,18 @@ describe('DetallePage', () => {
     expect(screen.getByRole('button', { name: /borrar la lápida/i })).toBeTruthy()
   })
 
+  it('ofrece quitar la corona cuando ya le di corona', () => {
+    montar({ lapida: lapida({ coronadaPorMi: true }) })
+
+    expect(screen.getByRole('button', { name: /quitar la corona/i })).toBeTruthy()
+  })
+
+  it('ofrece dar la corona cuando no le di corona', () => {
+    montar({ lapida: lapida({ coronadaPorMi: false }) })
+
+    expect(screen.getByRole('button', { name: /dar una corona/i })).toBeTruthy()
+  })
+
   it('deja todos los datos en la columna izquierda', () => {
     const { container } = montar({ sesion: sesionDuenia })
 
