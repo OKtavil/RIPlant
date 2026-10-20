@@ -3,13 +3,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { applyValidationPipe } from '../src/shared/validation-pipe';
-import { getModelToken } from '@nestjs/mongoose';
-import { LapidaDocumentModel } from '../src/lapidas/lapida.schema';
+import { UsuariosService } from '../src/usuarios/usuarios.service';
+import { abrirSesion } from './helpers/auth';
 
 describe('Lapidas (e2e)', () => {
   let app: INestApplication;
+  const sufijo = `${Date.now()}`;
+  const nombreUsuario = `lapida-user-${sufijo}`;
+  let cookie: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -17,19 +20,27 @@ describe('Lapidas (e2e)', () => {
     app = moduleFixture.createNestApplication();
     applyValidationPipe(app);
     await app.init();
+
+    const usuarios = app.get(UsuariosService);
+    await usuarios.crear({
+      username: nombreUsuario,
+      password: 'clave-larga-1',
+      rol: 'usuario',
+    });
+    cookie = await abrirSesion(app, nombreUsuario, 'clave-larga-1');
   });
 
-  afterEach(async () => {
-    await app.get(getModelToken(LapidaDocumentModel.name)).deleteMany({});
+  afterAll(async () => {
     await app.close();
   });
 
   it('lists, creates and crowns a grave', async () => {
     const list = await request(app.getHttpServer()).get('/lapidas').expect(200);
-    expect(list.body).toHaveLength(2);
+    expect(list.body.length).toBeGreaterThanOrEqual(10);
 
     const created = await request(app.getHttpServer())
       .post('/lapidas')
+      .set('Cookie', cookie)
       .send({
         nombrePlanta: 'Monstera',
         epitafio: 'Sus hojas fueron enormes.',
@@ -43,6 +54,8 @@ describe('Lapidas (e2e)', () => {
       id: expect.any(Number),
       nombrePlanta: 'Monstera',
       coronasCount: 0,
+      usuarioId: expect.any(String),
+      autor: nombreUsuario,
     });
 
     const crowned = await request(app.getHttpServer())
@@ -54,6 +67,7 @@ describe('Lapidas (e2e)', () => {
   it('rejects invalid grave payloads and missing resources', async () => {
     await request(app.getHttpServer())
       .post('/lapidas')
+      .set('Cookie', cookie)
       .send({ nombrePlanta: '', categoriaId: 'not-a-number' })
       .expect(400);
 
@@ -63,6 +77,7 @@ describe('Lapidas (e2e)', () => {
   it('creates and updates a grave without a cause of death', async () => {
     const creada = await request(app.getHttpServer())
       .post('/lapidas')
+      .set('Cookie', cookie)
       .send({
         nombrePlanta: 'Helecho',
         epitafio: 'Se desvaneció en silencio.',
@@ -74,6 +89,7 @@ describe('Lapidas (e2e)', () => {
 
     const editada = await request(app.getHttpServer())
       .put(`/lapidas/${creada.body.id}`)
+      .set('Cookie', cookie)
       .send({
         nombrePlanta: 'Helecho',
         epitafio: 'Sigue acá.',
@@ -83,10 +99,10 @@ describe('Lapidas (e2e)', () => {
       .expect(200);
     expect(editada.body.causaMuerte).toBe('');
 
-    // Un string vacío equivale a omitir el campo: si el formulario lo deja en
-    // blanco, la API no puede rechazarlo y mandar al usuario a un 400.
+    // Un string vacío equivale a omitir el campo
     const vacia = await request(app.getHttpServer())
       .post('/lapidas')
+      .set('Cookie', cookie)
       .send({
         nombrePlanta: 'Suculenta',
         epitafio: 'Nunca explicó qué pasó.',

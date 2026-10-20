@@ -23,6 +23,9 @@ export class LapidaDocumentModel {
   @Prop({ required: true, trim: true, maxlength: 40 })
   autor: string;
 
+  @Prop({ type: String, required: true, index: true })
+  usuarioId: string;
+
   @Prop({ required: true, index: true })
   categoriaId: number;
 

@@ -38,4 +38,12 @@ export class CreateLapidaDto {
   @IsString()
   @MaxLength(40)
   autor?: string;
+
+  /**
+   * Ignorado intencionalmente. POST /lapidas estampa el usuarioId desde la
+   * sesión (dueño-o-admin via middleware cuando se edita; al crear exige sesión).
+   */
+  @IsOptional()
+  @IsString()
+  usuarioId?: string;
 }

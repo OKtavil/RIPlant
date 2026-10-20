@@ -7,9 +7,11 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
 import { CreateLapidaDto } from './create-lapida.dto';
 import { LapidasService } from './lapidas.service';
+import type { RequestConSesion } from '../sesiones/sesion.interface';
 
 @Controller('lapidas')
 export class LapidasController {
@@ -20,14 +22,20 @@ export class LapidasController {
     return this.lapidasService.findAll();
   }
 
+  @Get('asesinos')
+  asesinos() {
+    return this.lapidasService.findAsesinos();
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.lapidasService.findOne(id);
   }
 
   @Post()
-  create(@Body() lapida: CreateLapidaDto) {
-    return this.lapidasService.create(lapida);
+  create(@Body() lapida: CreateLapidaDto, @Req() req: RequestConSesion) {
+    if (!req.sesion) throw new Error('Sesión requerida');
+    return this.lapidasService.create(lapida, req.sesion);
   }
 
   @Put(':id')

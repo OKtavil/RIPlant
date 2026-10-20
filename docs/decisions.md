@@ -83,3 +83,48 @@ autorización y la identidad son capas distintas.
 contraseña es intratable, así que nadie puede iniciar sesión como él. El estado sale de
 `duenio.rol` en la respuesta de la API: si lo resolviera el frontend comparando usernames
 se repetiría el mismo error frágil que ya existe en `autor`.
+
+## D-009 — La autorización de `/lapidas` vive en middlewares
+
+**Decisión:** cerrar las mutaciones de `/lapidas` con middlewares de Nest, no con guards ni
+con comprobaciones dentro del controlador. `DuenoOAdminLapidaMiddleware` carga la lápida por
+`:id`, la adjunta a la request y resuelve `401` / `403` / `404` antes de que el handler corra.
+`usuarioId` y `autor` se estampan desde la sesión; lo que mande el cliente se ignora.
+
+**Análisis:** es la instrucción explícita del usuario y coincide con el patrón que ya usa el
+proyecto (`SesionesMiddleware` global, `AdminMiddleware` en categorías). El middleware es el
+único punto donde la política ve la request completa y el recurso a la vez, así que la regla
+no se puede olvidar en un endpoint nuevo: o pasa por el middleware, o no llega.
+
+**Consecuencia:** `POST /lapidas` no necesita middleware propio porque el `SesionesMiddleware`
+global ya resuelve `req.sesion` para toda la aplicación; el controlador solo comprueba que
+exista. La política de "se borra el dueño, se borran sus lápidas" queda documentada sin
+implementar, porque el borrado de usuarios todavía no existe.
+
+## D-010 — Resultado de una mutación denegada: `401`, `403`, `404`
+
+**Decisión:** sin sesión → `401`; lápida inexistente o `:id` no numérico → `404`; sesión de
+otro usuario sin rol `admin` → `403`.
+
+**Análisis:** `401` y `403` responden preguntas distintas —"no sé quién sos" contra "sé quién
+sos y no te corresponde"— y mezclarlas obliga al front a adivinar si el problema es la sesión
+o el permiso. El `404` para una lápida que no existe es correcto y no filtra si el recurso
+existe para otro usuario; en este dominio la existencia de una lápida es pública (`GET` está
+abierto), así que no hay nada que ocultar con un `403` disfrazado de `404`.
+
+**Consecuencia:** el front distingue los tres casos sin ambigüedad. `409` queda reservado para
+choques con un registro existente (username duplicado), no para permisos.
+
+## D-011 — `duenio` se resuelve en lote, no por lápida
+
+**Decisión:** `GET /lapidas` y `GET /lapidas/:id` agregan `duenio: { username, rol }` con un
+solo `find` por `$in` sobre los `usuarioId` presentes en el resultado, no una consulta por
+lápida.
+
+**Análisis:** el naïf de resolver el dueño dentro del `map` es el N+1 clásico: con 10 lápidas
+son 11 consultas, con 200 son 201. Una consulta por lote lo mantiene en 2 sin agregar
+complejidad real.
+
+**Consecuencia:** el front resuelve el perfil y el estado zombie sin `GET /usuarios/:id` ni
+pedidos extra. Costo asumido: cada lápida paga un enriquecimiento en memoria; si el volumen
+creciera, se denormaliza el `username` en la lápida, no se optimiza la query.

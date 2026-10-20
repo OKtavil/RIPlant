@@ -178,17 +178,17 @@ que se desarrolla y se verifica todo lo anterior.
 
 Todas pendientes: este documento registra decisiones, no autoriza implementación.
 
-| ID | Tarea | Specs | Estado |
-|---|---|---|---|
-| T1 | `causaMuerte` opcional (DTO, schema y tests) | S2 | pendiente |
-| T2 | `POST /usuarios` con auto-login y `rol` forzado | S3 | pendiente |
-| T3 | `usuarioId` obligatorio + middlewares de sesión y de dueño-o-admin en `/lapidas` + usuario `zombie`, migración de huérfanas y datos semilla ampliados | S4, S4.1, S11 | pendiente |
-| T4 | Coronas: colección `coronas`, índice único y sesión requerida | S5 | pendiente |
-| T5 | Comentarios: colección, los tres endpoints y borrado solo admin | S6 | pendiente |
-| T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | pendiente |
-| T7 | Subida de foto a disco local con servido estático | S8 | pendiente |
-| T8 | Recuperar y nueva contraseña (diferida) | S9 | pendiente |
-| T9 | Documentación de los endpoints nuevos | S10 | pendiente |
+| ID | Tarea | Specs | Estado | Commit |
+|---|---|---|---|---|
+| T1 | `causaMuerte` opcional (DTO, schema y tests) | S2 | ✅ hecho | `65eae81` |
+| T2 | `POST /usuarios` con auto-login y `rol` forzado | S3 | ✅ hecho | `398ce55` |
+| T3 | `usuarioId` obligatorio + middlewares de sesión y de dueño-o-admin en `/lapidas` + usuario `zombie`, migración de huérfanas y datos semilla ampliados | S4, S4.1, S11 | ✅ hecho | (este commit) |
+| T4 | Coronas: colección `coronas`, índice único y sesión requerida | S5 | pendiente | — |
+| T5 | Comentarios: colección, los tres endpoints y borrado solo admin | S6 | pendiente | — |
+| T6 | `GET /lapidas/asesinos` con el agregado por dueño | S7 | ✅ hecho (salió junto a T3) | (este commit) |
+| T7 | Subida de foto a disco local con servido estático | S8 | pendiente | — |
+| T8 | Recuperar y nueva contraseña (diferida) | S9 | pendiente | — |
+| T9 | Documentación de los endpoints nuevos | S10 | pendiente | — |
 
 ## Orden y dependencias
 
@@ -317,3 +317,50 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   Confirma la propuesta de S11: el seed crea también a `jardinera` (rol `usuario`). Quedan
   tres dueños reales — `admin`, `jardinera` y `zombie` — para que asesinos seriales se
   pueda verificar con más de una fila.
+
+- **E4 (2026-10-19, verificación de T3 al implementarlo):**
+
+  **Implementado (T3, S4/S4.1/S11; absorbe también T6/S7):**
+
+  - `lapida.schema.ts` e `lapida.interface.ts`: `usuarioId` obligatorio e indexado, más
+    `duenio?: { username, rol }` en la interface (campo de respuesta, no de schema).
+  - `create-lapida.dto.ts`: `usuarioId` opcional declarado **solo** para que
+    `forbidNonWhitelisted` no rechace el campo; el servicio **nunca** lo lee del cuerpo.
+  - `DuenoOAdminLapidaMiddleware` (`sesiones/dueno-o-admin-lapida.middleware.ts`): carga la
+    lápida por `:id` y la adjunta a la request. Sin sesión → `401`; lápida inexistente o id
+    inválido → `404`; sesión de otro usuario sin rol `admin` → `403`.
+  - `LapidasModule` implementa `NestModule` y aplica ese middleware a `PUT /lapidas/:id` y
+    `DELETE /lapidas/:id`. **`POST /lapidas` no lo lleva**: lo cubre el `SesionesMiddleware`
+    global, que ya resuelve `req.sesion`; el controlador lo exige y rechaza si falta.
+  - `LapidasService.create()` estampa `usuarioId` y `autor = sesion.usuario.username` desde la
+    sesión, ignorando `autor` e `usuarioId` del cuerpo.
+  - `LapidasService.onModuleInit()` ahora: (1) siembra `zombie` (rol `zombie`, hash intratable
+    de contraseña aleatoria) y `jardinera` (rol `usuario`) con upsert idempotente; (2) migra las
+    huérfanas al zombie (`$or: usuarioId ausente/null/vacío`), idempotente; (3) siembra 10
+    lápidas con `$setOnInsert`, ids 7 y 8 a nombre de zombie, `coronasCount` de 0 a 15.
+  - `GET /lapidas` y `GET /lapidas/:id` enriquecen cada lápida con `duenio: { username, rol }`
+    resuelto contra `usuarios` en un solo `$in` por lote (no N+1).
+  - `GET /lapidas/asesinos` (T6, S7): agrupa por `usuarioId`, resuelve el nombre contra
+    `usuarios.username`, excluye al zombie y devuelve el top 10.
+
+  **Dos hallazgos de implementación que valen registro:**
+
+  - **Colisión real de módulos `UsuariosModule ↔ SesionesModule`.** `UsuariosController`
+    necesita `SesionesService` (auto-login de T2) y `SesionesModule` importa `UsuariosModule`.
+    Sin resolverlo, **todo el backend deja de arrancar**: los e2e fallan en `app.init()`, no en
+    las aserciones. Resuelto con `forwardRef` en ambos lados.
+  - **`import()` dinámico no es utilizable en este proyecto sin extensiones explícitas.** El
+    `tsconfig` es `module: nodenext` + `moduleResolution: nodenext`, así que el import
+    dinámico exige `.js`; pero ts-jest resuelve el nombre lógico y entonces `.js` no existe
+    en el runtime de los tests. Ninguna de las dos formas satisface build **y** unit tests
+    a la vez. Se resolvió con `require('../usuarios/password')` síncrono dentro del helper
+    de hash intratable. Queda anotado porque es una trampa que se va a repetir.
+
+  **Verificación observada:** `pnpm run test` 40/40 · `pnpm run test:e2e` 24/24 ·
+  `pnpm run build` sin errores · `pnpm run lint` sin warnings. `git status` limpio respecto
+  del otro agente antes de commitear.
+
+  **Brecha conocida que T3 deja abierta (S11 incompleto):** el seed de **categorías** sigue
+  en 2, pero el de lápidas ya referencia `categoriaId` 3, 4, 5 y 6. Hasta que se amplíe el seed
+  de categorías a 6, esas lápidas apuntan a categorías inexistentes. Es lo próximo a cerrar.
+  Tampoco entra todavía T4: `giveCorona` sigue incrementando sin el índice único de `coronas`.

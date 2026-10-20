@@ -9,4 +9,6 @@ export interface Lapida {
   causaMuerte: string;
   fotoUrl: string;
   coronasCount: number;
+  usuarioId: string;
+  duenio?: { username: string; rol: string };
 }
