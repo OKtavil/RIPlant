@@ -149,9 +149,9 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   usuario (granted) y ciclo iniciado con la línea `review-e71bd9f374d851f3`. Lentes congeladas:
   risk, readability, reliability. Las tres lentes volvieron con cero hallazgos causales por
   candidato (~10 WARNING/SUGGESTION, todos advisories no bloqueantes). **Ciclo cerró APPROVED
-  con `authority: burned`** (línea `review-e71bd9f374d851f3`). Advisory principal: fixture
-  `admin`/`riplanta123` en texto plano (`sesiones.api.test.ts:36`) — verificar si es un admin
-  seed real; si lo es, rotarla. Mientras corría el review, la otra sesión commiteó `44ac10b`
+  con `authority: burned`** (línea `review-e71bd9f374d851f3`). Advisory: fixture `admin`/`riplanta123`
+  en texto plano (`sesiones.api.test.ts:36`) — **cerrado en L11** tras verificarlo a fondo.
+  Mientras corría el review, la otra sesión commiteó `44ac10b`
   (backend `/lapidas`) y movió HEAD, pero no tocó esta línea ya aprobada.
 - **L9 (2026-10-19)** — **T8 (S2, fila Crear cuenta) hecho**: `POST /usuarios` aterrizó en el
   backend con auto-login (`usuarios.controller.ts:23-52`), así que la pantalla se conectó
@@ -189,3 +189,20 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   aparecen. 42 tests, `build` y `lint` en verde. Commit `cb97920`, 9 archivos, +225/−47.
   Veredicto de riesgo: **item 3** (`Grave` cambia de forma y la consumen las tres pantallas del
   feature).
+- **L11 (2026-10-20)** — **Advisory del fixture cerrado**. Se verificó a fondo y el diagnóstico
+  original era impreciso: **no había credencial filtrada** por un descuido, sino un default de
+  desarrollo deliberado. `riplanta123` es el fallback documentado de
+  `usuarios.service.ts:48` (solo fuera de producción, avisado por log) y aparece en el README.
+  El repo `origin` es `github.com/OKtavil/RIPlant` y es **privado** (confirmado con `gh`), así
+  que la exposición en `origin/copilot/working-copy` (commits `1ae7143`, `0e47aba`, `335a7db`)
+  queda restringida a quien ya tiene acceso. Búsqueda completa: 17 apariciones en el working
+  tree — 1 `.env` (ignorado), 1 test del backend (legítimo: verifica el fallback), 8 de relleno
+  en tests del frontend (corregidas), 3 de documentación, y 1 en este mismo doc.
+  **Hecho**: (a) los 8 rellenos del frontend pasaron a `clave-de-prueba`; (b) `backend/.env`
+  rotado a una contraseña aleatoria de 20 caracteres — el `.env` no cumplía su función si
+  repetía el valor que ya está público en el repo; (c) hallazgo nuevo: `backend/.env.example`
+  **no listaba** `ADMIN_PASSWORD` ni `ADMIN_USERNAME`, así que quien clonaba el repo no
+  descubría que existían y terminaba usando el default sin saberlo. **Pendiente**: el arreglo de
+  `.env.example` no se pudo escribir (el entorno bloquea escritura en archivos `.env*`); queda
+  el contenido propuesto en la conversación para aplicación manual. Commit `3d59227`, 3
+  archivos, +11/−11. Veredicto de riesgo: **item 5** (se tocó configuración de entorno).
