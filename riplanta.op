@@ -3380,6 +3380,51 @@
                       ]
                     }
                   ]
+                },
+                {
+                  "type": "frame",
+                  "id": "p362",
+                  "x": 19.0,
+                  "y": 443.0,
+                  "width": 240.0,
+                  "height": 40.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#C0392B"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": 3.0,
+                    "fill": [
+                      {
+                        "type": "solid",
+                        "color": "#6E3A12"
+                      }
+                    ]
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "p363",
+                      "x": 20.0,
+                      "y": 14.0,
+                      "width": 200.0,
+                      "height": 11.0,
+                      "content": "BORRAR ESTA LÁPIDA",
+                      "fontFamily": "Press Start 2P",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#F5E0B8"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             },
