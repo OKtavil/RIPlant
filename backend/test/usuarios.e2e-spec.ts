@@ -6,13 +6,18 @@ import { AppModule } from '../src/app.module';
 import { applyValidationPipe } from '../src/shared/validation-pipe';
 import { UsuarioDocumentModel } from '../src/usuarios/usuario.schema';
 import { SesionDocumentModel } from '../src/sesiones/sesion.schema';
+import { borrarBaseAislada, prepararBaseAislada } from './helpers/base-datos';
 
 describe('Usuarios (e2e)', () => {
   let app: INestApplication;
   const sufijo = `${Date.now()}`;
   const nombreNuevo = `jardinero-${sufijo}`;
+  let baseDatos: string;
 
   beforeAll(async () => {
+    // R3-e2e-shared-db: base propia, para no escribir en la de desarrollo.
+    baseDatos = prepararBaseAislada();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -32,6 +37,8 @@ describe('Usuarios (e2e)', () => {
       .deleteMany({ usuarioId: { $in: creados.map((u) => u._id) } });
     await usuariosModel.deleteMany({ username: { $regex: sufijo } });
     await app.close();
+
+    await borrarBaseAislada(baseDatos);
   });
 
   it('should register an account, auto-login and never leak the hash', async () => {

@@ -8,6 +8,7 @@ import { AppModule } from '../src/app.module';
 import { applyValidationPipe } from '../src/shared/validation-pipe';
 import { UsuariosService } from '../src/usuarios/usuarios.service';
 import { abrirSesion } from './helpers/auth';
+import { borrarBaseAislada, prepararBaseAislada } from './helpers/base-datos';
 
 // S8: las fotos de los e2e van a un temporal, nunca al worktree. Se define
 // antes de importar AppModule para que el servicio lo lea al construirse.
@@ -19,8 +20,12 @@ describe('Lapidas (e2e)', () => {
   const sufijo = `${Date.now()}`;
   const nombreUsuario = `lapida-user-${sufijo}`;
   let cookie: string;
+  let baseDatos: string;
 
   beforeAll(async () => {
+    // R3-e2e-shared-db: base propia, para no escribir en la de desarrollo.
+    baseDatos = prepararBaseAislada();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -41,6 +46,7 @@ describe('Lapidas (e2e)', () => {
   afterAll(async () => {
     await app.close();
     rmSync(uploadsScratch, { recursive: true, force: true });
+    await borrarBaseAislada(baseDatos);
   });
 
   it('lists, creates and crowns a grave', async () => {

@@ -9,13 +9,19 @@ import { UsuarioDocumentModel } from '../src/usuarios/usuario.schema';
 import { CategoriaDocumentModel } from '../src/categorias/categoria.schema';
 import { SesionDocumentModel } from '../src/sesiones/sesion.schema';
 import { abrirSesion } from './helpers/auth';
+import { borrarBaseAislada, prepararBaseAislada } from './helpers/base-datos';
 
 describe('Categorias (e2e)', () => {
   let app: INestApplication;
   let cookieAdmin: string;
   const nombreAdmin = `admin-cat-${Date.now()}`;
+  let baseDatos: string;
 
   beforeAll(async () => {
+    // R3-e2e-shared-db: base propia, para no escribir en la de desarrollo. Tiene
+    // que correr antes del compile(), que es cuando MongooseModule lee la URI.
+    baseDatos = prepararBaseAislada();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -46,6 +52,10 @@ describe('Categorias (e2e)', () => {
       .deleteMany({ usuarioId: { $in: creados.map((u) => u._id) } });
     await usuariosModel.deleteMany({ username: nombreAdmin });
     await app.close();
+
+    // La base entera, no las colecciones: borra incluso lo que dejó un test que
+    // falló antes de su propia limpieza, que es el caso que antes quedaba vivo.
+    await borrarBaseAislada(baseDatos);
   });
 
   it('creates, updates and removes a category', async () => {

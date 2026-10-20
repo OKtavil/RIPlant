@@ -8,14 +8,19 @@ import { UsuariosService } from '../src/usuarios/usuarios.service';
 import { UsuarioDocumentModel } from '../src/usuarios/usuario.schema';
 import { SesionDocumentModel } from '../src/sesiones/sesion.schema';
 import { abrirSesion } from './helpers/auth';
+import { borrarBaseAislada, prepararBaseAislada } from './helpers/base-datos';
 
 describe('Sesiones (e2e)', () => {
   let app: INestApplication;
   const sufijo = `${Date.now()}`;
   const nombreAdmin = `admin-${sufijo}`;
   const nombreJardinero = `jardinero-${sufijo}`;
+  let baseDatos: string;
 
   beforeAll(async () => {
+    // R3-e2e-shared-db: base propia, para no escribir en la de desarrollo.
+    baseDatos = prepararBaseAislada();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -49,6 +54,8 @@ describe('Sesiones (e2e)', () => {
       username: { $in: [nombreAdmin, nombreJardinero] },
     });
     await app.close();
+
+    await borrarBaseAislada(baseDatos);
   });
 
   it('should reject invalid credentials with 401', async () => {
