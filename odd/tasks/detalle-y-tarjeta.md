@@ -97,3 +97,22 @@ Supuestos:
   **No commiteado todavía**: el worktree es compartido y la otra sesión tiene
   `frontend/vite.config.ts` modificado (proxy de túnel para la demo), que NO es parte de
   este cambio y no se debe stagear.
+- **L21 (2026-10-20)** — Pedido nuevo del usuario (verbatim): "Una cosa mas de la pagina
+  por lapida, todos los detalles deberian de ir en una sola card, primero titulo, luego
+  epitafio". Al preguntar el orden completo respondió (verbatim): "Foto → título → autor
+  → epitafio → datos".
+  - **Código**: `DetallePage.tsx` reordenó el JSX (título y autor suben por encima del
+    epitafio). `DetallePage.test.tsx` sumó un test de orden
+    (`ordena los detalles: foto, título, autor, epitafio, datos`) — RED → GREEN 9/9.
+  - **CSS**: para que sea realmente UNA card se quitaron las cajas internas. El epitafio
+    perdió `background: var(--crema)` y `border-radius`; los datos perdieron
+    `background`, `border` y `padding`. El panel de madera `.detalle__info` queda como
+    única contenedora. `.detalle__autor` pasó de `var(--madera)` a `var(--texto-suave)`,
+    que sobre el fondo madera se leía mal.
+  - **Prototipos**: el board del detalle (`15d196a6`) se reescribió con el orden nuevo y
+    sin las cajas internas; `git diff --numstat` del HTML da **1/1 línea** y las otras 9
+    entradas quedaron intactas. El `.op` reordenó los hijos de `p162` a
+    `p163 → p167 → p168 → p165 → p169 → p176 → p362`, recalculó las `y` locales
+    (19 / 353 / 383 / 410 / 494.4 / 597.2 / 651.2) y `height` de `p162` a `710.2`
+    (antes `705.2`); diff de **40/40 líneas**, JSON válido, 10 páginas.
+  - **Suite**: **83/83 tests, build ✓, lint ✓**.

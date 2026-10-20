@@ -32,10 +32,10 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
           <IconoHoja size={96} />
         </div>
 
-        <p className="detalle__epitafio">“{lapida.epitafio}”</p>
-
         <h1 className="detalle__titulo">“{lapida.nombrePlanta.toUpperCase()}”</h1>
         <p className="detalle__autor">por @{nombreDelDuenio(lapida)}</p>
+
+        <p className="detalle__epitafio">“{lapida.epitafio}”</p>
 
         <div className="detalle__datos">
           <span>

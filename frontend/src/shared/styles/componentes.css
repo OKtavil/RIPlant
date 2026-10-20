@@ -570,7 +570,8 @@
 
 /* ── Detalle de lápida ───────────────────────────────────────────────── */
 
-/* Columna izquierda: toda la información de la lápida, de corrido. */
+/* Una sola card: el panel de madera contiene todo. Los bloques internos
+   no llevan fondo ni borde propio para que no parezcan tarjetas sueltas. */
 .detalle__info {
   flex: 1.6;
   min-width: 0;
@@ -593,11 +594,9 @@
 }
 
 .detalle__epitafio {
-  background: var(--crema);
-  border-radius: 8px;
-  padding: 16px;
   font-size: 12px;
   line-height: 1.6;
+  color: var(--texto-fuerte);
 }
 
 .detalle__titulo {
@@ -605,19 +604,17 @@
   font-size: 14px;
   color: var(--texto-fuerte);
   line-height: 1.5;
+  margin-top: 4px;
 }
 
 .detalle__autor {
   font-size: 11px;
-  color: var(--madera);
+  color: var(--texto-suave);
 }
 
 .detalle__datos {
-  background: var(--crema);
-  border: 2px solid var(--madera);
-  border-radius: 8px;
-  padding: 12px;
   font-size: 11px;
+  color: var(--texto-fuerte);
   display: flex;
   flex-direction: column;
   gap: 6px;

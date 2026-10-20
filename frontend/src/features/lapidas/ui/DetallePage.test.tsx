@@ -105,4 +105,27 @@ describe('DetallePage', () => {
     const izquierda = container.querySelector('.detalle__info')!
     expect(izquierda.querySelector('.detalle__foto')).toBeTruthy()
   })
+
+  it('ordena los detalles: foto, título, autor, epitafio, datos', () => {
+    const { container } = montar({ sesion: sesionDuenia })
+
+    const card = container.querySelector('.detalle__info')!
+    const orden = [
+      '.detalle__foto',
+      '.detalle__titulo',
+      '.detalle__autor',
+      '.detalle__epitafio',
+      '.detalle__datos',
+      '.detalle__acciones',
+    ].map((sel) => card.querySelector(sel))
+
+    // Ninguno puede faltar: si falta, el orden no significa nada.
+    orden.forEach((nodo) => expect(nodo).toBeTruthy())
+
+    // Y tienen que aparecer en ese orden exacto dentro de la card.
+    const posiciones = orden.map((nodo) =>
+      Array.from(card.querySelectorAll('*')).indexOf(nodo as Element),
+    )
+    expect(posiciones).toEqual([...posiciones].sort((a, b) => a - b))
+  })
 })
