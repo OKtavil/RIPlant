@@ -3504,7 +3504,7 @@
               "x": 24.0,
               "y": 92.0,
               "width": 792.0,
-              "height": 710.2,
+              "height": 688.2,
               "layout": "none",
               "cornerRadius": 12.0,
               "fill": [
@@ -3562,84 +3562,12 @@
                   ]
                 },
                 {
-                  "type": "text",
-                  "id": "p167",
+                  "type": "frame",
+                  "id": "p376",
                   "x": 19.0,
                   "y": 353.0,
                   "width": 754.0,
-                  "height": 16.0,
-                  "content": "\"DESCANSE EN CACTUS\"",
-                  "fontFamily": "Press Start 2P",
-                  "fontSize": 14.0,
-                  "fontWeight": 400,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#2E1305"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "p168",
-                  "x": 19.0,
-                  "y": 383.0,
-                  "width": 754.0,
-                  "height": 13.0,
-                  "content": "por @sinluznisombra",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 400,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#8B4513"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "p165",
-                  "x": 19.0,
-                  "y": 410.0,
-                  "width": 754.0,
-                  "height": 70.4,
-                  "layout": "none",
-                  "cornerRadius": 8.0,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#F5E0B8"
-                    }
-                  ],
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "p166",
-                      "x": 16.0,
-                      "y": 18.0,
-                      "width": 595.8,
-                      "height": 33.2,
-                      "content": "\"Descanse en cactus. Nunca supo lo que era el sol, pero tampoco lo que era el agua. Se fue en paz, seco, digno.\"",
-                      "fontFamily": "Space Mono",
-                      "fontSize": 12.0,
-                      "fontWeight": 400,
-                      "fill": [
-                        {
-                          "type": "solid",
-                          "color": "#3B2A1A"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "p169",
-                  "x": 19.0,
-                  "y": 494.4,
-                  "width": 754.0,
-                  "height": 88.8,
+                  "height": 262.2,
                   "layout": "none",
                   "cornerRadius": 8.0,
                   "fill": [
@@ -3660,109 +3588,208 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "p170",
-                      "x": 14.0,
-                      "y": 15.0,
-                      "width": 72.7,
-                      "height": 13.0,
-                      "content": "Categoría:",
-                      "fontFamily": "Space Mono",
-                      "fontSize": 11.0,
-                      "fontWeight": 700,
+                      "id": "p167",
+                      "x": 16.0,
+                      "y": 16.0,
+                      "width": 754.0,
+                      "height": 16.0,
+                      "content": "\"DESCANSE EN CACTUS\"",
+                      "fontFamily": "Press Start 2P",
+                      "fontSize": 14.0,
+                      "fontWeight": 400,
                       "fill": [
                         {
                           "type": "solid",
-                          "color": "#3B2A1A"
+                          "color": "#2E1305"
                         }
                       ]
                     },
                     {
                       "type": "text",
-                      "id": "p171",
-                      "x": 81.3,
-                      "y": 15.0,
-                      "width": 51.5,
+                      "id": "p168",
+                      "x": 16.0,
+                      "y": 46.0,
+                      "width": 754.0,
                       "height": 13.0,
-                      "content": "Cactus",
+                      "content": "por @sinluznisombra",
                       "fontFamily": "Space Mono",
                       "fontSize": 11.0,
                       "fontWeight": 400,
                       "fill": [
                         {
                           "type": "solid",
-                          "color": "#3B2A1A"
+                          "color": "#8B4513"
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "p172",
-                      "x": 14.0,
-                      "y": 37.3,
-                      "width": 115.1,
-                      "height": 13.0,
-                      "content": "Causa de muerte:",
-                      "fontFamily": "Space Mono",
-                      "fontSize": 11.0,
-                      "fontWeight": 700,
+                      "type": "frame",
+                      "id": "p165",
+                      "x": 16.0,
+                      "y": 73.0,
+                      "width": 754.0,
+                      "height": 70.4,
+                      "layout": "none",
+                      "cornerRadius": 8.0,
                       "fill": [
                         {
                           "type": "solid",
-                          "color": "#3B2A1A"
+                          "color": "#F5E0B8"
+                        }
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "p166",
+                          "x": 16.0,
+                          "y": 18.0,
+                          "width": 595.8,
+                          "height": 33.2,
+                          "content": "\"Descanse en cactus. Nunca supo lo que era el sol, pero tampoco lo que era el agua. Se fue en paz, seco, digno.\"",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 12.0,
+                          "fontWeight": 400,
+                          "fill": [
+                            {
+                              "type": "solid",
+                              "color": "#3B2A1A"
+                            }
+                          ]
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "p173",
-                      "x": 121.7,
-                      "y": 37.3,
-                      "width": 93.9,
-                      "height": 13.0,
-                      "content": "Olvido total",
-                      "fontFamily": "Space Mono",
-                      "fontSize": 11.0,
-                      "fontWeight": 400,
+                      "type": "frame",
+                      "id": "p169",
+                      "x": 16.0,
+                      "y": 157.4,
+                      "width": 754.0,
+                      "height": 88.8,
+                      "layout": "none",
+                      "cornerRadius": 8.0,
                       "fill": [
                         {
                           "type": "solid",
-                          "color": "#3B2A1A"
+                          "color": "#F5E0B8"
                         }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "p174",
-                      "x": 14.0,
-                      "y": 59.6,
-                      "width": 164.6,
-                      "height": 13.0,
-                      "content": "Fecha de fallecimiento:",
-                      "fontFamily": "Space Mono",
-                      "fontSize": 11.0,
-                      "fontWeight": 700,
-                      "fill": [
+                      ],
+                      "stroke": {
+                        "thickness": 2.0,
+                        "fill": [
+                          {
+                            "type": "solid",
+                            "color": "#8B4513"
+                          }
+                        ]
+                      },
+                      "children": [
                         {
-                          "type": "solid",
-                          "color": "#3B2A1A"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "p175",
-                      "x": 172.9,
-                      "y": 59.6,
-                      "width": 79.8,
-                      "height": 13.0,
-                      "content": "03/03/2025",
-                      "fontFamily": "Space Mono",
-                      "fontSize": 11.0,
-                      "fontWeight": 400,
-                      "fill": [
+                          "type": "text",
+                          "id": "p170",
+                          "x": 14.0,
+                          "y": 15.0,
+                          "width": 72.7,
+                          "height": 13.0,
+                          "content": "Categoría:",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11.0,
+                          "fontWeight": 700,
+                          "fill": [
+                            {
+                              "type": "solid",
+                              "color": "#3B2A1A"
+                            }
+                          ]
+                        },
                         {
-                          "type": "solid",
-                          "color": "#3B2A1A"
+                          "type": "text",
+                          "id": "p171",
+                          "x": 81.3,
+                          "y": 15.0,
+                          "width": 51.5,
+                          "height": 13.0,
+                          "content": "Cactus",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11.0,
+                          "fontWeight": 400,
+                          "fill": [
+                            {
+                              "type": "solid",
+                              "color": "#3B2A1A"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "p172",
+                          "x": 14.0,
+                          "y": 37.3,
+                          "width": 115.1,
+                          "height": 13.0,
+                          "content": "Causa de muerte:",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11.0,
+                          "fontWeight": 700,
+                          "fill": [
+                            {
+                              "type": "solid",
+                              "color": "#3B2A1A"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "p173",
+                          "x": 121.7,
+                          "y": 37.3,
+                          "width": 93.9,
+                          "height": 13.0,
+                          "content": "Olvido total",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11.0,
+                          "fontWeight": 400,
+                          "fill": [
+                            {
+                              "type": "solid",
+                              "color": "#3B2A1A"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "p174",
+                          "x": 14.0,
+                          "y": 59.6,
+                          "width": 164.6,
+                          "height": 13.0,
+                          "content": "Fecha de fallecimiento:",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11.0,
+                          "fontWeight": 700,
+                          "fill": [
+                            {
+                              "type": "solid",
+                              "color": "#3B2A1A"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "p175",
+                          "x": 172.9,
+                          "y": 59.6,
+                          "width": 79.8,
+                          "height": 13.0,
+                          "content": "03/03/2025",
+                          "fontFamily": "Space Mono",
+                          "fontSize": 11.0,
+                          "fontWeight": 400,
+                          "fill": [
+                            {
+                              "type": "solid",
+                              "color": "#3B2A1A"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -3772,8 +3799,8 @@
                   "type": "frame",
                   "id": "p176",
                   "x": 19.0,
-                  "y": 597.2,
-                  "width": 754.0,
+                  "y": 629.2,
+                  "width": 372.0,
                   "height": 40.0,
                   "layout": "none",
                   "cornerRadius": 8.0,
@@ -3836,9 +3863,9 @@
                 {
                   "type": "frame",
                   "id": "p362",
-                  "x": 19.0,
-                  "y": 651.2,
-                  "width": 240.0,
+                  "x": 401.0,
+                  "y": 629.2,
+                  "width": 372.0,
                   "height": 40.0,
                   "layout": "none",
                   "cornerRadius": 8.0,

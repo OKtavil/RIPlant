@@ -103,12 +103,10 @@ disco local y se sirve en `/uploads/<archivo>`.
 - La **tarjeta** de la grilla muestra el epitafio además de la foto, el nombre, la
   categoría con la causa, el autor y las coronas. Aplica en el cementerio (Inicio), en
   el perfil y en las filas del ranking.
-- La **página de cada lápida** reúne todos los detalles en una sola card: la columna
-  izquierda es el panel de madera que contiene, en orden, la foto, el nombre, el autor,
-  el epitafio, los datos (categoría, causa, fecha) y las acciones (`DAR CORONA`,
-  `BORRAR ESTA LÁPIDA`, `VOLVER AL CEMENTERIO`). Los bloques internos no llevan fondo
-  ni borde propio, así no parecen tarjetas sueltas. La columna derecha queda solo para
-  los comentarios.
+- La **página de cada lápida** tiene el panel de madera como contenedor: arriba la
+  foto, después una card con los detalles del texto (nombre, autor, epitafio y datos de
+  categoría, causa y fecha) y al final las acciones. La card no incluye ni la foto ni los
+  botones. La columna derecha queda solo para los comentarios.
 - Las pruebas cubren el camino feliz y los errores HTTP principales.
 
 ## Casos de uso ODD

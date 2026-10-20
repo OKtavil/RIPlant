@@ -116,3 +116,32 @@ Supuestos:
     (19 / 353 / 383 / 410 / 494.4 / 597.2 / 651.2) y `height` de `p162` a `710.2`
     (antes `705.2`); diff de **40/40 líneas**, JSON válido, 10 páginas.
   - **Suite**: **83/83 tests, build ✓, lint ✓**.
+- **L22 (2026-10-20)** — Corrección del usuario sobre L21 (verbatim): "En esta card [la
+  que agrupaba los detalles] era donde debían ir los detalles dentro del panel, menos la
+  foto y los botones, luego corrige que los botones para que tengan el mismo tamaño".
+  Yo había leído "una sola card" como *el panel entero* y borré la card interna. La
+  lectura correcta: el panel es el contenedor, y **dentro** va una card con los detalles
+  del texto, sin la foto ni los botones.
+  - **Código**: `DetallePage.tsx` envuelve título, autor, epitafio y datos en
+    `<div className="detalle__card">`. `DetallePage.test.tsx`: +3 tests (la card agrupa los
+    4 bloques; la foto y las acciones quedan fuera; el orden dentro de la card). El test
+    de orden viejo se reescribió a `foto → card → acciones` y se sumó el orden interno de
+    la card. RED 4 fallos → GREEN **86/86** (eran 83).
+  - **CSS**: `.detalle__card` recupera `background: var(--crema)`,
+    `border: 2px solid var(--madera)`, `radius 8`, `padding 16` y el `gap` interno. Se
+    quitó el `margin-top: 4px` del título, que era un parche de cuando estaba suelto.
+  - **Botones del mismo tamaño**: `.detalle__corona` y `.detalle__borrar` eran dos reglas
+    **duplicadas** (ambas `font-size: 10px; padding: 10px 16px`) y ninguna fijaba ancho,
+    así que cada uno medía lo suyo según su texto. Se reemplazaron por una regla única
+    `.detalle__acciones .boton` que además pisa el `border-width`/`radius` que
+    `boton--chico` cambia (`VOLVER` usa `tamano="chico"`), y las acciones pasaron a
+    `display: grid` con `repeat(auto-fit, minmax(190px, 1fr))` para que los tres
+    compartan ancho. Se agregó `className="detalle__volver"` al botón de volver.
+  - **Prototipos**: el board del detalle (`15d196a6`) ahora tiene la card con fondo crema
+    (`#F5E0B8` + borde `#8B4513`) envolviendo título/autor/epitafio/datos, y los botones
+    en un grid de 2 columnas iguales. Diff del HTML: **1/1 línea**, las otras 9 entradas
+    byte-idénticas. En el `.op` se agregó el frame `p376` con el estilo de `p169`, que
+    contiene `p167`, `p168`, `p165` y `p169` con coords relativas; los botones quedaron
+    lado a lado (`p176` x=19 w=372, `p362` x=401 w=372, ambos y=629.2) y `height` de
+    `p162` bajó de `710.2` a `688.2`. 386 IDs únicos, 10 páginas, JSON válido.
+  - **Suite**: **86/86 tests, build ✓, lint ✓**.

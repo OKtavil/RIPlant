@@ -106,23 +106,61 @@ describe('DetallePage', () => {
     expect(izquierda.querySelector('.detalle__foto')).toBeTruthy()
   })
 
-  it('ordena los detalles: foto, título, autor, epitafio, datos', () => {
+  it('agrupa los detalles del texto en una card dentro del panel', () => {
     const { container } = montar({ sesion: sesionDuenia })
 
-    const card = container.querySelector('.detalle__info')!
-    const orden = [
-      '.detalle__foto',
-      '.detalle__titulo',
-      '.detalle__autor',
-      '.detalle__epitafio',
-      '.detalle__datos',
-      '.detalle__acciones',
-    ].map((sel) => card.querySelector(sel))
+    const card = container.querySelector('.detalle__card')!
+    expect(card).toBeTruthy()
+    expect(card.querySelector('.detalle__titulo')).toBeTruthy()
+    expect(card.querySelector('.detalle__autor')).toBeTruthy()
+    expect(card.querySelector('.detalle__epitafio')).toBeTruthy()
+    expect(card.querySelector('.detalle__datos')).toBeTruthy()
+  })
+
+  it('deja la foto y los botones fuera de la card de detalles', () => {
+    const { container } = montar({ sesion: sesionDuenia })
+
+    const card = container.querySelector('.detalle__card')!
+    const panel = container.querySelector('.detalle__info')!
+
+    // La foto y las acciones viven en el panel, pero no dentro de la card.
+    expect(card.querySelector('.detalle__foto')).toBeNull()
+    expect(card.querySelector('.detalle__acciones')).toBeNull()
+    expect(panel.querySelector('.detalle__foto')).toBeTruthy()
+    expect(panel.querySelector('.detalle__acciones')).toBeTruthy()
+  })
+
+  it('ordena los detalles: foto, card de texto, acciones', () => {
+    const { container } = montar({ sesion: sesionDuenia })
+
+    const panel = container.querySelector('.detalle__info')!
+    const orden = ['.detalle__foto', '.detalle__card', '.detalle__acciones'].map((sel) =>
+      panel.querySelector(sel),
+    )
 
     // Ninguno puede faltar: si falta, el orden no significa nada.
     orden.forEach((nodo) => expect(nodo).toBeTruthy())
 
-    // Y tienen que aparecer en ese orden exacto dentro de la card.
+    // Y tienen que aparecer en ese orden exacto dentro del panel.
+    const posiciones = orden.map((nodo) =>
+      Array.from(panel.querySelectorAll('*')).indexOf(nodo as Element),
+    )
+    expect(posiciones).toEqual([...posiciones].sort((a, b) => a - b))
+  })
+
+  it('dentro de la card ordena título, autor, epitafio y datos', () => {
+    const { container } = montar({ sesion: sesionDuenia })
+
+    const card = container.querySelector('.detalle__card')!
+    const orden = [
+      '.detalle__titulo',
+      '.detalle__autor',
+      '.detalle__epitafio',
+      '.detalle__datos',
+    ].map((sel) => card.querySelector(sel))
+
+    orden.forEach((nodo) => expect(nodo).toBeTruthy())
+
     const posiciones = orden.map((nodo) =>
       Array.from(card.querySelectorAll('*')).indexOf(nodo as Element),
     )

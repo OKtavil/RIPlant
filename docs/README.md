@@ -55,7 +55,7 @@ datos ahora sí sobreviven al reinicio del backend porque viven en el volumen Do
 | Resultado | Pasos | Resultado esperado |
 |---|---|---|
 | Explorar | Abre `Cementerio` y usa la búsqueda | Las tarjetas se filtran por planta o jardinero |
-| Recordar | Selecciona una tarjeta | Aparece el detalle en una sola card: foto, nombre, autor, epitafio, datos y acciones; los comentarios van a la derecha |
+| Recordar | Selecciona una tarjeta | Aparece el detalle con la foto, una card con los detalles del texto y las acciones; los comentarios van a la derecha |
 | Participar | Pulsa `Dar corona` | El contador aumenta y aparece una confirmación visual |
 | Publicar | `+ Publicar` → completa campos → `Publicar lápida` | Regresas al cementerio y aparece la nueva tarjeta |
 | Rankings | Abre `Rankings` | Las plantas aparecen ordenadas por coronas |

@@ -570,8 +570,9 @@
 
 /* ── Detalle de lápida ───────────────────────────────────────────────── */
 
-/* Una sola card: el panel de madera contiene todo. Los bloques internos
-   no llevan fondo ni borde propio para que no parezcan tarjetas sueltas. */
+/* El panel de madera sostiene la foto, una card con los detalles del texto y
+   las acciones. La card es la única caja interna, y no incluye ni la foto ni
+   los botones. */
 .detalle__info {
   flex: 1.6;
   min-width: 0;
@@ -593,6 +594,16 @@
   justify-content: center;
 }
 
+.detalle__card {
+  background: var(--crema);
+  border: 2px solid var(--madera);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-bloque);
+}
+
 .detalle__epitafio {
   font-size: 12px;
   line-height: 1.6;
@@ -604,7 +615,6 @@
   font-size: 14px;
   color: var(--texto-fuerte);
   line-height: 1.5;
-  margin-top: 4px;
 }
 
 .detalle__autor {
@@ -620,21 +630,19 @@
   gap: 6px;
 }
 
-.detalle__corona {
-  font-size: 10px;
-  padding: 10px 16px;
-}
-
+/* Los tres botones del detalle comparten caja y ancho para que se vean parejos,
+   aunque el texto de cada uno mida distinto. */
 .detalle__acciones {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px;
 }
 
-.detalle__borrar {
+.detalle__acciones .boton {
   font-size: 10px;
   padding: 10px 16px;
+  border-width: 3px;
+  border-radius: 8px;
 }
 
 /* Columna derecha: solo los comentarios. */

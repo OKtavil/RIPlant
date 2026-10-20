@@ -17,9 +17,10 @@ type Props = {
 /**
  * Página propia de una lápida.
  *
- * Toda la información vive en la columna izquierda (`detalle__info`); la derecha
- * es solo para los comentarios. Así la ficha se lee de corrido en un solo lugar
- * y la conversación no la interrumpe.
+ * El panel de madera (`detalle__info`) contiene la foto, una card con los datos
+ * del texto (título, autor, epitafio y datos) y las acciones. La columna derecha
+ * es solo para los comentarios, así la ficha se lee de corrido y la conversación
+ * no la interrumpe.
  */
 export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, onVolver }: Props) {
   const categoria = categorias.find((c) => c.id === lapida.categoriaId)?.nombre || 'Sin categoría'
@@ -32,21 +33,23 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
           <IconoHoja size={96} />
         </div>
 
-        <h1 className="detalle__titulo">“{lapida.nombrePlanta.toUpperCase()}”</h1>
-        <p className="detalle__autor">por @{nombreDelDuenio(lapida)}</p>
+        <div className="detalle__card">
+          <h1 className="detalle__titulo">“{lapida.nombrePlanta.toUpperCase()}”</h1>
+          <p className="detalle__autor">por @{nombreDelDuenio(lapida)}</p>
 
-        <p className="detalle__epitafio">“{lapida.epitafio}”</p>
+          <p className="detalle__epitafio">“{lapida.epitafio}”</p>
 
-        <div className="detalle__datos">
-          <span>
-            <strong>Categoría:</strong> {categoria}
-          </span>
-          <span>
-            <strong>Causa de muerte:</strong> {lapida.causaMuerte}
-          </span>
-          <span>
-            <strong>Fecha de fallecimiento:</strong> {formatearFecha(lapida.fechaFallecimiento)}
-          </span>
+          <div className="detalle__datos">
+            <span>
+              <strong>Categoría:</strong> {categoria}
+            </span>
+            <span>
+              <strong>Causa de muerte:</strong> {lapida.causaMuerte}
+            </span>
+            <span>
+              <strong>Fecha de fallecimiento:</strong> {formatearFecha(lapida.fechaFallecimiento)}
+            </span>
+          </div>
         </div>
 
         <div className="detalle__acciones">
@@ -70,7 +73,7 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
             </Boton>
           )}
 
-          <Boton tamano="chico" onClick={onVolver}>
+          <Boton className="detalle__volver" tamano="chico" onClick={onVolver}>
             VOLVER AL CEMENTERIO
           </Boton>
         </div>
