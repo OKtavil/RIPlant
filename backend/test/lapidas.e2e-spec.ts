@@ -20,9 +20,7 @@ describe('Lapidas (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app
-      .get(getModelToken(LapidaDocumentModel.name))
-      .deleteMany({});
+    await app.get(getModelToken(LapidaDocumentModel.name)).deleteMany({});
     await app.close();
   });
 
@@ -60,5 +58,43 @@ describe('Lapidas (e2e)', () => {
       .expect(400);
 
     await request(app.getHttpServer()).get('/lapidas/999').expect(404);
+  });
+
+  it('creates and updates a grave without a cause of death', async () => {
+    const creada = await request(app.getHttpServer())
+      .post('/lapidas')
+      .send({
+        nombrePlanta: 'Helecho',
+        epitafio: 'Se desvaneció en silencio.',
+        fechaFallecimiento: '2025-02-02',
+        categoriaId: 1,
+      })
+      .expect(201);
+    expect(creada.body.causaMuerte).toBe('');
+
+    const editada = await request(app.getHttpServer())
+      .put(`/lapidas/${creada.body.id}`)
+      .send({
+        nombrePlanta: 'Helecho',
+        epitafio: 'Sigue acá.',
+        fechaFallecimiento: '2025-02-02',
+        categoriaId: 1,
+      })
+      .expect(200);
+    expect(editada.body.causaMuerte).toBe('');
+
+    // Un string vacío equivale a omitir el campo: si el formulario lo deja en
+    // blanco, la API no puede rechazarlo y mandar al usuario a un 400.
+    const vacia = await request(app.getHttpServer())
+      .post('/lapidas')
+      .send({
+        nombrePlanta: 'Suculenta',
+        epitafio: 'Nunca explicó qué pasó.',
+        fechaFallecimiento: '2025-03-03',
+        categoriaId: 1,
+        causaMuerte: '',
+      })
+      .expect(201);
+    expect(vacia.body.causaMuerte).toBe('');
   });
 });

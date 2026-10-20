@@ -26,7 +26,7 @@ export class LapidaDocumentModel {
   @Prop({ required: true, index: true })
   categoriaId: number;
 
-  @Prop({ required: true, maxlength: 80 })
+  @Prop({ default: '', maxlength: 80 })
   causaMuerte: string;
 
   @Prop({ default: '' })

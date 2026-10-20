@@ -25,8 +25,8 @@ export class CreateLapidaDto {
   @IsInt()
   categoriaId: number;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MaxLength(80)
   causaMuerte: string;
 
