@@ -26,10 +26,10 @@ MongoDB conserve internamente su `_id`, para no romper el contrato inicial del f
 
 El frontend sigue scream architecture: cada feature se reconoce por su capacidad de
 negocio (`lapidas` y `categorias`) y contiene su modelo, acceso a datos y componentes de
-interfaz. `App.tsx` solo compone esas features y coordina la navegación; el cliente HTTP
-es una dependencia compartida, no una responsabilidad de las pantallas. No hay datos de
-demostración ni persistencia local como segundo adaptador: si la API falla, la interfaz
-informa el error y no presenta cambios como si estuvieran guardados.
+interfaz. `frontend/src/app/App.tsx` solo compone esas features y coordina la navegación;
+el cliente HTTP es una dependencia compartida, no una responsabilidad de las pantallas.
+No hay datos de demostración ni persistencia local como segundo adaptador: si la API
+falla, la interfaz informa el error y no presenta cambios como si estuvieran guardados.
 
 ## Persistencia MongoDB
 

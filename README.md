@@ -655,6 +655,41 @@ La ruta la resuelve una sola función, `directorioDeSubidas()`: el servicio escr
 ella y `main.ts` monta el estático con ella. Si resolvieran la ruta por separado, la foto
 se guardaría donde nadie la sirve.
 
+### Configuración de despliegue: `RIPLANTA_TRUST_PROXY` y `RIPLANTA_CORS_ORIGINS`
+
+Hoy **no hay despliegue definido**: el `docker-compose.yml` solo levanta MongoDB y el
+frontend corre en otro puerto en desarrollo. Las dos variables siguientes existen para
+cubrir los dos hallazgos de la review que dependen del entorno donde corra el backend.
+**Ambas quedan en su default seguro cuando no están definidas**, que es el comportamiento
+actual; se activan cuando exista el despliegue que las justifica.
+
+| Variable | Sin definir (default) | Definida |
+|---|---|---|
+| `RIPLANTA_TRUST_PROXY` | No se confía en ningún header de proxy | `1` = último salto, `N` = últimos `N` saltos |
+| `RIPLANTA_CORS_ORIGINS` | Refleja el origen que pide (dev) | Allowlist exacta, separada por comas |
+
+**`RIPLANTA_TRUST_PROXY`** resuelve qué IP usa el rate-limit de login. `req.ip` es la clave
+de origen: sin proxy es la IP del socket y está bien. **Detrás de un proxy sin configurar
+esto**, todos los clientes comparten la IP del proxy — cinco fallos ajenos bloquean a todos
+con ese usuario y un flood no llega nunca al `429`.
+
+El default es **no confiar**, y no es una elección de comodidad: si el backend queda
+accesible directo *y* confía en `X-Forwarded-For`, cualquiera falsea su IP con ese header
+y **saltea el rate-limit por completo**, cambiándolo en cada intento. Ese riesgo es peor
+que el que el hallazgo describía, así que apagado es el default. Un valor que no se
+entiende (`si`, `0`, `-1`) **apaga** la confianza en vez de encenderla a medias.
+
+**`RIPLANTA_CORS_ORIGINS`** resuelve qué orígenes pueden llamar a la API. Sin allowlist se
+refleja el origen que pide, que es lo que necesita el desarrollo con el frontend en otro
+puerto; el riesgo está acotado por `SameSite=Lax`, que ya impide que el browser adjunte la
+cookie en un `POST` cross-site. En un despliegue real, la allowlist explícita es lo
+correcto. Una variable definida pero vacía se interpreta como "sin allowlist", no como una
+lista vacía que rechazaría todo el tráfico.
+
+Ninguna de las dos está en `.env.example`: no son configuración de desarrollo, y quien las
+defina creyendo que sí cambia el comportamiento de seguridad sin querer. Las dos se leen en
+`shared/config-despliegue.ts`, que es también donde vive el porqué de cada default.
+
 ### Autorización: middlewares, no guards
 
 Toda la autorización se implementa con **middlewares** aplicados por ruta en cada

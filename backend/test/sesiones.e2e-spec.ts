@@ -82,6 +82,26 @@ describe('Sesiones (e2e)', () => {
     await request(app.getHttpServer()).post('/sesiones').send({}).expect(400);
   });
 
+  it('rechaza un username de solo espacios (R2-003)', async () => {
+    // `@IsNotEmpty` es `value !== '' && value !== null && value !== undefined`,
+    // así que `" "` lo pasa y llegaba hasta el servicio. Ahí se compara contra
+    // un `username` real sin normalizar, y un espacio no es un usuario: es un
+    // intento que no debería gastar una comparación bcrypt. `CreateCategoriaDTO`
+    // ya resuelve lo mismo con `@Matches(/\S/)`; acá se usa el mismo criterio.
+    await request(app.getHttpServer())
+      .post('/sesiones')
+      .send({ username: '   ', password: 'clave-cualquiera' })
+      .expect(400);
+  });
+
+  it('rechaza un password de solo espacios (R2-003)', async () => {
+    // Mismo agujero del otro lado: un password en blanco no es una credencial.
+    await request(app.getHttpServer())
+      .post('/sesiones')
+      .send({ username: nombreAdmin, password: '   ' })
+      .expect(400);
+  });
+
   it('should open a session with an httpOnly cookie and never leak the hash', async () => {
     const res = await request(app.getHttpServer())
       .post('/sesiones')
