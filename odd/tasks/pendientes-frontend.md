@@ -91,16 +91,30 @@ Bug de identidad corregido de paso: `DetallePage:28` y `GraveCard:39` mostraban
 `lapida.autor` (texto libre) en vez del dueño real. En los datos reales hay lápidas
 con `autor: "Anónimo"` cuyo dueño es `@zombie`. Ahora usan `nombreDelDuenio()`.
 
-**Sigue abierta** la decisión de si **editar** lápida entra al prototipo, y el riesgo
-técnico asociado: `lapidas.api.ts:12` tipa el body del `PUT` como
-`Partial<CreateGraveInput>` pero el backend valida `CreateLapidaDto` completo con
-`forbidNonWhitelisted` — un PUT parcial hoy devuelve 400.
+Estado 2026-10-20: **cerrado** (T4). El borrado está implementado y verificado; la
+**edición quedó descartada** por decisión del usuario: no está en el prototipo y hoy el
+backend la rechazaría igual.
+
+Riesgo técnico latente, sin arreglar: `lapidas.api.ts:12` tipa el body del `PUT` como
+`Partial<CreateGraveInput>`, pero el backend valida `CreateLapidaDto` completo con
+`forbidNonWhitelisted` — un PUT parcial hoy devuelve 400. No molesta porque no hay UI de
+edición; el día que se escriba, hay que mandar el body completo.
 
 ### S5 — Detalle por `GET /lapidas/:id`
 
-`lapidas.api.ts:7` definido con cero call sites; `DetallePage` se arma del estado en memoria
-que `App.tsx` ya cargó. Funciona en el flujo actual. Solo hace falta si se agrega **routing
-por URL** (deep link o recarga en el detalle): decisión abierta, sin pedido del usuario.
+Estado 2026-10-20: **cerrado** (T5). La decisión abierta era "¿routing por URL?", y el
+usuario eligió implementarlo. Ahora la URL es la fuente de verdad de la pantalla.
+
+`GET /lapidas/:id` **sigue sin call site**: el detalle se resuelve contra la lista que
+`findAll()` ya cargó. Eso es correcto hoy porque `findAll()` no pagina ni limita
+(`lapidas.service.ts:265`), así que toda lápida está en memoria. Quedaría como deuda el
+día que el listado se pagine o el detalle necesite datos que la lista no trae — el
+endpoint ya devuelve `duenio` (`findOne` llama a `enriquecerConDuenio`), así que migrar
+sería directo.
+
+Implementación: `ruta.ts` + `useRuta.ts` sobre la History API nativa, sin dependencias.
+Deuda anotada: para la refactorización a hexagonal y la rama de aprendizaje manual, migrar
+a `react-router-dom` 7.x (ver la nota al pie de `ruta.ts`).
 
 ### S6 — Insignia Zombie
 
@@ -121,8 +135,8 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
 | T1 | S1 | inline | hecho 2026-10-19 — 28 tests verdes (RED/GREEN en L6) + build + lint + verificación sin blockers (L7); review RDD APPROVED con authority burned (L8) | `0e47aba` |
 | T2 | S2 | inline | en curso: Crear cuenta conectada (T8); el resto de las filas sigue bloqueado por backend | `022c150` |
 | T3 | S3 | inline | hecho 2026-10-19 — asesinos con datos reales del endpoint (L10); cierra junto con T9 | `cb97920` |
-| T4 | S4 | inline | hecho 2026-10-20 — borrar propio/admin en detalle y perfil + fix de identidad (L12); prototipo pendiente | `6dee621` |
-| T5 | S5 | inline | decisión abierta (routing por URL) | — |
+| T4 | S4 | inline | cerrado 2026-10-20 — borrar propio/admin en detalle y perfil + fix de identidad (L12); prototipo en `325bff3`; edición descartada por el usuario (L14) | `6dee621` |
+| T5 | S5 | inline | cerrado 2026-10-20 — routing por URL con History API nativa, sin dependencias (L14) | `cb84492` |
 | T6 | S6 | inline | decisión abierta + esquema backend | — |
 | T7 | S7 | inline | decisión abierta + definición backend | — |
 | T8 | S2 | inline | hecho 2026-10-19 — registro conectado y verificado contra el backend real (L9) | `022c150` |
@@ -263,3 +277,24 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   (`15d196a6...`); las otras 9 quedaron idénticas, y el balance de tags del board sigue
   cerrado (19/19 divs, 2/2 buttons). Commit `325bff3`, 2 archivos, +46/−1. Riesgo: **item 3**
   (el prototipo es el contrato de referencia del frontend).
+- **L14 (2026-10-20)** — **S4 cerrado y S5 implementado** (T4, T5). El usuario primero
+  eligió "cerrar S5 sin código", se arrepintió de la opción seleccionada y al repetirse la
+  pregunta eligió **implementar routing por URL de verdad**; la primera respuesta quedó sin
+  efecto. La edición de lápidas (lo único que quedaba abierto de S4) quedó **descartada**:
+  no está en el prototipo y el `PUT` parcial devolvería 400 igual.
+  **Diseño**: History API nativa, sin dependencias — elección del usuario. React Router 7.x
+  queda documentado en la nota al pie de `ruta.ts` para la refactorización a hexagonal y la
+  rama de aprendizaje manual.
+  **Contrato verificado contra el backend real** antes de escribir código: `GET /lapidas/:id`
+  da 200 con `duenio` incluido (`findOne` llama a `enriquecerConDuenio`, `lapidas.service.ts:276`),
+  404 si no existe y 400 si el id no es numérico.
+  **Hallazgo de tooling**: jsdom **no navega de verdad** — `history.back()` deja
+  `location.pathname` intacto (verificado con una probe descartable: `antes=/ranking
+  despues=/ranking`). El primer test del botón Atrás asumía que sí navega y fallaba por eso,
+  no por un bug del hook. Se reescribió para reproducir lo que hace el navegador real:
+  cambiar la URL con `replaceState` y después disparar `PopStateEvent`.
+  **Verificación**: build ✓, 74/74 tests (16 nuevos de ruta), lint ✓; SPA fallback
+  confirmado en el dev server — `/ranking`, `/publicar`, `/perfil`, `/categorias`,
+  `/lapidas/9` y una ruta inventada devuelven 200 con el mismo index, así que recargar en
+  el detalle mantiene la pantalla. Commit `cb84492`, 5 archivos, +279/−17. Riesgo: **item 3**
+  (la navegación la consumen los 10 boards del prototipo).
