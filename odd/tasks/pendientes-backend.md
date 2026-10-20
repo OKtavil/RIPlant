@@ -221,10 +221,10 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   documentar en `.env.example`** ni decidida como variable pública. T9 **no la documentó en el
   README** siguiendo la recomendación de dejarla como costura de test, pero sí menciona que los
   e2e la usan. Si se quiere poder mover las subidas en despliegue, hay que documentarla.
-- **`R3-e2e-shared-db`** — los e2e escriben en la base real de `.env`. T7 lo confirmó en vivo
-  (ver E8). Sin arreglar, cada corrida ensucia `riplanta`. **T9 dejó el aviso en el README**,
-  que mitiga el daño (quien corre las pruebas ahora lo sabe) pero no lo arregla: el arreglo real
-  es que la suite use una base aparte.
+- **`R3-e2e-shared-db`** — ✅ **cerrado (E10, commit `1888293`)**. Cada suite e2e corre contra su
+  propia base `riplanta_e2e_<suite>_w<N>_<uuid>`, creada al arrancar y borrada en el `afterAll`.
+  El `globalSetup` barre lo que dejó una corrida cortada a la mitad. T9 había dejado el aviso en
+  el README, que mitigaba el daño pero no lo arreglaba; ahora no hay daño que avisar.
 - **Entrega del frontend** (`P1` del documento del frontend). La divergencia de rama de L4
   **ya no existe**: verificado en E3, la rama está en `ahead 0 / behind 0` con el remoto.
 
@@ -645,3 +645,48 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   contrato en su versión vieja.
 
   **Commit:** `82b73c6`.
+
+- **E10 (2026-10-20, `R3-e2e-shared-db` cerrado):** los e2e ya no escriben en `riplanta`. Cada
+  suite llama a `prepararBaseAislada()` (en `beforeAll`, antes del `compile()`) y se queda con
+  una base propia, `riplanta_e2e_<suite>_w<worker>_<uuid>`, que borra en el `afterAll`.
+
+  **Por qué funciona:** `ConfigModule` hace `{ ...desdeArchivoDeEnv, ...process.env }`, así que
+  `process.env` gana sobre `backend/.env`; y `ConfigService.get()` resuelve al consultar, no al
+  importar el módulo, así que alcanza con fijar `MONGODB_URI` antes de
+  `Test.createTestingModule(...).compile()`. **No hacen falta imports dinámicos**, que era el
+  riesgo de diseño: `module: nodenext` + CJS hacía temer que hubiera que ganarle al hoisting de
+  los `import`. Se verificó con un probe descartable antes de escribir el helper.
+
+  **El problema era peor que "suciedad".** Las cinco suites corren en paralelo contra una sola
+  base, y `categorias.e2e-spec.ts` hace `deleteMany({})` sobre `categorias` en el `afterEach`.
+  Con base compartida, esa suite le borraba las categorías a las otras mientras corrían: un
+  test podía fallar sin que nadie hubiera roto nada. El síntoma ya estaba en el código —
+  `expect(list.body.length).toBeGreaterThanOrEqual(10)` en `lapidas.e2e-spec.ts`, un test que no
+  puede afirmar su propio estado porque no controla su base.
+
+  **Verificación observada, contra Mongo real:**
+  - `riplanta` idéntica antes y después de la corrida completa: **6 usuarios, 10 lápidas
+    (ids 1-10), 6 categorías, 0 coronas, 0 comentarios, 0 sesiones**. Los 3 usuarios del otro
+    actor intactos. Cero bases `riplanta_e2e_*` sobrevivientes.
+  - **5 suites / 29 tests en paralelo, 4.5 s**, pasando.
+  - **Prueba de aislamiento real:** dos suites en paralelo con bases distintas; la suite A borra
+    sus categorías (6 → 0) y la B sigue viendo las 6. Con base compartida B habría visto 0.
+  - **Recuperación de crash:** dos bases huérfanas plantadas a mano; el `globalSetup` las barrió
+    y lo reportó (`[e2e] Bases de corridas anteriores borradas: ...`).
+  - Unit **72/72** (13 suites) · `build` y `lint` limpios.
+
+  **Dos correcciones de método, ambas mías:**
+  1. `mongodb` **no** es dependencia directa (llega por hoisting de `mongoose`). El primer
+     helper hacía `await import('mongodb')` y falló en vivo — la misma fragilidad de `file-type`
+     en T7. Se usa `mongoose.mongo.MongoClient`, con `mongoose` que sí es directa.
+  2. Un probe mío afirmaba "la base aislada arranca vacía" y **falló**: `onModuleInit` siembra
+     las 6 categorías y las 10 lápidas al arrancar el módulo. El supuesto era mío y estaba mal
+     —cada base se auto-siembra, igual que la real—, así que el probe se reescribió para probar
+     lo que sí importa: que **dos suites en paralelo no se pisen**.
+
+  **Nota de diseño:** el `globalSetup` no fija `MONGODB_URI` a propósito. Su `process.env` no es
+  el de los workers y todas las suites compartirían un valor; el valor por suite sale del helper
+  explícito que cada suite llama. Por eso tampoco hay magia implícita que dependa de un camino
+  no documentado de Jest.
+
+  **Commit:** `1888293`.
