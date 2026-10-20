@@ -238,7 +238,7 @@
                   "x": 2.0,
                   "y": 2.0,
                   "width": 237.5,
-                  "height": 197.6,
+                  "height": 217.6,
                   "layout": "none",
                   "cornerRadius": 8.0,
                   "fill": [
@@ -315,9 +315,27 @@
                     },
                     {
                       "type": "text",
+                      "id": "p364",
+                      "x": 13.0,
+                      "y": 124.0,
+                      "width": 211.5,
+                      "height": 11.0,
+                      "content": "Regada con amor, ahogada con exceso.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#6B6B6B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
                       "id": "p15",
                       "x": 13.0,
-                      "y": 127.8,
+                      "y": 147.8,
                       "width": 169.1,
                       "height": 11.0,
                       "content": "Suculenta · exceso de agua",
@@ -335,7 +353,7 @@
                       "type": "text",
                       "id": "p16",
                       "x": 13.0,
-                      "y": 148.6,
+                      "y": 168.6,
                       "width": 130.5,
                       "height": 11.0,
                       "content": "por @manos_de_tierra",
@@ -353,7 +371,7 @@
                       "type": "text",
                       "id": "p17",
                       "x": 11.0,
-                      "y": 168.5,
+                      "y": 188.5,
                       "width": 16.0,
                       "height": 16.0,
                       "content": "♛",
@@ -373,7 +391,7 @@
                       "type": "text",
                       "id": "p18",
                       "x": 29.0,
-                      "y": 169.4,
+                      "y": 189.4,
                       "width": 23.2,
                       "height": 13.0,
                       "content": "132",
@@ -413,7 +431,7 @@
                   "x": 2.0,
                   "y": 2.0,
                   "width": 237.5,
-                  "height": 197.6,
+                  "height": 217.6,
                   "layout": "none",
                   "cornerRadius": 8.0,
                   "fill": [
@@ -490,9 +508,27 @@
                     },
                     {
                       "type": "text",
+                      "id": "p365",
+                      "x": 13.0,
+                      "y": 124.0,
+                      "width": 211.5,
+                      "height": 11.0,
+                      "content": "Nunca supo lo que era el sol, pero tampoco lo que era el agua.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#6B6B6B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
                       "id": "p24",
                       "x": 13.0,
-                      "y": 127.8,
+                      "y": 147.8,
                       "width": 137.0,
                       "height": 11.0,
                       "content": "Cactus · olvido total",
@@ -510,7 +546,7 @@
                       "type": "text",
                       "id": "p25",
                       "x": 13.0,
-                      "y": 148.6,
+                      "y": 168.6,
                       "width": 124.1,
                       "height": 11.0,
                       "content": "por @sinluznisombra",
@@ -528,7 +564,7 @@
                       "type": "text",
                       "id": "p26",
                       "x": 11.0,
-                      "y": 168.5,
+                      "y": 188.5,
                       "width": 16.0,
                       "height": 16.0,
                       "content": "♛",
@@ -548,7 +584,7 @@
                       "type": "text",
                       "id": "p27",
                       "x": 29.0,
-                      "y": 169.4,
+                      "y": 189.4,
                       "width": 23.2,
                       "height": 13.0,
                       "content": "287",
@@ -588,7 +624,7 @@
                   "x": 2.0,
                   "y": 2.0,
                   "width": 237.5,
-                  "height": 197.6,
+                  "height": 217.6,
                   "layout": "none",
                   "cornerRadius": 8.0,
                   "fill": [
@@ -665,9 +701,27 @@
                     },
                     {
                       "type": "text",
+                      "id": "p366",
+                      "x": 13.0,
+                      "y": 124.0,
+                      "width": 211.5,
+                      "height": 11.0,
+                      "content": "Buscó la luz y encontró el olvido.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#6B6B6B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
                       "id": "p33",
                       "x": 13.0,
-                      "y": 127.8,
+                      "y": 147.8,
                       "width": 149.8,
                       "height": 11.0,
                       "content": "Interior · falta de luz",
@@ -685,7 +739,7 @@
                       "type": "text",
                       "id": "p34",
                       "x": 11.0,
-                      "y": 147.7,
+                      "y": 167.7,
                       "width": 16.0,
                       "height": 16.0,
                       "content": "♛",
@@ -705,7 +759,7 @@
                       "type": "text",
                       "id": "p35",
                       "x": 29.0,
-                      "y": 148.6,
+                      "y": 168.6,
                       "width": 16.1,
                       "height": 13.0,
                       "content": "64",
@@ -745,7 +799,7 @@
                   "x": 2.0,
                   "y": 2.0,
                   "width": 237.5,
-                  "height": 176.8,
+                  "height": 196.8,
                   "layout": "none",
                   "cornerRadius": 8.0,
                   "fill": [
@@ -822,9 +876,27 @@
                     },
                     {
                       "type": "text",
+                      "id": "p367",
+                      "x": 13.0,
+                      "y": 124.0,
+                      "width": 211.5,
+                      "height": 11.0,
+                      "content": "Prometió frutos, entregó ramas secas.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#6B6B6B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
                       "id": "p41",
                       "x": 13.0,
-                      "y": 127.8,
+                      "y": 147.8,
                       "width": 137.0,
                       "height": 11.0,
                       "content": "Árbol frutal · sequía",
@@ -842,7 +914,7 @@
                       "type": "text",
                       "id": "p42",
                       "x": 11.0,
-                      "y": 147.7,
+                      "y": 167.7,
                       "width": 16.0,
                       "height": 16.0,
                       "content": "♛",
@@ -862,7 +934,7 @@
                       "type": "text",
                       "id": "p43",
                       "x": 29.0,
-                      "y": 148.6,
+                      "y": 168.6,
                       "width": 16.1,
                       "height": 13.0,
                       "content": "41",
@@ -902,7 +974,7 @@
                   "x": 2.0,
                   "y": 2.0,
                   "width": 237.5,
-                  "height": 176.8,
+                  "height": 196.8,
                   "layout": "none",
                   "cornerRadius": 8.0,
                   "fill": [
@@ -979,9 +1051,27 @@
                     },
                     {
                       "type": "text",
+                      "id": "p368",
+                      "x": 13.0,
+                      "y": 124.0,
+                      "width": 211.5,
+                      "height": 11.0,
+                      "content": "Tuvo todo para vivir. Le faltó suerte.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#6B6B6B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
                       "id": "p49",
                       "x": 13.0,
-                      "y": 127.8,
+                      "y": 147.8,
                       "width": 111.3,
                       "height": 11.0,
                       "content": "Suculenta · plaga",
@@ -999,7 +1089,7 @@
                       "type": "text",
                       "id": "p50",
                       "x": 11.0,
-                      "y": 147.7,
+                      "y": 167.7,
                       "width": 16.0,
                       "height": 16.0,
                       "content": "♛",
@@ -1019,7 +1109,7 @@
                       "type": "text",
                       "id": "p51",
                       "x": 29.0,
-                      "y": 148.6,
+                      "y": 168.6,
                       "width": 16.1,
                       "height": 13.0,
                       "content": "19",
@@ -1169,7 +1259,7 @@
                   "x": 19.0,
                   "y": 72.7,
                   "width": 435.6,
-                  "height": 92.8,
+                  "height": 140.8,
                   "layout": "none",
                   "cornerRadius": 6.0,
                   "fill": [
@@ -1199,6 +1289,24 @@
                     },
                     {
                       "type": "text",
+                      "id": "p373",
+                      "x": 12.0,
+                      "y": 30.0,
+                      "width": 300.0,
+                      "height": 11.0,
+                      "content": "Nunca supo lo que era el sol, pero tampoco lo que era el agua.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#6B6B6B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
                       "id": "p60",
                       "x": 382.5,
                       "y": 13.0,
@@ -1219,7 +1327,7 @@
                       "type": "text",
                       "id": "p61",
                       "x": 12.0,
-                      "y": 39.3,
+                      "y": 55.3,
                       "width": 150.5,
                       "height": 13.0,
                       "content": "2. \"Aquí yace Pepino\"",
@@ -1235,9 +1343,27 @@
                     },
                     {
                       "type": "text",
+                      "id": "p374",
+                      "x": 12.0,
+                      "y": 72.3,
+                      "width": 300.0,
+                      "height": 11.0,
+                      "content": "Regada con amor, ahogada con exceso.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#6B6B6B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
                       "id": "p62",
                       "x": 382.5,
-                      "y": 39.3,
+                      "y": 55.3,
                       "width": 45.1,
                       "height": 13.0,
                       "content": "♛ 132",
@@ -1255,7 +1381,7 @@
                       "type": "text",
                       "id": "p63",
                       "x": 12.0,
-                      "y": 65.6,
+                      "y": 97.6,
                       "width": 157.5,
                       "height": 13.0,
                       "content": "3. \"Viajó al más allá\"",
@@ -1271,9 +1397,27 @@
                     },
                     {
                       "type": "text",
+                      "id": "p375",
+                      "x": 12.0,
+                      "y": 114.6,
+                      "width": 300.0,
+                      "height": 11.0,
+                      "content": "Buscó la luz y encontró el olvido.",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#6B6B6B"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
                       "id": "p64",
                       "x": 389.2,
-                      "y": 65.6,
+                      "y": 97.6,
                       "width": 38.0,
                       "height": 13.0,
                       "content": "♛ 64",
@@ -1768,7 +1912,7 @@
               "x": 24.0,
               "y": 180.5,
               "width": 607.0,
-              "height": 68.0,
+              "height": 84.0,
               "layout": "none",
               "cornerRadius": 8.0,
               "fill": [
@@ -1825,9 +1969,27 @@
                 },
                 {
                   "type": "text",
+                  "id": "p369",
+                  "x": 17.0,
+                  "y": 53.2,
+                  "width": 567.0,
+                  "height": 11.0,
+                  "content": "Nunca supo lo que era el sol, pero tampoco lo que era el agua.",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6B6B6B"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
                   "id": "p92",
                   "x": 545.1,
-                  "y": 25.0,
+                  "y": 41.0,
                   "width": 18.0,
                   "height": 18.0,
                   "content": "♛",
@@ -1847,7 +2009,7 @@
                   "type": "text",
                   "id": "p93",
                   "x": 566.1,
-                  "y": 26.4,
+                  "y": 42.4,
                   "width": 27.1,
                   "height": 15.0,
                   "content": "287",
@@ -1867,9 +2029,9 @@
               "type": "frame",
               "id": "p94",
               "x": 24.0,
-              "y": 260.5,
+              "y": 276.5,
               "width": 607.0,
-              "height": 68.0,
+              "height": 84.0,
               "layout": "none",
               "cornerRadius": 8.0,
               "fill": [
@@ -1926,9 +2088,27 @@
                 },
                 {
                   "type": "text",
+                  "id": "p370",
+                  "x": 17.0,
+                  "y": 53.2,
+                  "width": 567.0,
+                  "height": 11.0,
+                  "content": "Regada con amor, ahogada con exceso.",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6B6B6B"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
                   "id": "p97",
                   "x": 545.1,
-                  "y": 25.0,
+                  "y": 41.0,
                   "width": 18.0,
                   "height": 18.0,
                   "content": "♛",
@@ -1948,7 +2128,7 @@
                   "type": "text",
                   "id": "p98",
                   "x": 566.1,
-                  "y": 26.4,
+                  "y": 42.4,
                   "width": 27.1,
                   "height": 15.0,
                   "content": "132",
@@ -1968,9 +2148,9 @@
               "type": "frame",
               "id": "p99",
               "x": 24.0,
-              "y": 340.6,
+              "y": 372.5,
               "width": 607.0,
-              "height": 68.0,
+              "height": 84.0,
               "layout": "none",
               "cornerRadius": 8.0,
               "fill": [
@@ -2027,9 +2207,27 @@
                 },
                 {
                   "type": "text",
+                  "id": "p371",
+                  "x": 17.0,
+                  "y": 53.2,
+                  "width": 567.0,
+                  "height": 11.0,
+                  "content": "Buscó la luz y encontró el olvido.",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6B6B6B"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
                   "id": "p102",
                   "x": 553.1,
-                  "y": 25.0,
+                  "y": 41.0,
                   "width": 18.0,
                   "height": 18.0,
                   "content": "♛",
@@ -2049,7 +2247,7 @@
                   "type": "text",
                   "id": "p103",
                   "x": 574.1,
-                  "y": 26.4,
+                  "y": 42.4,
                   "width": 18.7,
                   "height": 15.0,
                   "content": "64",
@@ -2069,9 +2267,9 @@
               "type": "frame",
               "id": "p104",
               "x": 24.0,
-              "y": 420.6,
+              "y": 468.5,
               "width": 607.0,
-              "height": 68.0,
+              "height": 84.0,
               "layout": "none",
               "cornerRadius": 8.0,
               "fill": [
@@ -2128,9 +2326,27 @@
                 },
                 {
                   "type": "text",
+                  "id": "p372",
+                  "x": 17.0,
+                  "y": 53.2,
+                  "width": 567.0,
+                  "height": 11.0,
+                  "content": "Prometió frutos, entregó ramas secas.",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 10.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#6B6B6B"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
                   "id": "p107",
                   "x": 553.1,
-                  "y": 25.0,
+                  "y": 41.0,
                   "width": 18.0,
                   "height": 18.0,
                   "content": "♛",
@@ -2150,7 +2366,7 @@
                   "type": "text",
                   "id": "p108",
                   "x": 574.1,
-                  "y": 26.4,
+                  "y": 42.4,
                   "width": 18.7,
                   "height": 15.0,
                   "content": "41",
@@ -3287,8 +3503,8 @@
               "id": "p162",
               "x": 24.0,
               "y": 92.0,
-              "width": 653.0,
-              "height": 784.0,
+              "width": 792.0,
+              "height": 705.1999999999999,
               "layout": "none",
               "cornerRadius": 12.0,
               "fill": [
@@ -3312,7 +3528,7 @@
                   "id": "p163",
                   "x": 19.0,
                   "y": 19.0,
-                  "width": 615.0,
+                  "width": 754.0,
                   "height": 320.0,
                   "layout": "none",
                   "cornerRadius": 8.0,
@@ -3350,7 +3566,7 @@
                   "id": "p165",
                   "x": 19.0,
                   "y": 353.0,
-                  "width": 615.0,
+                  "width": 754.0,
                   "height": 70.4,
                   "layout": "none",
                   "cornerRadius": 8.0,
@@ -3382,10 +3598,246 @@
                   ]
                 },
                 {
+                  "type": "text",
+                  "id": "p167",
+                  "x": 19.0,
+                  "y": 437.4,
+                  "width": 754.0,
+                  "height": 16.0,
+                  "content": "\"DESCANSE EN CACTUS\"",
+                  "fontFamily": "Press Start 2P",
+                  "fontSize": 14.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#2E1305"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "p168",
+                  "x": 19.0,
+                  "y": 467.4,
+                  "width": 754.0,
+                  "height": 13.0,
+                  "content": "por @sinluznisombra",
+                  "fontFamily": "Space Mono",
+                  "fontSize": 11.0,
+                  "fontWeight": 400,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#8B4513"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "p169",
+                  "x": 19.0,
+                  "y": 494.4,
+                  "width": 754.0,
+                  "height": 88.8,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#F5E0B8"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": 2.0,
+                    "fill": [
+                      {
+                        "type": "solid",
+                        "color": "#8B4513"
+                      }
+                    ]
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "p170",
+                      "x": 14.0,
+                      "y": 15.0,
+                      "width": 72.7,
+                      "height": 13.0,
+                      "content": "Categoría:",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11.0,
+                      "fontWeight": 700,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "p171",
+                      "x": 81.3,
+                      "y": 15.0,
+                      "width": 51.5,
+                      "height": 13.0,
+                      "content": "Cactus",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "p172",
+                      "x": 14.0,
+                      "y": 37.3,
+                      "width": 115.1,
+                      "height": 13.0,
+                      "content": "Causa de muerte:",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11.0,
+                      "fontWeight": 700,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "p173",
+                      "x": 121.7,
+                      "y": 37.3,
+                      "width": 93.9,
+                      "height": 13.0,
+                      "content": "Olvido total",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "p174",
+                      "x": 14.0,
+                      "y": 59.6,
+                      "width": 164.6,
+                      "height": 13.0,
+                      "content": "Fecha de fallecimiento:",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11.0,
+                      "fontWeight": 700,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "p175",
+                      "x": 172.9,
+                      "y": 59.6,
+                      "width": 79.8,
+                      "height": 13.0,
+                      "content": "03/03/2025",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 11.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#3B2A1A"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "p176",
+                  "x": 19.0,
+                  "y": 597.1999999999999,
+                  "width": 754.0,
+                  "height": 40.0,
+                  "layout": "none",
+                  "cornerRadius": 8.0,
+                  "fill": [
+                    {
+                      "type": "solid",
+                      "color": "#D6AB69"
+                    }
+                  ],
+                  "stroke": {
+                    "thickness": 3.0,
+                    "fill": [
+                      {
+                        "type": "solid",
+                        "color": "#6E3A12"
+                      }
+                    ]
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "p177",
+                      "x": 17.0,
+                      "y": 11.0,
+                      "width": 18.0,
+                      "height": 18.0,
+                      "content": "♛",
+                      "fontFamily": "Space Mono",
+                      "fontSize": 14.0,
+                      "fontWeight": 400,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "p178",
+                      "x": 39.0,
+                      "y": 14.0,
+                      "width": 170.0,
+                      "height": 11.0,
+                      "content": "DAR CORONA · 287",
+                      "fontFamily": "Press Start 2P",
+                      "fontSize": 10.0,
+                      "fontWeight": 400,
+                      "fill": [
+                        {
+                          "type": "solid",
+                          "color": "#2E1305"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
                   "type": "frame",
                   "id": "p362",
                   "x": 19.0,
-                  "y": 443.0,
+                  "y": 651.1999999999999,
                   "width": 240.0,
                   "height": 40.0,
                   "layout": "none",
@@ -3429,248 +3881,12 @@
               ]
             },
             {
-              "type": "text",
-              "id": "p167",
-              "x": 697.0,
-              "y": 91.0,
-              "width": 296.0,
-              "height": 16.0,
-              "content": "\"DESCANSE EN CACTUS\"",
-              "fontFamily": "Press Start 2P",
-              "fontSize": 14.0,
-              "fontWeight": 400,
-              "fill": [
-                {
-                  "type": "solid",
-                  "color": "#2E1305"
-                }
-              ]
-            },
-            {
-              "type": "text",
-              "id": "p168",
-              "x": 697.0,
-              "y": 113.0,
-              "width": 136.3,
-              "height": 13.0,
-              "content": "por @sinluznisombra",
-              "fontFamily": "Space Mono",
-              "fontSize": 11.0,
-              "fontWeight": 400,
-              "fill": [
-                {
-                  "type": "solid",
-                  "color": "#8B4513"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "p169",
-              "x": 697.0,
-              "y": 143.7,
-              "width": 559.0,
-              "height": 88.8,
-              "layout": "none",
-              "cornerRadius": 8.0,
-              "fill": [
-                {
-                  "type": "solid",
-                  "color": "#F5E0B8"
-                }
-              ],
-              "stroke": {
-                "thickness": 2.0,
-                "fill": [
-                  {
-                    "type": "solid",
-                    "color": "#8B4513"
-                  }
-                ]
-              },
-              "children": [
-                {
-                  "type": "text",
-                  "id": "p170",
-                  "x": 14.0,
-                  "y": 15.0,
-                  "width": 72.7,
-                  "height": 13.0,
-                  "content": "Categoría:",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 700,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#3B2A1A"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "p171",
-                  "x": 81.3,
-                  "y": 15.0,
-                  "width": 51.5,
-                  "height": 13.0,
-                  "content": "Cactus",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 400,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#3B2A1A"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "p172",
-                  "x": 14.0,
-                  "y": 37.3,
-                  "width": 115.1,
-                  "height": 13.0,
-                  "content": "Causa de muerte:",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 700,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#3B2A1A"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "p173",
-                  "x": 121.7,
-                  "y": 37.3,
-                  "width": 93.9,
-                  "height": 13.0,
-                  "content": "Olvido total",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 400,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#3B2A1A"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "p174",
-                  "x": 14.0,
-                  "y": 59.6,
-                  "width": 164.6,
-                  "height": 13.0,
-                  "content": "Fecha de fallecimiento:",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 700,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#3B2A1A"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "p175",
-                  "x": 172.9,
-                  "y": 59.6,
-                  "width": 79.8,
-                  "height": 13.0,
-                  "content": "03/03/2025",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 11.0,
-                  "fontWeight": 400,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#3B2A1A"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "p176",
-              "x": 697.0,
-              "y": 246.5,
-              "width": 218.0,
-              "height": 40.0,
-              "layout": "none",
-              "cornerRadius": 8.0,
-              "fill": [
-                {
-                  "type": "solid",
-                  "color": "#D6AB69"
-                }
-              ],
-              "stroke": {
-                "thickness": 3.0,
-                "fill": [
-                  {
-                    "type": "solid",
-                    "color": "#6E3A12"
-                  }
-                ]
-              },
-              "children": [
-                {
-                  "type": "text",
-                  "id": "p177",
-                  "x": 17.0,
-                  "y": 11.0,
-                  "width": 18.0,
-                  "height": 18.0,
-                  "content": "♛",
-                  "fontFamily": "Space Mono",
-                  "fontSize": 14.0,
-                  "fontWeight": 400,
-                  "textAlign": "center",
-                  "textAlignVertical": "middle",
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#2E1305"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "p178",
-                  "x": 39.0,
-                  "y": 14.0,
-                  "width": 170.0,
-                  "height": 11.0,
-                  "content": "DAR CORONA · 287",
-                  "fontFamily": "Press Start 2P",
-                  "fontSize": 10.0,
-                  "fontWeight": 400,
-                  "fill": [
-                    {
-                      "type": "solid",
-                      "color": "#2E1305"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
               "type": "frame",
               "id": "p179",
-              "x": 697.0,
-              "y": 300.5,
-              "width": 559.0,
-              "height": 575.5,
+              "x": 836.0,
+              "y": 92.0,
+              "width": 420.0,
+              "height": 705.1999999999999,
               "layout": "none",
               "cornerRadius": 8.0,
               "fill": [

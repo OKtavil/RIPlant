@@ -100,6 +100,12 @@ disco local y se sirve en `/uploads/<archivo>`.
 - El frontend muestra estados útiles: aviso de error si la API no está disponible (sin
   datos de demostración; los mocks se reservan para las pruebas), confirmación después
   de publicar y confirmación antes de eliminar categorías.
+- La **tarjeta** de la grilla muestra el epitafio además de la foto, el nombre, la
+  categoría con la causa, el autor y las coronas. Aplica en el cementerio (Inicio), en
+  el perfil y en las filas del ranking.
+- La **página de cada lápida** reúne toda la información en la columna izquierda
+  (foto, epitafio, nombre, autor, categoría, causa, fecha, `DAR CORONA` y
+  `BORRAR ESTA LÁPIDA`); la columna derecha queda solo para los comentarios.
 - Las pruebas cubren el camino feliz y los errores HTTP principales.
 
 ## Casos de uso ODD
