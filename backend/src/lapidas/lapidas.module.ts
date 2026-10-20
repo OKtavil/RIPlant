@@ -2,9 +2,11 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { LapidasController } from './lapidas.controller';
 import { LapidasService } from './lapidas.service';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CoronaDocumentModel, CoronaSchema } from './corona.schema';
 import { LapidaDocumentModel, LapidaSchema } from './lapida.schema';
 import { UsuarioDocumentModel, UsuarioSchema } from '../usuarios/usuario.schema';
 import { DuenoOAdminLapidaMiddleware } from '../sesiones/dueno-o-admin-lapida.middleware';
+import { SesionRequeridaMiddleware } from '../sesiones/sesion-requerida.middleware';
 import { SesionesModule } from '../sesiones/sesiones.module';
 
 @Module({
@@ -12,16 +14,28 @@ import { SesionesModule } from '../sesiones/sesiones.module';
     MongooseModule.forFeature([
       { name: LapidaDocumentModel.name, schema: LapidaSchema },
       { name: UsuarioDocumentModel.name, schema: UsuarioSchema },
+      { name: CoronaDocumentModel.name, schema: CoronaSchema },
     ]),
     SesionesModule,
   ],
   controllers: [LapidasController],
-  providers: [LapidasService, DuenoOAdminLapidaMiddleware],
+  providers: [
+    LapidasService,
+    DuenoOAdminLapidaMiddleware,
+    SesionRequeridaMiddleware,
+  ],
 })
 export class LapidasModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    // POST /lapidas exige sesión (cualquier rol logueado). PUT/DELETE exigen dueño o admin.
+    // POST /lapidas y POST /lapidas/:id/corona exigen sesión (cualquier rol).
+    // PUT/DELETE /lapidas/:id exigen dueño o admin.
     // La sesión ya está resuelta por SesionesMiddleware global (AppModule).
+    consumer
+      .apply(SesionRequeridaMiddleware)
+      .forRoutes(
+        { path: 'lapidas', method: RequestMethod.POST },
+        { path: 'lapidas/:id/corona', method: RequestMethod.POST },
+      );
     consumer
       .apply(DuenoOAdminLapidaMiddleware)
       .forRoutes(
@@ -30,4 +44,3 @@ export class LapidasModule implements NestModule {
       );
   }
 }
-

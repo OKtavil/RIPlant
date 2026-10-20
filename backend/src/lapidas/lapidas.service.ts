@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { UsuarioDocumentModel } from '../usuarios/usuario.schema';
+import { CoronaDocument, CoronaDocumentModel } from './corona.schema';
 import { CreateLapidaDto } from './create-lapida.dto';
 import { Lapida } from './lapida.interface';
 import { LapidaDocument, LapidaDocumentModel } from './lapida.schema';
@@ -22,6 +27,8 @@ export class LapidasService {
     private readonly lapidaModel: Model<LapidaDocument>,
     @InjectModel(UsuarioDocumentModel.name)
     private readonly usuarioModel: Model<any>,
+    @InjectModel(CoronaDocumentModel.name)
+    private readonly coronaModel: Model<CoronaDocument>,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -305,12 +312,45 @@ export class LapidasService {
     return lapida;
   }
 
-  async giveCorona(id: number): Promise<Lapida> {
-    const lapida = await this.lapidaModel
+  /**
+   * Una corona por usuario y lápida (D4). La unicidad la garantiza el índice
+   * compuesto `lapidaId + usuarioId`, no una consulta previa: una consulta
+   * previa tiene una carrera entre leer y escribir y el índice no. Si este
+   * usuario ya corona, la inserción falla con el código 11000 y el contador no
+   * se mueve.
+   *
+   * Primero se registra la corona y recién después se incrementa
+   * `coronasCount`, para que el contador nunca se adelante al registro que lo
+   * justifica.
+   *
+   * Nota: las coronas dadas antes de que existiera esta colección no tienen
+   * dueño registrado, así que `coronasCount` puede ser mayor que la cantidad de
+   * documentos en `coronas`. Es una inconsistencia conocida y no se reconstruye.
+   */
+  async giveCorona(
+    id: number,
+    sesion: { usuario: { id: string; username: string } },
+  ): Promise<Lapida> {
+    const lapida = await this.lapidaModel.findOne({ id }).lean();
+    if (!lapida) throw new NotFoundException('Lápida no encontrada');
+
+    try {
+      await this.coronaModel.create({
+        lapidaId: id,
+        usuarioId: sesion.usuario.id,
+        creadaEn: new Date(),
+      });
+    } catch (error) {
+      if ((error as { code?: number }).code === 11000) {
+        throw new ConflictException('Este usuario ya corono esta lápida');
+      }
+      throw error;
+    }
+
+    const coronada = await this.lapidaModel
       .findOneAndUpdate({ id }, { $inc: { coronasCount: 1 } }, { new: true })
       .lean();
-    if (!lapida) throw new NotFoundException('Lápida no encontrada');
-    return lapida;
+    return coronada as Lapida;
   }
 
   async findById(id: number): Promise<LapidaDocument | null> {

@@ -34,8 +34,8 @@ export class LapidasController {
 
   @Post()
   create(@Body() lapida: CreateLapidaDto, @Req() req: RequestConSesion) {
-    if (!req.sesion) throw new Error('Sesión requerida');
-    return this.lapidasService.create(lapida, req.sesion);
+    // SesionRequeridaMiddleware ya corrió: sin sesión la petición no llega acá.
+    return this.lapidasService.create(lapida, req.sesion!);
   }
 
   @Put(':id')
@@ -52,7 +52,11 @@ export class LapidasController {
   }
 
   @Post(':id/corona')
-  giveCorona(@Param('id', ParseIntPipe) id: number) {
-    return this.lapidasService.giveCorona(id);
+  giveCorona(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: RequestConSesion,
+  ) {
+    // SesionRequeridaMiddleware ya corrió: sin sesión la petición no llega acá.
+    return this.lapidasService.giveCorona(id, req.sesion!);
   }
 }

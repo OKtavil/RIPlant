@@ -41,11 +41,19 @@ describe('LapidasService', () => {
     updateOne: jest.fn().mockResolvedValue({}),
     updateMany: jest.fn().mockResolvedValue({}),
   };
+  const coronaModel = {
+    create: jest.fn(),
+  };
   let service: LapidasService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new LapidasService(model as never, model as never);
+    coronaModel.create.mockResolvedValue({ lapidaId: 1, usuarioId: 'u1' });
+    service = new LapidasService(
+      model as never,
+      model as never,
+      coronaModel as never,
+    );
   });
 
   it('lists and finds graves', async () => {
@@ -81,8 +89,28 @@ describe('LapidasService', () => {
       causaMuerte: 'Poca luz',
     } as any, { usuario: { id: 'u1', username: 'Jardinero' } } as any)).resolves.toEqual(grave);
     await expect(service.update(1, grave)).resolves.toMatchObject({ id: 1 });
-    await expect(service.giveCorona(1)).resolves.toMatchObject({ coronasCount: 1 });
+    await expect(
+      service.giveCorona(1, { usuario: { id: 'u1', username: 'Jardinero' } } as any),
+    ).resolves.toMatchObject({ coronasCount: 1 });
     await expect(service.remove(1)).resolves.toEqual(grave);
+  });
+
+  it('records one corona per user and rejects the second', async () => {
+    const sesion = { usuario: { id: 'u1', username: 'Jardinero' } } as any;
+
+    await expect(service.giveCorona(1, sesion)).resolves.toMatchObject({
+      coronasCount: 1,
+    });
+    expect(coronaModel.create).toHaveBeenCalledWith({
+      lapidaId: 1,
+      usuarioId: 'u1',
+      creadaEn: expect.any(Date),
+    });
+
+    coronaModel.create.mockRejectedValueOnce({ code: 11000 });
+    await expect(service.giveCorona(1, sesion)).rejects.toMatchObject({
+      status: 409,
+    });
   });
 
   it('seeds only an empty collection', async () => {
