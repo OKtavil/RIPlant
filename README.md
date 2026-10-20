@@ -520,6 +520,7 @@ Abre la URL que indique Vite, normalmente `http://localhost:5173`.
 ```bash
 pnpm --filter backend run test
 pnpm --filter backend run test:e2e
+pnpm --filter frontend run test
 pnpm --filter backend run build
 pnpm --filter frontend run build
 ```

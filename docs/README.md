@@ -27,6 +27,9 @@ pnpm install
 pnpm --filter backend run test
 pnpm --filter backend run test:e2e
 
+# Pruebas unitarias del frontend
+pnpm --filter frontend run test
+
 # Compilación de ambos proyectos
 pnpm --filter backend run build
 pnpm --filter frontend run build

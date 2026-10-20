@@ -1,16 +1,16 @@
 # Plan: los pasos que faltan en el frontend
 
 Objetivo: dejar registradas, con evidencia file:line, las brechas del frontend respecto de
-docs y backend, su dependencia y su orden de trabajo. **No hay implementación todavía**:
-este documento es el insumo de las features frontend que vienen.
+docs y backend, su dependencia y su orden de trabajo. **T1 (S1) ya está implementado**;
+el resto sigue esperando endpoints del backend o decisiones de producto.
 
 Rama: `copilot/working-copy` (worktree `riplant-copilot-working-copy`).
 Contraparte: `odd/tasks/pendientes-backend.md` — la vista de backend de estas mismas brechas
 (S1, S3, S4 y S5 ahí definen los contratos que el frontend va a consumir). Origen del hallazgo:
 la brecha ya detectada en `frontend-prototipo.md` S10 (E3) más la auditoría de contrato
 front ↔ docs ↔ backend del 2026-10-19.
-Runner de verificación hoy: `pnpm --filter frontend run build` y `pnpm --filter frontend run lint`
-(oxlint). **No existe test runner en el frontend** (ver S1).
+Runner de verificación hoy: `pnpm --filter frontend run test` (Vitest 5),
+`pnpm --filter frontend run build` y `pnpm --filter frontend run lint` (oxlint).
 
 ## Specs
 
@@ -19,9 +19,11 @@ Runner de verificación hoy: `pnpm --filter frontend run build` y `pnpm --filter
 Requisito de `docs/spec.md:44`, texto literal: "Las pruebas cubren el camino feliz y los
 errores HTTP principales."
 
-Hoy: cero archivos `*.test.*` en `frontend/` y ningún script de test en
-`frontend/package.json:6-11`. Es el único trabajo de este plan que no depende del backend.
-Falta decidir el runner (asunción, no decisión: **vitest**, el estándar junto a Vite).
+Estado 2026-10-19: **implementado** (T1). Runner **Vitest 5.0.5** con `jsdom` y
+`@testing-library/react`/`@testing-library/dom` como devDependencies; scripts `test` y
+`test:watch` en `frontend/package.json`; config en `vite.config.ts` (`environment: 'jsdom'`,
+`globals: true`). Cobertura: cliente HTTP (camino feliz, los 6 estados de error y caída de
+red), los tres módulos de API (paths, métodos y bodies) y un smoke de `LoginPage`.
 
 ### S2 — Conectar las pantallas ya construidas cuando el backend entregue cada endpoint
 
@@ -88,7 +90,7 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
 
 | ID | S# | Ruta | Estado | Commit |
 |---|---|---|---|---|
-| T1 | S1 | inline | pendiente (sin dependencias; falta decidir runner) | — |
+| T1 | S1 | inline | hecho 2026-10-19 — 28 tests verdes (RED/GREEN en L6) + build + lint + verificación sin blockers (L7) | — |
 | T2 | S2 | inline | bloqueado por backend (una tarea por fila al llegar cada endpoint) | — |
 | T3 | S3 | inline | bloqueado por endpoint de conteo en backend | — |
 | T4 | S4 | inline | pendiente de decisión (borrar propio al aterrizar S4 del backend; editar = decisión de producto) | — |
@@ -113,3 +115,18 @@ esas lápidas. Arrastra UI (mensaje de error o confirmación) y una definición 
   README ("Publicar no tiene causa de muerte") **ya está resuelta en código**
   (`PublicarPage.tsx:19,34,100` envía `causaMuerte`); `pendientes-backend.md` S2 además la vuelve
   opcional en el backend.
+- **L6 (2026-10-19)** — T1 implementado inline: decisión de runner **vitest** (la asunción de
+  S1) más `jsdom`, `@testing-library/react` y `@testing-library/dom` como devDependencies.
+  5 archivos de test / 28 tests. Primera ejecución: 7 fallos — el test asertaba la propiedad
+  `mensaje` de `ApiError` y la correcta es `message` (hereda de `Error`); corregido, verde
+  total. `build` (tsc + vite) y `lint` (oxlint) verdes; lint probado con un archivo malicioso
+  en `/tmp` para confirmar que reporta hallazgos cuando los hay. Comandos documentados en
+  README.md, docs/README.md y docs/verification.md. Veredicto de riesgo: **item 5** (nuevas
+  devDependencies).
+- **L7 (2026-10-19)** — Verificador independiente (`gentle-ai-verify`) sobre el diff completo
+  de T1: **S1 MET, cero blockers**, 4 advisories (cobertura de `credentials` en DELETEs, aviso
+  de auto-install de pnpm en CI, warnings de oxlint no bloquean (preexistente) e historial de
+  proceso no reproducible). Pruebas propias del verificador en scratch: verde 28/28, typecheck
+  de tests confirmado con error inyectado, `dependencies` intacto (solo react/react-dom),
+  `dist` sin rastros de tooling de test, lockfile +554/−0 y `--frozen-lockfile` en verde, peers
+  limpios con vite 8 / React 19 / TS 6. Spot check del parent tras la verificación: 28/28.

@@ -7,6 +7,7 @@
 | Backend unitario | `pnpm --filter backend run test` | Servicios y controladores |
 | Backend HTTP + MongoDB | `pnpm --filter backend run test:e2e` | CRUD, validación, `404` y coronas |
 | Backend compilación | `pnpm --filter backend run build` | TypeScript, Nest y esquemas Mongoose |
+| Frontend unitario | `pnpm --filter frontend run test` | Cliente HTTP, contratos de los módulos de API y login (Vitest) |
 | Frontend compilación | `pnpm --filter frontend run build` | TypeScript y bundle Vite |
 | Frontend lint | `pnpm --filter frontend run lint` | Reglas Oxlint configuradas |
 
@@ -17,6 +18,7 @@ pnpm install
 docker compose up -d mongo
 pnpm --filter backend run test
 pnpm --filter backend run test:e2e
+pnpm --filter frontend run test
 pnpm --filter backend run build
 pnpm --filter frontend run build
 pnpm --filter frontend run lint
