@@ -303,3 +303,64 @@ Riesgo: **item 2 (seguridad: autenticación, permisos, credenciales)** y
   revisor no lo levante de nuevo. **Lección de método:** mi primer análisis lo
   llamó "el más serio" sin verificar si el dato era realmente confidencial en el
   resto del sistema; dos `curl` al backend corriendo lo refutaron.
+- **L22** — Cierre de los hallazgos que quedaban vivos (`R1-002`, `R1-003`,
+  `R2-003`, `R2-005`). Commit `d4af22a`. El usuario, 2026-10-20, ante las dos
+  preguntas de despliegue: "**Todavía no hay despliegue definido**" y, sobre
+  dónde vivirá el frontend, "**No lo sé todavía**".
+
+  **Lo que ese contexto cambia.** `R1-002` y `R1-003` no se cierran con un valor
+  fijo: su default correcto **depende de dónde corra el backend** y hoy no hay
+  respuesta. Verificado: el `docker-compose.yml` solo levanta Mongo, no hay
+  nginx ni proxy, y no existe URL de producción declarada en ningún archivo. En
+  vez de inventar valores de producción —o de dejar el default abierto, que es
+  el riesgo real— las dos quedaron **configurables con el default de hoy**.
+
+  **`RIPLANTA_TRUST_PROXY`.** Default: no confiar en ningún header de proxy (el
+  comportamiento actual). Detrás de un proxy sin esto, todos los clientes
+  comparten la IP del proxy y cinco fallos ajenos bloquean a todos con ese
+  usuario. **El default es no confiar a propósito, y el motivo importa más que
+  el hallazgo original:** si el backend queda accesible directo *y* confía en
+  `X-Forwarded-For`, cualquiera falsea su IP con ese header y **saltea el
+  rate-limit entero**. Activar esto a ciegas habría abierto un agujero peor que
+  el que cerraba. `1` = último salto; `N` = últimos `N` saltos. Un valor que no
+  se entiende (`si`, `0`, `-1`) **apaga** la confianza en vez de encenderla a
+  medias.
+
+  **`RIPLANTA_CORS_ORIGINS`.** Default: refleja el origen que pide (lo de hoy,
+  acotado por `SameSite=Lax`). Con valores: allowlist exacta. Una variable
+  definida pero **vacía** se interpreta como "sin allowlist" y no como lista
+  vacía que rechazaría todo el tráfico — es un error de despliegue común y no
+  puede convertirse en una caída.
+
+  **Diseño: costura, no configuración de desarrollo.** Ninguna de las dos está
+  en `.env.example`, por el mismo motivo que `RIPLANTA_UPLOADS_DIR`: quien las
+  defina creyendo que son config cambia el comportamiento de seguridad sin
+  querer. Viven en `src/shared/config-despliegue.ts`, siguiendo el patrón de
+  `shared/validation-pipe.ts`, y tienen spec propia (10 tests).
+
+  **`R2-003`.** `@IsNotEmpty` es `value !== '' && value !== null && value !==
+  undefined`, así que **`" "` lo pasaba** y llegaba al servicio, donde gasta una
+  comparación bcrypt contra el cebo sin ser una credencial. RED real (e2e):
+  ambos casos fallaban contra `expect(400)`. GREEN: `@Matches(/\S/)` en
+  `username` y `password`, **mismo criterio que `CreateCategoriaDTO` ya usa**
+  para `nombre`. No es un bypass: el schema tiene `trim: true`, así que no se
+  puede registrar un usuario que normalice a otro. Verificado que
+  `IniciarSesionDTO` **solo lo usa el login** — el registro tiene su propio
+  `CrearUsuarioDTO` — así que no hay regresión ahí.
+
+  **`R2-005`.** El doc decía `App.tsx`; la ruta real es `frontend/src/app/App.tsx`.
+
+  **Verificación observada:** unit **93/93** (eran 83; +10 de la costura nueva) ·
+  e2e **34/34** (eran 32; +2 del DTO) · `build` y `lint` limpios. **El default
+  no cambia el comportamiento en runtime**: sin las variables definidas,
+  `saltosDeProxy()` devuelve `false` y `corsOriginsPermitidos()` devuelve
+  `true`, que es exactamente lo que había antes por construcción.
+
+  **Un error propio durante el trabajo:** el primer `edit` de `main.ts` dejó el
+  bloque final duplicado y **el build falló** (`Found 3 error(s)`, `main.ts:54`).
+  Se detectó porque el build se corre siempre, no porque el cambio pareciera
+  correcto. Lección: editar `main.ts` con un `oldString` que no incluye el cierre
+  de la función duplica el residuo.
+
+  **Estado de los hallazgos de `L15`: los nueve están cerrados, obsoletos o
+  documentados como no determinables.** No queda ninguno pendiente.
