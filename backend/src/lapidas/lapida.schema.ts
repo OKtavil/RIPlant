@@ -37,6 +37,22 @@ export class LapidaDocumentModel {
 
   @Prop({ default: 0, min: 0 })
   coronasCount: number;
+
+  /**
+   * S1 de la insignia: la lápida volvió a dar señales de vida. Se enciende
+   * cuando su dueño o un admin la editan (`PUT /lapidas/:id`); nunca vuelve a
+   * `false`, porque revivir es un hecho, no un estado que se pueda deshacer.
+   */
+  @Prop({ default: false })
+  resucitada: boolean;
+
+  /**
+   * Cuándo se rescató por primera vez. Se fija una sola vez: editar diez veces
+   * no mueve la fecha, porque la fecha del último retoque no dice nada sobre
+   * el hecho de haber revivido.
+   */
+  @Prop({ default: '' })
+  resucitadaEn: string;
 }
 
 export const LapidaSchema = SchemaFactory.createForClass(LapidaDocumentModel);

@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { hashPassword, verifyPassword } from './password';
-import type { Rol, Usuario } from './usuario.interface';
+import type { InsigniaUsuario, Rol, Usuario } from './usuario.interface';
 import { UsuarioDocumentModel } from './usuario.schema';
 
 /**
@@ -140,7 +140,15 @@ export class UsuariosService implements OnModuleInit {
     _id: unknown;
     username: string;
     rol: Rol;
+    insignias?: InsigniaUsuario[];
   }): Usuario {
-    return { id: String(doc._id), username: doc.username, rol: doc.rol };
+    return {
+      id: String(doc._id),
+      username: doc.username,
+      rol: doc.rol,
+      // `?? []`: los usuarios creados antes de la feature no tienen el campo
+      // guardado, y la API promete una lista, no `undefined`.
+      insignias: doc.insignias ?? [],
+    };
   }
 }

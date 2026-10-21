@@ -40,7 +40,7 @@ email (ver [Recuperar contraseña](#recuperar-contraseña-pendiente)).
 | Cementerio | Feed de todas las lápidas |
 | Salón del Honor | Ranking de lápidas por coronas recibidas |
 | Asesinos Seriales | Ranking de usuarios por lápidas publicadas |
-| Superviviente Zombie | Insignia: se otorga cuando una lápida reportada como muerta vuelve a mostrar señales de vida |
+| Superviviente Zombie | Insignia: se otorga cuando una lápida propia se edita para que vuelva a mostrar señales de vida. La insignia se guarda en el usuario y se muestra en el perfil. |
 
 ## Pantallas
 
@@ -387,7 +387,7 @@ Al comparar el esquema con el prototipo, estos puntos siguen sin decidir:
 | 2 | **Causa de muerte** | ✅ **Resuelto**: es opcional. El formulario de Publicar la pide pero ya no es obligatoria. |
 | 3 | **Una o varias categorías** | El prototipo permite elegir **una**; el esquema original permitía **varias**. Implementado como una sola (`categoriaId`); pasarlo a varias tocaría el DTO, el schema y el front. |
 | 4 | **Autoría** | ✅ **Resuelto**: un solo dueño por lápida (`usuarioId`), que es lo que muestra el prototipo. |
-| 5 | **Insignia Zombie** | No existe en el esquema: faltan el estado "reportada como muerta" y una forma de guardar insignias (por ejemplo, una lista `insignias` en el usuario). **Ojo**: no confundir con el usuario reservado `zombie`, que es el dueño de las lápidas huérfanas. |
+| 5 | **Insignia Zombie** | ✅ **Resuelto**: `resucitada`/`resucitadaEn` en la lápida (se enciende al editarla con `PUT /lapidas/:id`, dueño o admin) y lista `insignias` en el usuario (`superviviente-zombie`). Se muestra en el perfil, y el estado resucitada en tarjeta/detalle. El usuario reservado `zombie` queda excluido del premio. |
 | 6 | **Fechas** | `fechaPublicacion` se asigna al crear. Los comentarios y las coronas llevan fecha (`creadoEn`). |
 | 7 | **Rol** | ✅ **Resuelto**: texto, no bit. Hoy hay tres: `'usuario'`, `'admin'` y `'zombie'` (este último no autoriza nada). |
 | 8 | **Borrar una categoría en uso** | Si hay lápidas que la usan, hay que decidir: impedir el borrado, o quitarla de esas lápidas. |

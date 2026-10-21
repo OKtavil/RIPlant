@@ -30,6 +30,13 @@ export type Grave = {
    * verdad de la identidad: `autor` es texto libre y puede no coincidir.
    */
   duenio?: { username: string; rol: string }
+  /**
+   * Si la lápida volvió a dar señales de vida: su dueño o un admin la editaron
+   * (`PUT /lapidas/:id`). `resucitadaEn` guarda la fecha del primer rescate.
+   * Se muestra distinto en el cementerio.
+   */
+  resucitada?: boolean
+  resucitadaEn?: string
 }
 
 /** Fila de `GET /lapidas/asesinos`. */

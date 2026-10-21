@@ -46,6 +46,16 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
 
           <p className="detalle__epitafio">“{lapida.epitafio}”</p>
 
+          {lapida.resucitada && (
+            <p
+              className="detalle__resucitada"
+              aria-label="Lápida resucitada"
+              role="status"
+            >
+              RESUCITADA
+            </p>
+          )}
+
           <div className="detalle__datos">
             <span>
               <strong>Categoría:</strong> {categoria}

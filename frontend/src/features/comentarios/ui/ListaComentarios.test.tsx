@@ -28,6 +28,7 @@ const SESION = {
   id: 'u9',
   username: 'jardinera',
   rol: 'usuario' as const,
+  insignias: [],
   expiraEn: '2026-12-31T00:00:00.000Z',
 }
 
@@ -129,7 +130,7 @@ describe('ListaComentarios', () => {
   })
 
   it('el admin ve un botón de borrar por cada comentario', async () => {
-    const admin = { ...SESION, username: 'admin', rol: 'admin' as const }
+    const admin = { ...SESION, username: 'admin', rol: 'admin' as const, insignias: [] }
     conApi([comentario({ id: 'c1' }), comentario({ id: 'c2', autor: 'otra' })])
 
     render(<ListaComentarios lapidaId={7} sesion={admin} />)
@@ -139,7 +140,7 @@ describe('ListaComentarios', () => {
   })
 
   it('el admin borra un comentario y desaparece de la lista', async () => {
-    const admin = { ...SESION, username: 'admin', rol: 'admin' as const }
+    const admin = { ...SESION, username: 'admin', rol: 'admin' as const, insignias: [] }
     vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
     fetchMock.mockImplementation((_url: string, init?: RequestInit) => {
       if (init?.method === 'DELETE') return Promise.resolve(Response.json({ id: 'c1' }))
@@ -160,7 +161,7 @@ describe('ListaComentarios', () => {
   })
 
   it('no borra nada si el admin cancela la confirmación', async () => {
-    const admin = { ...SESION, username: 'admin', rol: 'admin' as const }
+    const admin = { ...SESION, username: 'admin', rol: 'admin' as const, insignias: [] }
     vi.stubGlobal('confirm', vi.fn().mockReturnValue(false))
     conApi([comentario({ id: 'c1' })])
 
@@ -175,7 +176,7 @@ describe('ListaComentarios', () => {
   })
 
   it('pregunta antes de borrar, nombrando al autor del comentario', async () => {
-    const admin = { ...SESION, username: 'admin', rol: 'admin' as const }
+    const admin = { ...SESION, username: 'admin', rol: 'admin' as const, insignias: [] }
     const confirmar = vi.fn().mockReturnValue(false)
     vi.stubGlobal('confirm', confirmar)
     conApi([comentario({ id: 'c1', autor: 'regabien_no' })])

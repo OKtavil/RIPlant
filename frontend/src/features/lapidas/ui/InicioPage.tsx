@@ -76,8 +76,8 @@ export function InicioPage({
         </div>
 
         <p className="sidebar__nota">
-          Insignia especial: <strong>“Superviviente Zombie”</strong> — se otorga cuando una
-          lápida reportada como muerta vuelve a mostrar señales de vida.
+          Insignia especial: <strong>“Superviviente Zombie”</strong> — se otorga cuando
+          editás una lápida propia para que vuelva a mostrar señales de vida.
         </p>
       </aside>
     </div>

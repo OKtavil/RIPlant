@@ -22,6 +22,17 @@ import { LapidaDocument, LapidaDocumentModel } from './lapida.schema';
 const USUARIO_ZOMBIE = 'zombie';
 const USUARIO_JARDINERA = 'jardinera';
 
+/**
+ * Código estable de la insignia "Superviviente Zombie" (decisión abierta #5
+ * del README, cerrada acá). Es el identificador que se guarda en
+ * `usuarios.insignias[].codigo`; la UI lo traduce a su nombre visible.
+ *
+ * Ojo con el nombre: **no** es el usuario reservado `zombie` de D-008. La
+ * insignia es un logro del dueño de una lápida que volvió a la vida; el
+ * usuario `zombie` es el estado de las lápidas huérfanas.
+ */
+const INSIGNIA_SUPERVIVIENTE = 'superviviente-zombie';
+
 type DuenioInfo = { username: string; rol: string } | undefined;
 
 @Injectable()
@@ -337,23 +348,122 @@ export class LapidasService {
     return lapida.toObject();
   }
 
+  /**
+   * Edita una lápida. **Editar es la señal de vida** (decisión del usuario):
+   * la lápida queda `resucitada` y su dueño recibe la insignia
+   * `superviviente-zombie`.
+   *
+   * **Por qué la revivida viaja en el mismo `findOneAndUpdate`.** Una escritura
+   * aparte (editar y después marcar) tiene una ventana en la que la lápida ya
+   * cambió pero todavía no revivió: si el proceso muere ahí, la edición quedó
+   * aplicada y el premio no, y nada lo vuelve a intentar. Con un solo update,
+   * las dos cosas pasan o no pasa ninguna.
+   *
+   * **Por qué `resucitadaEn` se lee antes.** El `$set` de Mongo no puede
+   * referirse al valor previo del documento, así que la fecha se resuelve en
+   * memoria: la del primer rescate si ya estaba resucitada, `ahora` si no. Es
+   * la misma razón por la que el premio no se otorga dos veces.
+   *
+   * **Por qué el premio va al dueño y no a la sesión.** Un admin puede editar
+   * la lápida de cualquiera. La insignia marca a quien revivió **su** planta,
+   * no a quien movió el teclado: acreditársela al editor haría que moderar el
+   * cementerio regalara el logro.
+   *
+   * **Por qué `$addToSet` y no un `if`.** Comprobar antes e insertar después
+   * tiene una carrera entre leer y escribir; el operador de Mongo no. Es el
+   * mismo criterio que el índice único de `coronas`.
+   */
   async update(id: number, dto: CreateLapidaDto): Promise<Lapida> {
+    const previa = await this.lapidaModel.findOne({ id }).lean();
+    if (!previa) throw new NotFoundException('Lápida no encontrada');
+
+    const yaResucitada = Boolean((previa as { resucitada?: boolean }).resucitada);
+    const resucitadaEn =
+      (previa as { resucitadaEn?: string }).resucitadaEn || new Date().toISOString();
+
     const lapida = await this.lapidaModel
       .findOneAndUpdate(
         { id },
         {
-          nombrePlanta: dto.nombrePlanta,
-          epitafio: dto.epitafio,
-          fechaFallecimiento: dto.fechaFallecimiento,
-          categoriaId: dto.categoriaId,
-          causaMuerte: dto.causaMuerte ?? '',
+          $set: {
+            nombrePlanta: dto.nombrePlanta,
+            epitafio: dto.epitafio,
+            fechaFallecimiento: dto.fechaFallecimiento,
+            categoriaId: dto.categoriaId,
+            causaMuerte: dto.causaMuerte ?? '',
+            resucitada: true,
+            resucitadaEn,
+          },
           // S8: actualizar la lápida no toca la foto; para eso está el endpoint.
         },
         { new: true, runValidators: true },
       )
       .lean();
     if (!lapida) throw new NotFoundException('Lápida no encontrada');
+
+    await this.premiarSuperviviente(
+      (previa as { usuarioId?: unknown }).usuarioId,
+      id,
+      yaResucitada,
+    );
+
     return lapida;
+  }
+
+  /**
+   * Otorga la insignia `superviviente-zombie` al dueño de la lápida revivida.
+   *
+   * Best-effort y **después** de la edición: si esto falla, la edición ya está
+   * hecha y el rescate igual ocurrió. Al revés —premiar primero— la insignia
+   * podría quedar acreditada por una edición que después falló.
+   *
+   * El usuario reservado `zombie` queda excluido: no es un jugador, es el
+   * estado de las lápidas huérfanas (D-008). Si heredara insignias, el
+   * cementerio premiaría a un usuario que nunca publicó nada.
+   */
+  private async premiarSuperviviente(
+    usuarioId: unknown,
+    lapidaId: number,
+    yaResucitada: boolean,
+  ): Promise<void> {
+    // Si ya estaba resucitada, no damos la insignia de nuevo: `$addToSet`
+    // solo funciona si los subdocumentos son idénticos en todo; cambiando la
+    // fecha cada vez rompería la idempotencia. Más importante, el logro es
+    // "haber revivido" una lápida: revivirla otra vez no es un logro nuevo.
+    if (yaResucitada) return;
+
+    const id = usuarioId ? String(usuarioId) : '';
+    if (!id) return;
+
+    try {
+      const dueño = await this.usuarioModel.findOne({ _id: id }).lean();
+      if (!dueño || (dueño as { username?: string }).username === USUARIO_ZOMBIE) return;
+
+      await this.usuarioModel.updateOne(
+        { _id: id },
+        {
+          $addToSet: {
+            insignias: {
+              codigo: INSIGNIA_SUPERVIVIENTE,
+              // La primera lápida que lo hizo merecer la insignia: con
+              // `$addToSet` la entrada no se reescribe, así que el dato queda
+              // congelado en el primer rescate.
+              lapidaId,
+              obtenidaEn: new Date().toISOString(),
+            },
+          },
+        },
+      );
+    } catch (error) {
+      // La edición ya está persistida: no se revierte por no poder premiar.
+      // Se loguea para que la insignia faltante tenga rastro.
+      this.logger.warn(
+        `No se pudo otorgar la insignia ${INSIGNIA_SUPERVIVIENTE} al dueño ${id} ` +
+          `(la lápida ${lapidaId}${yaResucitada ? ' ya estaba resucitada' : ''}): ${
+            (error as Error).message
+          }`,
+      );
+    }
   }
 
   /**

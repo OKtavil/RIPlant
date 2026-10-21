@@ -20,7 +20,12 @@ type Props = {
 
 export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCorona, onBorrar }: Props) {
   return (
-    <article className="lapida">
+    <article className={`lapida${lapida.resucitada ? ' lapida--resucitada' : ''}`}>
+      {lapida.resucitada && (
+        <span className="lapida__resucitada" aria-label="Lápida resucitada">
+          RESUCITADA
+        </span>
+      )}
       <button
         className={`lapida__foto ${tamano === 'baja' ? 'lapida__foto--baja' : 'lapida__foto--alta'}`}
         style={lapida.fotoUrl ? undefined : { background: colorDeFoto(lapida.id) }}

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import type { Rol } from './usuario.interface';
+import type { InsigniaUsuario, Rol } from './usuario.interface';
 
 export type UsuarioDocument = HydratedDocument<UsuarioDocumentModel>;
 
@@ -23,6 +23,21 @@ export class UsuarioDocumentModel {
 
   @Prop({ required: true, type: Date, default: Date.now })
   creadoEn: Date;
+
+  /**
+   * Logros del usuario. Hoy solo `superviviente-zombie`: se otorga al dueño
+   * cuando una de sus lápidas revive (edición vía `PUT /lapidas/:id`).
+   *
+   * Es una lista de sub-documentos y no de strings a propósito: cada insignia
+   * necesita saber **qué lápida** la disparó y **cuándo**, y con un string
+   * suelto esa información se perdería. El `default: []` evita el `undefined`
+   * en los usuarios anteriores a la feature.
+   */
+  @Prop({
+    type: [{ _id: false, codigo: String, lapidaId: Number, obtenidaEn: String }],
+    default: [],
+  })
+  insignias: InsigniaUsuario[];
 }
 
 export const UsuarioSchema =

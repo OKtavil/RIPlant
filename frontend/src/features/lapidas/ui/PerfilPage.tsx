@@ -1,7 +1,7 @@
-import { AvisoNoDisponible } from '../../../shared/ui/Aviso'
+import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { IconoInsignia, IconoPersona } from '../../../shared/ui/iconos'
-import type { Session } from '../../sesiones/model/sesion'
+import { insigniaSuperviviente, type Session } from '../../sesiones/model/sesion'
 import type { Category } from '../../categorias/model/categoria'
 import type { Asesino, Grave } from '../model/lapida'
 import { puedeBorrar } from '../model/lapida'
@@ -15,6 +15,13 @@ type Props = {
   onPublicar: () => void
   onBorrar: (lapida: Grave) => Promise<void>
   onIniciarSesion: () => void
+}
+
+function formatearFechaCorta(fecha: string): string {
+  const soloFecha = fecha.slice(0, 10)
+  const [anio, mes, dia] = soloFecha.split('-')
+  if (!anio || !mes || !dia) return fecha
+  return `${dia}/${mes}/${anio}`
 }
 
 export function PerfilPage({
@@ -35,6 +42,7 @@ export function PerfilPage({
   const coronasRecibidas = propias.reduce((total, lapida) => total + lapida.coronasCount, 0)
   const misMuertes = asesinos.find((a) => a.username === sesion?.username)?.muertes ?? 0
   const nombreCategoria = (id: number) => categorias.find((c) => c.id === id)?.nombre
+  const insignia = insigniaSuperviviente(sesion)
 
   return (
     <>
@@ -68,19 +76,31 @@ export function PerfilPage({
           <p className="perfil__stat-valor perfil__stat-valor--madera">{coronasRecibidas}</p>
           <p className="perfil__stat-etiqueta">Coronas recibidas</p>
         </div>
-        <div className="perfil__stat perfil__stat--insignia">
+        <div
+          className={`perfil__stat perfil__stat--insignia${
+            insignia ? ' perfil__stat--obtenida' : ''
+          }`}
+        >
           <IconoInsignia />
           <p className="perfil__insignia-texto">
             <strong>Superviviente Zombie</strong>
             <br />
-            una lápida “resucitó”
+            {insignia ? (
+              <>Obtenida · {formatearFechaCorta(insignia.obtenidaEn)}</>
+            ) : (
+              <>Aún no obtenida</>
+            )}
           </p>
         </div>
       </section>
 
-      <AvisoNoDisponible>
-        La insignia “Superviviente Zombie” todavía no tiene estado en la API.
-      </AvisoNoDisponible>
+      {!insignia && (
+        <Aviso tono="pendiente">
+          <strong>Superviviente Zombie:</strong> editá una de tus lápidas para que
+          vuelva a mostrar señales de vida. La primera vez que la revivas se te otorga la
+          insignia al dueño.
+        </Aviso>
+      )}
 
       <h2 className="perfil__seccion">SU CEMENTERIO</h2>
 

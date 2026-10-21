@@ -94,4 +94,44 @@ describe('GraveCard', () => {
     expect(container.querySelector('.lapida__foto-img')).toBeNull()
     expect(container.querySelector('.lapida__foto svg')).toBeTruthy()
   })
+
+  describe('estado resucitada (S5)', () => {
+    it('no marca la tarjeta de una lápida que nunca revivió', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida({ resucitada: false })} onAbrir={vi.fn()} />,
+      )
+
+      const tarjeta = container.querySelector('.lapida')!
+      expect(tarjeta.className).not.toContain('lapida--resucitada')
+      expect(container.querySelector('.lapida__resucitada')).toBeNull()
+    })
+
+    it('marca la tarjeta con una clase propia cuando revivió', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida({ resucitada: true })} onAbrir={vi.fn()} />,
+      )
+
+      const tarjeta = container.querySelector('.lapida')!
+      expect(tarjeta.className).toContain('lapida--resucitada')
+    })
+
+    it('muestra el rótulo visible en la tarjeta, no solo el color', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida({ resucitada: true })} onAbrir={vi.fn()} />,
+      )
+
+      const rotulo = container.querySelector('.lapida__resucitada')!
+      expect(rotulo).toBeTruthy()
+      expect(rotulo.textContent).toContain('RESUCITADA')
+    })
+
+    it('también marca la variante baja, que es la del perfil', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida({ resucitada: true })} tamano="baja" onAbrir={vi.fn()} />,
+      )
+
+      expect(container.querySelector('.lapida--resucitada')).toBeTruthy()
+      expect(container.querySelector('.lapida__resucitada')).toBeTruthy()
+    })
+  })
 })

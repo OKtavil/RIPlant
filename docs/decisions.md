@@ -152,3 +152,29 @@ cambio es **global** (todas las respuestas a la vez, o ninguna) y toca el contra
 de endpoints públicos. El campo está declarado en `comentario.interface.ts`,
 `comentario.schema.ts` y fijado por `comentarios.service.spec.ts`, así que
 removerlo es un cambio de contrato, no una limpieza.
+
+## D-013 — Insignia Superviviente Zombie (editar una lápida la revive)
+
+**Decisión:** editar una lápida propia con `PUT /lapidas/:id` (dueño o admin) es
+la señal de vida. La lápida queda `resucitada: true` y `resucitadaEn` con la fecha
+del primer rescate; el dueño recibe la insignia `superviviente-zombie` en una lista
+`insignias` del usuario, leída desde la sesión.
+
+**Análisis:** el prototipo pedía la insignia pero no existía ni el estado ni el
+lugar para guardarla. Se descartan un botón explícito "REVIVIÓ" (agrega UI/estado) y
+un modelo de dos estados "reportar muerta → revivir" (más caro, sin razón para
+implementar dos acciones). Reutilizar `PUT /lapidas/:id` es el menor cambio: la
+revivida viaja en el **mismo** `findOneAndUpdate` que la edición (para evitar que la
+edición quede aplicada sin premio) y se resuelve en memoria (`resucitadaEn`
+previo o `ahora`). El premio va al **dueño** (`lapida.usuarioId`), no a quien
+editó, y el usuario reservado `zombie` queda excluido. Es idempotente con
+`$addToSet` (y la fecha no se reescribe). La lista vive en el usuario porque la
+sesión ya la entrega y no hace falta un endpoint nuevo. El `PUT` sigue validando
+con el DTO; una edición rechazada no revive nada.
+
+**Consecuencia:** `lapida.schema.ts`/`interface.ts` ganan `resucitada`/`resucitadaEn`;
+`usuario.schema.ts`/`interface.ts`/`usuarios.service.ts` ganan `insignias`; `sesiones.controller.ts`
+lo expone en `POST /sesiones` y `GET /sesiones/actual`; el front muestra la
+insignia en `PerfilPage`, el estado resucitada en `GraveCard`/`DetallePage` y
+actualiza la nota del sidebar. `README.md`, `docs/spec.md` y esta decisión
+cierran el punto abierto #5.

@@ -16,7 +16,7 @@ function conRespuesta(respuesta: Response) {
 describe('sesionesApi', () => {
   it('actual pide GET /sesiones/actual', async () => {
     conRespuesta(
-      Response.json({ id: 1, username: 'admin', rol: 'admin', expiraEn: '2026-10-20T00:00:00.000Z' }),
+      Response.json({ id: 1, username: 'admin', rol: 'admin', insignias: [], expiraEn: '2026-10-20T00:00:00.000Z' }),
     )
 
     const sesion = await sesionesApi.actual()
@@ -30,7 +30,7 @@ describe('sesionesApi', () => {
 
   it('iniciar hace POST /sesiones con las credenciales', async () => {
     conRespuesta(
-      Response.json({ id: 1, username: 'admin', rol: 'admin', expiraEn: '2026-10-20T00:00:00.000Z' }),
+      Response.json({ id: 1, username: 'admin', rol: 'admin', insignias: [], expiraEn: '2026-10-20T00:00:00.000Z' }),
     )
 
     await sesionesApi.iniciar({ username: 'admin', password: 'clave-de-prueba' })
@@ -44,7 +44,7 @@ describe('sesionesApi', () => {
 
   it('registrar hace POST /usuarios con las credenciales y devuelve la sesión', async () => {
     conRespuesta(
-      Response.json({ id: 2, username: 'pepe', rol: 'usuario', expiraEn: '2026-10-20T00:00:00.000Z' }),
+      Response.json({ id: 2, username: 'pepe', rol: 'usuario', insignias: [], expiraEn: '2026-10-20T00:00:00.000Z' }),
     )
 
     const sesion = await sesionesApi.registrar({ username: 'pepe', password: 'clave-de-prueba' })

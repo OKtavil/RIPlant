@@ -39,6 +39,7 @@ const sesionDuenia: Session = {
   id: 'u1',
   username: 'zombie',
   rol: 'usuario',
+  insignias: [],
   expiraEn: '2026-10-20T00:00:00.000Z',
 }
 
@@ -210,5 +211,31 @@ describe('DetallePage', () => {
       Array.from(card.querySelectorAll('*')).indexOf(nodo as Element),
     )
     expect(posiciones).toEqual([...posiciones].sort((a, b) => a - b))
+  })
+
+  describe('estado resucitada (S5)', () => {
+    it('no muestra el rótulo en una lápida que nunca revivió', () => {
+      const { container } = montar({ lapida: lapida({ resucitada: false }) })
+
+      expect(container.querySelector('.detalle__resucitada')).toBeNull()
+      expect(screen.queryByText(/resucitada/i)).toBeNull()
+    })
+
+    it('muestra el rótulo RESUCITADA en una lápida que revivió', () => {
+      const { container } = montar({
+        lapida: lapida({ resucitada: true, resucitadaEn: '2026-10-20T00:00:00.000Z' }),
+      })
+
+      const rotulo = container.querySelector('.detalle__resucitada')!
+      expect(rotulo).toBeTruthy()
+      expect(rotulo.textContent).toContain('RESUCITADA')
+    })
+
+    it('el rótulo tiene etiqueta accesible, no solo color', () => {
+      montar({ lapida: lapida({ resucitada: true, resucitadaEn: '2026-10-20T00:00:00.000Z' }) })
+
+      // El estado no puede depender del color: tiene que anunciarse.
+      expect(screen.getByLabelText(/lápida resucitada/i)).toBeTruthy()
+    })
   })
 })

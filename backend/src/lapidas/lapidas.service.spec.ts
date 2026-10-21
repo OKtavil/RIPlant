@@ -204,6 +204,140 @@ describe('LapidasService', () => {
     expect(model.findOneAndUpdate).not.toHaveBeenCalled();
   });
 
+  it('marca la lápida como resucitada al editarla (S1)', async () => {
+    // La señal de vida es la edición: `PUT /lapidas/:id` revivida la lápida.
+    // `resucitadaEn` queda fijada en ese momento.
+    model.findOne = jest.fn(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ ...grave, resucitada: false }),
+      }),
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: false }),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({
+        ...grave,
+        resucitada: true,
+        resucitadaEn: '2026-10-20T00:00:00.000Z',
+      }),
+    }) as any;
+
+    const editada = await service.update(1, grave as any);
+
+    expect(editada).toMatchObject({ resucitada: true });
+    // Lo que importa: la revivida viaja en el MISMO update que la edición, no
+    // en una escritura aparte que podría fallar después de aplicar los cambios.
+    const [, cambios] = (model.findOneAndUpdate as jest.Mock).mock.calls[0];
+    expect(cambios.$set).toMatchObject({ resucitada: true });
+    expect(cambios.$set.resucitadaEn).toEqual(expect.any(String));
+  });
+
+  it('no reescribe resucitadaEn si la lápida ya estaba resucitada (S1)', async () => {
+    // Idempotente: la fecha es la del PRIMER rescate. Sin esto, editar diez
+    // veces dejaría la fecha del último, que no dice nada del hecho.
+    const primera = '2026-01-01T00:00:00.000Z';
+    model.findOne = jest.fn(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ ...grave, resucitada: true, resucitadaEn: primera }),
+      }),
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: true, resucitadaEn: primera }),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: true, resucitadaEn: primera }),
+    }) as any;
+
+    await service.update(1, grave as any);
+
+    const [, cambios] = (model.findOneAndUpdate as jest.Mock).mock.calls[0];
+    expect(cambios.$set.resucitadaEn).toBe(primera);
+  });
+
+  it('premia al DUEÑO de la lápida, no a quien la editó (S2)', async () => {
+    // Un admin puede editar la lápida de otro. El premio es del dueño: la
+    // insignia marca a quien revivió SU planta, no a quien movió el teclado.
+    model.findOne = jest.fn(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ ...grave, usuarioId: 'u-duenio' }),
+      }),
+      lean: jest.fn().mockResolvedValue({ ...grave, usuarioId: 'u-duenio' }),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({
+        ...grave,
+        usuarioId: 'u-duenio',
+        resucitada: true,
+        resucitadaEn: '2026-10-20T00:00:00.000Z',
+      }),
+    }) as any;
+
+    await service.update(1, grave as any);
+
+    expect(model.updateOne).toHaveBeenCalledWith(
+      { _id: 'u-duenio' },
+      expect.objectContaining({
+        $addToSet: { insignias: expect.objectContaining({ codigo: 'superviviente-zombie' }) },
+      }),
+    );
+    // El editor era otro: el premio no se le acredita a él de ninguna forma.
+    expect(model.updateOne).not.toHaveBeenCalledWith(
+      { _id: 'u1' },
+      expect.anything(),
+    );
+  });
+
+  it('no premia dos veces al mismo dueño (S2, $addToSet)', async () => {
+    // La idempotencia la garantiza `$addToSet`, no un `if` previo: un `if`
+    // tiene carrera entre leer y escribir, y el operador de Mongo no.
+    model.findOne = jest.fn(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue({ ...grave, resucitada: false }),
+      }),
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: false }),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: true }),
+    }) as any;
+
+    await service.update(1, grave as any);
+
+    expect(model.updateOne).toHaveBeenCalled();
+    const [, operacion] = (model.updateOne as jest.Mock).mock.calls[0];
+    expect(operacion.$addToSet).toBeDefined();
+  });
+
+  it('no premia a la lápida del usuario zombie (S2)', async () => {
+    // `zombie` no es un jugador: es el estado reservado de las lápidas
+    // huérfanas. Si heredara insignias, el cementerio premiaría a un usuario
+    // que nunca publicó nada.
+    model.findOne = jest.fn((filtro: any) => {
+      const esZombie = filtro?.username === 'zombie';
+      const doc = esZombie ? { _id: 'id-zombie', username: 'zombie' } : grave;
+      return {
+        sort: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(doc) }),
+        lean: jest.fn().mockResolvedValue(doc),
+        select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+      };
+    }) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({
+        ...grave,
+        usuarioId: 'id-zombie',
+        resucitada: true,
+        resucitadaEn: '2026-10-20T00:00:00.000Z',
+      }),
+    }) as any;
+
+    await service.update(1, grave as any);
+
+    expect(model.updateOne).not.toHaveBeenCalledWith(
+      { _id: 'id-zombie' },
+      expect.anything(),
+    );
+  });
+
   it('removes every comment when the grave is removed (S6 cascade)', async () => {
     await expect(service.remove(1)).resolves.toEqual(grave);
     expect(comentarioModel.deleteMany).toHaveBeenCalledWith({ lapidaId: 1 });

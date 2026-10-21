@@ -97,6 +97,12 @@ disco local y se sirve en `/uploads/<archivo>`.
   Al reemplazarla se borra la anterior, y al borrar la lápida se borra la suya.
 - `GET /lapidas/asesinos` agrupa por dueño, ordena de mayor a menor y excluye al
   usuario `zombie`.
+- La insignia **Superviviente Zombie** se otorga al dueño de una lápida que revive:
+  `PUT /lapidas/:id` (dueño o admin) marca la lápida como `resucitada` y añade la
+  insignia `superviviente-zombie` a las `insignias` del dueño, con `$addToSet` y
+  la fecha del primer rescate. `GET /sesiones/actual` y `POST /sesiones` la devuelven
+  en la respuesta de sesión; el perfil la muestra y el estado resucitada aparece en
+  tarjeta y detalle.
 - El frontend muestra estados útiles: aviso de error si la API no está disponible (sin
   datos de demostración; los mocks se reservan para las pruebas), confirmación después
   de publicar y confirmación antes de eliminar categorías.

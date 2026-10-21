@@ -193,6 +193,144 @@ describe('Lapidas (e2e)', () => {
     expect(vacia.body.causaMuerte).toBe('');
   });
 
+  describe('Insignia Superviviente Zombie (S1-S3)', () => {
+    /** Crea una lápida propia y devuelve su id. */
+    async function crearLapida(): Promise<number> {
+      const res = await request(app.getHttpServer())
+        .post('/lapidas')
+        .set('Cookie', cookie)
+        .send({
+          nombrePlanta: 'Revivida',
+          epitafio: 'Antes',
+          fechaFallecimiento: '2025-05-05',
+          categoriaId: 1,
+        })
+        .expect(201);
+      return res.body.id;
+    }
+
+    /** La lápida tal como la devuelve el backend. */
+    async function leer(id: number) {
+      const res = await request(app.getHttpServer()).get(`/lapidas/${id}`).expect(200);
+      return res.body;
+    }
+
+    /** Las insignias de la sesión vigente. */
+    async function misInsignias() {
+      const res = await request(app.getHttpServer())
+        .get('/sesiones/actual')
+        .set('Cookie', cookie)
+        .expect(200);
+      return res.body.insignias as Array<{
+        codigo: string;
+        lapidaId: number;
+        obtenidaEn: string;
+      }>;
+    }
+
+    it('una lápida nueva NO está resucitada', async () => {
+      const id = await crearLapida();
+
+      expect((await leer(id)).resucitada).toBe(false);
+    });
+
+    it('editar la lápida la revive y da la insignia al dueño', async () => {
+      const id = await crearLapida();
+      expect(await misInsignias()).toEqual([]);
+
+      const editada = await request(app.getHttpServer())
+        .put(`/lapidas/${id}`)
+        .set('Cookie', cookie)
+        .send({
+          nombrePlanta: 'Revivida',
+          epitafio: 'Sigue acá',
+          fechaFallecimiento: '2025-05-05',
+          categoriaId: 1,
+        })
+        .expect(200);
+
+      expect(editada.body.resucitada).toBe(true);
+      expect(editada.body.resucitadaEn).toEqual(expect.any(String));
+
+      const insignias = await misInsignias();
+      expect(insignias).toHaveLength(1);
+      expect(insignias[0]).toMatchObject({
+        codigo: 'superviviente-zombie',
+        lapidaId: id,
+      });
+      expect(insignias[0].obtenidaEn).toEqual(expect.any(String));
+    });
+
+    it('editar dos veces no da la insignia dos veces ni mueve la fecha', async () => {
+      const id = await crearLapida();
+      const edicion = {
+        nombrePlanta: 'Revivida',
+        epitafio: 'Sigue acá',
+        fechaFallecimiento: '2025-05-05',
+        categoriaId: 1,
+      };
+
+      const primera = await request(app.getHttpServer())
+        .put(`/lapidas/${id}`)
+        .set('Cookie', cookie)
+        .send(edicion)
+        .expect(200);
+
+      const segunda = await request(app.getHttpServer())
+        .put(`/lapidas/${id}`)
+        .set('Cookie', cookie)
+        .send({ ...edicion, epitafio: 'Otra vez' })
+        .expect(200);
+
+      // La fecha es la del PRIMER rescate: la segunda edición no la mueve.
+      expect(segunda.body.resucitadaEn).toBe(primera.body.resucitadaEn);
+      expect(segunda.body.epitafio).toBe('Otra vez');
+
+      // Y la insignia sigue siendo una sola entrada.
+      const insignias = await misInsignias();
+      expect(insignias.filter((i) => i.lapidaId === id)).toHaveLength(1);
+    });
+
+    it('una edición rechazada NO revive la lápida ni da la insignia', async () => {
+      const id = await crearLapida();
+
+      // `400`: el payload no valida. La revivida no puede ocurrir "de paso".
+      await request(app.getHttpServer())
+        .put(`/lapidas/${id}`)
+        .set('Cookie', cookie)
+        .send({ nombrePlanta: '', epitafio: '', fechaFallecimiento: 'no-es-fecha', categoriaId: 1 })
+        .expect(400);
+
+      expect((await leer(id)).resucitada).toBe(false);
+      expect(await misInsignias()).toEqual([]);
+    });
+
+    it('un tercero no puede revivir una lápida ajena', async () => {
+      const id = await crearLapida();
+      const otra = `insignia-ajena-${sufijo}`;
+      const usuarios = app.get(UsuariosService);
+      await usuarios.crear({ username: otra, password: 'clave-larga-1', rol: 'usuario' });
+      const cookieAjena = await abrirSesion(app, otra, 'clave-larga-1');
+
+      await request(app.getHttpServer())
+        .put(`/lapidas/${id}`)
+        .set('Cookie', cookieAjena)
+        .send({
+          nombrePlanta: 'Revivida',
+          epitafio: 'Intento ajeno',
+          fechaFallecimiento: '2025-05-05',
+          categoriaId: 1,
+        })
+        .expect(403);
+
+      expect((await leer(id)).resucitada).toBe(false);
+    });
+
+    it('sin sesión no hay insignias que leer', async () => {
+      await request(app.getHttpServer()).get('/sesiones/actual').expect(401);
+    });
+  });
+
   describe('POST /lapidas/:id/foto (S8)', () => {
     const PNG = Buffer.from(
       '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489',
