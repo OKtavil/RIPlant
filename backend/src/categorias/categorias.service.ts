@@ -12,17 +12,26 @@ export class CategoriasService {
     private readonly categoriaModel: Model<CategoriaDocument>,
   ) {}
 
+  /**
+   * S11: seis categorías = seis **tipos de planta**. La categoría clasifica qué
+   * era la planta, no de qué murió; la causa de muerte es su propio campo
+   * (`causaMuerte`).
+   *
+   * Se usa `$set` y no `$setOnInsert` a propósito: los ids 1 y 2 ya están en las
+   * bases de desarrollo sembrados con causas de muerte (`Descuido`, `Exceso de
+   * cariño`) — el vocabulario equivocado. Con `$setOnInsert` el seed nunca los
+   * corregiría y la base seguiría mintiendo. `$set` hace converger el nombre y
+   * `$setOnInsert` conserva el alta. Se sigue guardando contra el 11000 por los
+   * arranques simultáneos.
+   */
   async onModuleInit(): Promise<void> {
-    // S11: seis categorías, en el vocabulario del dominio. Los ids 1 y 2 ya
-    // existen en bases de desarrollo; $setOnInsert + upsert los deja como
-    // están y agrega las que faltan. El seed de lápidas referencia hasta la 6.
     const sembrar = [
-      { id: 1, nombre: 'Descuido' },
-      { id: 2, nombre: 'Exceso de cariño' },
-      { id: 3, nombre: 'Olvido' },
-      { id: 4, nombre: 'Clima extremo' },
-      { id: 5, nombre: 'Plagas' },
-      { id: 6, nombre: 'Accidente' },
+      { id: 1, nombre: 'Suculentas' },
+      { id: 2, nombre: 'Cactus' },
+      { id: 3, nombre: 'Helechos' },
+      { id: 4, nombre: 'Aromáticas' },
+      { id: 5, nombre: 'Trepadoras' },
+      { id: 6, nombre: 'Árboles' },
     ];
 
     try {
@@ -30,7 +39,10 @@ export class CategoriasService {
         sembrar.map((categoria) => ({
           updateOne: {
             filter: { id: categoria.id },
-            update: { $setOnInsert: { ...categoria } },
+            update: {
+              $set: { nombre: categoria.nombre },
+              $setOnInsert: { id: categoria.id },
+            },
             upsert: true,
           },
         })),

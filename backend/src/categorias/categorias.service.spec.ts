@@ -52,22 +52,33 @@ describe('CategoriasService', () => {
     expect(model.bulkWrite).toHaveBeenCalledTimes(1);
   });
 
-  it('seeds six categories so every seeded grave has one', async () => {
+  it('seeds six plant-type categories so every seeded grave has one', async () => {
     await service.onModuleInit();
     const [operaciones] = (model.bulkWrite as jest.Mock).mock.calls[0];
     expect(operaciones).toHaveLength(6);
     expect(operaciones.map((op: any) => op.updateOne.filter.id)).toEqual([
       1, 2, 3, 4, 5, 6,
     ]);
-    expect(
-      operaciones.map((op: any) => op.updateOne.update.$setOnInsert.nombre),
-    ).toEqual([
-      'Descuido',
-      'Exceso de cariño',
-      'Olvido',
-      'Clima extremo',
-      'Plagas',
-      'Accidente',
+    expect(operaciones.map((op: any) => op.updateOne.update.$set.nombre)).toEqual([
+      'Suculentas',
+      'Cactus',
+      'Helechos',
+      'Aromáticas',
+      'Trepadoras',
+      'Árboles',
     ]);
+  });
+
+  it('corrects an already-seeded category name instead of leaving the old one', async () => {
+    // Los ids 1 y 2 existen en bases de desarrollo con causas de muerte
+    // ("Descuido", "Exceso de cariño"). El seed tiene que *corregir* el nombre,
+    // así que escribe con $set y no con $setOnInsert: con $setOnInsert el
+    // nombre viejo sobreviviría para siempre a cada arranque.
+    await service.onModuleInit();
+    const [operaciones] = (model.bulkWrite as jest.Mock).mock.calls[0];
+    for (const op of operaciones) {
+      expect(op.updateOne.update.$set).toBeDefined();
+      expect(op.updateOne.update.$setOnInsert).not.toHaveProperty('nombre');
+    }
   });
 });

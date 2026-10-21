@@ -178,3 +178,38 @@ lo expone en `POST /sesiones` y `GET /sesiones/actual`; el front muestra la
 insignia en `PerfilPage`, el estado resucitada en `GraveCard`/`DetallePage` y
 actualiza la nota del sidebar. `README.md`, `docs/spec.md` y esta decisión
 cierran el punto abierto #5.
+
+## D-014 — La categoría es el tipo de planta, no la causa de muerte
+
+**Decisión:** las categorías son **tipos de planta** (`Suculentas`, `Cactus`, `Helechos`,
+`Aromáticas`, `Trepadoras`, `Árboles`). La causa de muerte vive únicamente en el campo
+`causaMuerte` de la lápida y no puede ser una categoría.
+
+**Análisis:** el seed original sembró `Descuido` y `Exceso de cariño` como categorías, y al
+implementar S11 ese vocabulario se extendió a `Olvido`, `Clima extremo`, `Plagas` y
+`Accidente`. Son causas, no tipos: colapsan dos ejes de clasificación en uno y el filtro por
+categoría del front deja de poder responder "qué plantas hay". La señal de que estaba mal ya
+existía en el repo — los tests del dominio usaban `Interior`/`Exterior` y el `README.md`
+documentaba `{"nombre":"Suculentas"}` — pero el ejemplo del plan se copió sin contrastarlo.
+
+**Consecuencia:** `POST /categorias` no valida que el nombre sea un tipo de planta (sería una
+lista cerrada en el código, y el CRUD existe justamente para que el admin administre el
+vocabulario). Lo que sí queda: la categoría nunca describe la muerte, y `causaMuerte` es el
+único lugar de esa información. `Interior`/`Exterior` quedan descartados: son ambiente, un
+tercer eje, y mezclarlos con tipos vuelve ambigua cualquier categoría.
+
+## D-015 — El seed escribe con `$set` cuando el vocabulario cambia
+
+**Decisión:** el seed de categorías escribe `nombre` con `$set` y `id` con `$setOnInsert`.
+
+**Análisis:** `$setOnInsert` solo aplica en el alta, así que **nunca corrige un documento que
+ya existe**. Con los ids 1 y 2 ya sembrados con el vocabulario viejo, un `$setOnInsert` habría
+dejado `Descuido` y `Exceso de cariño` intactos para siempre en toda base ya levantada,
+mientras las categorías nuevas entraban a partir del id 3: dos vocabularios conviviendo y una
+corrección que no corrige. `$set` hace converger el nombre en cada arranque, `$setOnInsert`
+conserva el alta, y upsert mantiene la idempotencia.
+
+**Consecuencia:** el seed puede **renombrar** una categoría existente. Es aceptable porque el
+seed es la fuente de verdad de los datos de desarrollo y sus ids son fijos; si un admin
+renombra una categoría sembrada, el próximo arranque la devuelve. Queda anotado como límite
+conocido y deliberado: para el vocabulario semilla, manda el código.

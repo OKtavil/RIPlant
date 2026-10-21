@@ -784,3 +784,48 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   > renombrarla, documentando la desicion, entonces ponemos la contraseña de minimo 8 caracteres
   > y el comentario de maximo 500 caracteres, el t8, lo vamos a pasar como opcion a
   > implementacion futura dado a que no se necesita proveedor de email para esta aplicaion sencilla
+
+- **E8 (2026-10-21, corrección del vocabulario del seed de categorías):**
+
+  **El defecto:** las seis categorías sembradas eran `Descuido`, `Exceso de cariño`,
+  `Olvido`, `Clima extremo`, `Plagas` y `Accidente`. Eso **no son tipos de planta: son
+  causas de muerte**, y el campo `causaMuerte` ya existe en la lápida para eso. Sembrar
+  causas como categorías deja dos ejes de clasificación colapsados en uno: el filtro por
+  categoría del front no puede distinguir "qué era la planta" de "de qué murió".
+
+  **De dónde salió el error, para que no se repita:** el vocabulario equivocado **no lo
+  introduje yo**. Es el del seed original (`id: 1` y `id: 2` ya estaban así en las bases de
+  desarrollo), y `odd/tasks/frontend-prototipo.md:327` lo tenía escrito como si fuera el
+  contrato: `[{id:1,"Descuido"},{id:2,"Exceso de cariño"}]`. Al implementar S11 copié ese
+  vocabulario y lo extendí a seis. La señal de que estaba mal llevaba tiempo en el repo:
+  `categorias.service.spec.ts` y `categorias.controller.spec.ts` usaban `Interior` /
+  `Exterior`, y `README.md:608` documentaba el ejemplo `{"nombre":"Suculentas"}`.
+  **Tres vocabularios, y el que se implementó fue el único que no era de tipos de planta.**
+  Lección de método: un ejemplo del plan que nunca se contrastó con los tests del propio
+  dominio ni con el README no es contrato, es una suposición copiada.
+
+  **Corrección aplicada (confirmada por el usuario):** el vocabulario pasa a
+  `Suculentas`, `Cactus`, `Helechos`, `Aromáticas`, `Trepadoras`, `Árboles`, en los ids
+  1 a 6.
+
+  **El detalle que hacía que el arreglo no fuera solo cambiar la lista:** `id: 1` y `id: 2`
+  ya existían en las bases con el nombre viejo, y el seed escribía con `$setOnInsert` —
+  que **nunca pisa un documento existente**. Cambiar los strings habría dejado las dos
+  categorías viejas intactas en toda base ya levantada, con las nuevas solo a partir del
+  id 3. El seed pasa a escribir el `nombre` con `$set` (y el `id` con `$setOnInsert`), de
+  modo que converge a los nombres correctos en cada arranque, conserve el alta de las
+  faltantes y siga siendo idempotente. Verificado que **E6 había validado explícitamente
+  "id 1 y 2 intactos, sin renombrar"** como si fuera correcto: era el bug, verificado.
+
+  **Verificación observada:** unit 99/99. La semántica de `$set` versus `$setOnInsert` se
+  comprobó aislada para el caso que importa (documento preexistente → `$set` gana:
+  `Descuido` → `Suculentas`; con `$setOnInsert` solo, `Descuido` sobrevive).
+  **Sin verificar contra Mongo real:** el contenedor no está corriendo en esta WSL
+  (Docker Desktop sin integración), así que el humo en vivo que hizo E5/E6 sobre base
+  pre-sembrada **queda pendiente de repetir** cuando Mongo esté disponible.
+
+  **Documentación:** se agregan D-012 (categoría = tipo de planta) y D-013 (`$set` para
+  que el seed corrija, no solo inserte) en `docs/decisions.md`. `odd/tasks/frontend-prototipo.md:327`
+  queda con el vocabulario viejo — es del otro actor y **no se toca desde acá**; su
+  corrección de nombre de categoría es alcance del front (el front solo muestra
+  `{ id, nombre }`, así que un nombre distinto no rompe su contrato).
