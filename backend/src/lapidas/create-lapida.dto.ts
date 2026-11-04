@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsInt,
   IsDateString,
@@ -6,19 +7,29 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
+import { EsFechaDeFallecimiento } from './fecha-fallecimiento.validator';
 
 export class CreateLapidaDto {
+  /**
+   * `@Transform` recorta antes de validar: `@IsNotEmpty` solo rechaza `''`,
+   * así que `'   '` pasaba y se guardaba como texto en blanco (D001).
+   */
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
   @MaxLength(40)
   nombrePlanta: string;
 
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()
   @MaxLength(280)
   epitafio: string;
 
   @IsDateString({}, { message: 'La fecha de fallecimiento debe ser válida' })
+  @EsFechaDeFallecimiento({
+    message: 'La fecha de fallecimiento debe estar entre el 01/01/1900 y hoy',
+  })
   fechaFallecimiento: string;
 
   @IsInt()
@@ -26,6 +37,7 @@ export class CreateLapidaDto {
 
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @MaxLength(80)
   causaMuerte: string;
 

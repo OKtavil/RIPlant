@@ -182,6 +182,46 @@ describe('Lapidas (e2e)', () => {
     await request(app.getHttpServer()).get('/lapidas/999').expect(404);
   });
 
+  it('rejects blank texts and dates outside a sane range', async () => {
+    // D001: `IsNotEmpty` solo mira la cadena vacía; `'   '` pasaba y se
+    // guardaba como texto en blanco.
+    const base = {
+      nombrePlanta: 'Pepino',
+      epitafio: 'Se fue',
+      fechaFallecimiento: '2025-01-01',
+      categoriaId: 1,
+    };
+    const manana = new Date();
+    manana.setUTCDate(manana.getUTCDate() + 1);
+
+    const invalidos = [
+      { ...base, nombrePlanta: '   ' },
+      { ...base, epitafio: '   ' },
+      // E001: ni en el futuro ni antes de 1900.
+      { ...base, fechaFallecimiento: manana.toISOString().slice(0, 10) },
+      { ...base, fechaFallecimiento: '1899-12-31' },
+    ];
+    for (const invalido of invalidos) {
+      await request(app.getHttpServer())
+        .post('/lapidas')
+        .set('Cookie', cookie)
+        .send(invalido)
+        .expect(400);
+    }
+
+    // D001: un comentario de solo espacios tampoco entra.
+    const creada = await request(app.getHttpServer())
+      .post('/lapidas')
+      .set('Cookie', cookie)
+      .send(base)
+      .expect(201);
+    await request(app.getHttpServer())
+      .post(`/lapidas/${creada.body.id}/comentarios`)
+      .set('Cookie', cookie)
+      .send({ texto: '   ' })
+      .expect(400);
+  });
+
   it('creates and updates a grave without a cause of death', async () => {
     const creada = await request(app.getHttpServer())
       .post('/lapidas')

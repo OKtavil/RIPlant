@@ -120,6 +120,26 @@ describe('Usuarios (e2e)', () => {
       .post('/usuarios')
       .send({ username: `corta-${sufijo}`, password: 'corta' })
       .expect(400);
+
+    // V001: un usuario de solo espacios pasaba el `IsNotEmpty` y el `trim`
+    // posterior lo dejaba en `''`, que terminaba en un 500 del schema.
+    await request(app.getHttpServer())
+      .post('/usuarios')
+      .send({ username: '   ', password: 'clave-larga-1' })
+      .expect(400);
+
+    // V001: el límite de 50 tiene que estar en el borde, no solo en el schema.
+    await request(app.getHttpServer())
+      .post('/usuarios')
+      .send({ username: 'x'.repeat(51), password: 'clave-larga-1' })
+      .expect(400);
+
+    // El hash bcrypt trunca en 72 bytes: aceptar más sería mentir sobre la
+    // contraseña que el usuario cree tener.
+    await request(app.getHttpServer())
+      .post('/usuarios')
+      .send({ username: `larga-${sufijo}`, password: 'x'.repeat(73) })
+      .expect(400);
   });
 
   describe('Perfiles públicos y descripción', () => {
