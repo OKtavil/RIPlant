@@ -1,5 +1,6 @@
 import { IconoCorona } from '../../../shared/ui/iconos'
 import type { Category } from '../../categorias/model/categoria'
+import type { Session } from '../../sesiones/model/sesion'
 import type { Asesino, Grave } from '../model/lapida'
 import { GraveCard, GraveCardNueva } from './GraveCard'
 import { AvisoAsesinos, ListaAsesinos } from './ListaAsesinos'
@@ -8,6 +9,7 @@ type Props = {
   lapidas: Grave[]
   categorias: Category[]
   asesinos: Asesino[]
+  sesion: Session | null
   errorAsesinos: string
   onAbrir: (lapida: Grave) => void
   onCorona: (lapida: Grave) => void
@@ -22,6 +24,7 @@ export function InicioPage({
   lapidas,
   categorias,
   asesinos,
+  sesion,
   errorAsesinos,
   onAbrir,
   onCorona,
@@ -44,6 +47,7 @@ export function InicioPage({
               categoria={nombreCategoria(categorias, lapida.categoriaId)}
               onAbrir={onAbrir}
               onCorona={onCorona}
+              propia={!!sesion && lapida.duenio?.username === sesion.username}
             />
           ))}
           <GraveCardNueva texto="Publica tu lápida" onClick={onPublicar} />

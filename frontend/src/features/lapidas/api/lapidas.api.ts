@@ -18,6 +18,9 @@ export const lapidasApi = {
   remove: (id: number) =>
     request<void>(`/lapidas/${id}`, { method: 'DELETE', sinCuerpo: true }),
 
+  /** Revive una lápida propia (solo dueño/admin). Otorga la insignia al dueño. */
+  revivir: (id: number) => request<Grave>(`/lapidas/${id}/revivir`, { method: 'POST' }),
+
   /** Incrementa el contador de coronas y devuelve la lápida actualizada. */
   giveCorona: (id: number) =>
     request<Grave>(`/lapidas/${id}/corona`, { method: 'POST' }),

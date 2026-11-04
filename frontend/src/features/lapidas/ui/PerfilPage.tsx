@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { IconoInsignia, IconoPersona } from '../../../shared/ui/iconos'
@@ -15,6 +17,13 @@ type Props = {
   onPublicar: () => void
   onBorrar: (lapida: Grave) => Promise<void>
   onIniciarSesion: () => void
+  onActualizarDescripcion?: (descripcion: string) => Promise<void>
+  /**
+   * Perfil ajeno: se ve todo, no se ofrece ninguna acción de escritura. Sin
+   * esto, `puedeBorrar` compararía contra el usuario retratado y mostraría
+   * botones que el backend rechaza con 403.
+   */
+  soloLectura?: boolean
 }
 
 function formatearFechaCorta(fecha: string): string {
@@ -33,7 +42,22 @@ export function PerfilPage({
   onPublicar,
   onBorrar,
   onIniciarSesion,
+  onActualizarDescripcion,
+  soloLectura = false,
 }: Props) {
+  const [editando, setEditando] = useState(false)
+  const [errorDescripcion, setErrorDescripcion] = useState('')
+  const descripcionSesion = sesion?.descripcion ?? ''
+  const [descripcion, setDescripcion] = useState(descripcionSesion)
+  // El borrador sigue a la sesión: si la descripción cambia por fuera (guardado
+  // en otra pestaña, refresco de `/sesiones/actual`), reabrir el editor no debe
+  // mostrar el valor viejo. Ajustar el estado durante el render es el patrón que
+  // recomienda React y evita el render extra de un `useEffect`.
+  const [descripcionPrevia, setDescripcionPrevia] = useState(descripcionSesion)
+  if (descripcionPrevia !== descripcionSesion) {
+    setDescripcionPrevia(descripcionSesion)
+    setDescripcion(descripcionSesion)
+  }
   // La identidad sale de `duenio.username` (resuelto por el backend contra
   // `usuarios.username`), no de `autor`: ese es texto libre y puede no coincidir.
   const propias = sesion
@@ -43,6 +67,8 @@ export function PerfilPage({
   const misMuertes = asesinos.find((a) => a.username === sesion?.username)?.muertes ?? 0
   const nombreCategoria = (id: number) => categorias.find((c) => c.id === id)?.nombre
   const insignia = insigniaSuperviviente(sesion)
+  const puedeEditarDescripcion =
+    !!sesion && !!onActualizarDescripcion && !soloLectura
 
   return (
     <>
@@ -53,19 +79,63 @@ export function PerfilPage({
         <div className="perfil__identidad">
           <h1 className="perfil__nombre">{sesion ? sesion.username : 'Invitado'}</h1>
           <p className="perfil__desde">
-            {sesion ? 'Tu jardín memorial' : 'Iniciá sesión para ver tu jardín'}
+            {sesion ? (sesion.descripcion || 'Sin descripción') : 'Iniciá sesión para ver tu jardín'}
           </p>
         </div>
-        {sesion ? (
-          <Boton tamano="chico" disabled title="Editar perfil todavía no tiene endpoint">
-            EDITAR PERFIL
+        {puedeEditarDescripcion && (
+          <Boton tamano="chico" onClick={() => setEditando(true)}>
+            EDITAR DESCRIPCIÓN
           </Boton>
-        ) : (
+        )}
+        {!sesion && (
           <Boton tamano="chico" onClick={onIniciarSesion}>
             INICIAR SESIÓN
           </Boton>
         )}
       </section>
+
+      {editando && puedeEditarDescripcion && (
+        <section style={{ padding: '0 24px', marginBottom: 16 }}>
+          <textarea
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            maxLength={280}
+            rows={3}
+            style={{ width: '100%', maxWidth: 600, padding: 8 }}
+          />
+          <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+            <Boton
+              tamano="chico"
+              onClick={async () => {
+                setErrorDescripcion('')
+                try {
+                  await onActualizarDescripcion(descripcion)
+                  setEditando(false)
+                } catch (fallo) {
+                  // El backend ya valida largo y permisos: su mensaje es más
+                  // útil que uno genérico.
+                  setErrorDescripcion(
+                    fallo instanceof ApiError ? fallo.message : 'No se pudo guardar la descripción.',
+                  )
+                }
+              }}
+            >
+              GUARDAR
+            </Boton>
+            <Boton
+              tamano="chico"
+              onClick={() => {
+                setDescripcion(descripcionSesion)
+                setErrorDescripcion('')
+                setEditando(false)
+              }}
+            >
+              CANCELAR
+            </Boton>
+          </div>
+          {errorDescripcion && <Aviso tono="error">{errorDescripcion}</Aviso>}
+        </section>
+      )}
 
       <section className="perfil__stats">
         <div className="perfil__stat">
@@ -112,10 +182,12 @@ export function PerfilPage({
             tamano="baja"
             categoria={nombreCategoria(lapida.categoriaId)}
             onAbrir={onAbrir}
-            {...(puedeBorrar(lapida, sesion) ? { onBorrar } : {})}
+            {...(puedeBorrar(lapida, sesion) && !soloLectura ? { onBorrar } : {})}
           />
         ))}
-        <GraveCardNueva tamano="baja" texto="Nueva lápida" onClick={onPublicar} />
+        {sesion && onPublicar && !soloLectura && (
+          <GraveCardNueva tamano="baja" texto="Nueva lápida" onClick={onPublicar} />
+        )}
       </div>
     </>
   )

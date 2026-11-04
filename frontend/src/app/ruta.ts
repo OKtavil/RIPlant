@@ -18,6 +18,7 @@ const VISTAS: ReadonlyArray<Vista> = [
   'ranking',
   'publicar',
   'perfil',
+  'perfiles',
   'categorias',
 ]
 
@@ -27,6 +28,7 @@ const RUTAS: Record<Vista, string> = {
   ranking: '/ranking',
   publicar: '/publicar',
   perfil: '/perfil',
+  perfiles: '/perfiles',
   categorias: '/categorias',
   // `detalle` no es una vista navegable directa: depende de un id.
   detalle: '/',

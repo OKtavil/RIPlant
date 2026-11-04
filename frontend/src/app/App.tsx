@@ -8,6 +8,7 @@ import type { Category } from '../features/categorias/model/categoria'
 import { DetallePage } from '../features/lapidas/ui/DetallePage'
 import { InicioPage } from '../features/lapidas/ui/InicioPage'
 import { PerfilPage } from '../features/lapidas/ui/PerfilPage'
+import { PerfilesPage } from '../features/usuarios/ui/PerfilesPage'
 import { PublicarPage } from '../features/lapidas/ui/PublicarPage'
 import { RankingPage } from '../features/lapidas/ui/RankingPage'
 import { lapidasApi } from '../features/lapidas/api/lapidas.api'
@@ -17,11 +18,12 @@ import { RecuperarPage } from '../features/sesiones/ui/RecuperarPage'
 import { RegistroPage } from '../features/sesiones/ui/RegistroPage'
 import { RestablecerPage } from '../features/sesiones/ui/RestablecerPage'
 import { sesionesApi } from '../features/sesiones/api/sesiones.api'
+import { usuariosApi } from '../features/usuarios/api/usuarios.api'
 import type { Credenciales, Session, VistaAuth } from '../features/sesiones/model/sesion'
 import { rutaDeDetalle, rutaDeVista } from './ruta'
 import { useRuta } from './useRuta'
 
-const MENU: Vista[] = ['inicio', 'ranking', 'publicar']
+const MENU: Vista[] = ['inicio', 'ranking', 'publicar', 'perfiles']
 
 export default function App() {
   const { ruta, navegar } = useRuta()
@@ -134,6 +136,10 @@ export default function App() {
   }
 
   async function darCorona(lapida: Grave) {
+    if (sesion && lapida.duenio?.username === sesion.username) {
+      setAviso('No podés coronarte a vos mismo')
+      return
+    }
     try {
       // Toggle: si ya le di corona, volver a tocar la quita. El backend es
       // idempotente en los dos sentidos, así que el estado local no puede
@@ -142,8 +148,20 @@ export default function App() {
         ? await lapidasApi.quitarCorona(lapida.id)
         : await lapidasApi.giveCorona(lapida.id)
       setLapidas((items) => items.map((item) => (item.id === actualizada.id ? actualizada : item)))
+      // `seleccionada` se deriva de `lapidas` por `detalleId`, no hay estado local aparte
+      setAviso('')
     } catch (fallo) {
       setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo actualizar la corona.')
+    }
+  }
+
+  async function revivirLapida(lapida: Grave) {
+    try {
+      const actualizada = await lapidasApi.revivir(lapida.id)
+      setLapidas((items) => items.map((item) => (item.id === actualizada.id ? actualizada : item)))
+      setAviso('')
+    } catch (fallo) {
+      setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo revivir la lápida.')
     }
   }
 
@@ -238,6 +256,7 @@ export default function App() {
           sesion={sesion}
           onCorona={darCorona}
           onBorrar={borrarLapida}
+          onRevivir={revivirLapida}
           onVolver={() => irAVista('inicio')}
         />
       ) : (
@@ -247,6 +266,7 @@ export default function App() {
               lapidas={lapidas}
               categorias={categorias}
               asesinos={asesinos}
+              sesion={sesion}
               errorAsesinos={errorAsesinos}
               onAbrir={abrirDetalle}
               onCorona={(l) => void darCorona(l)}
@@ -273,6 +293,23 @@ export default function App() {
               onPublicar={() => irAVista('publicar')}
               onBorrar={borrarLapida}
               onIniciarSesion={() => setVistaAuth('login')}
+              onActualizarDescripcion={async (descripcion) => {
+                if (!sesion) return
+                const actualizado = await usuariosApi.actualizarDescripcion(sesion.id, descripcion)
+                setSesion((s) => (s ? { ...s, descripcion: actualizado.descripcion } : s))
+              }}
+            />
+          )}
+          {vista === 'perfiles' && (
+            <PerfilesPage
+              sesion={sesion}
+              lapidas={lapidas}
+              categorias={categorias}
+              asesinos={asesinos}
+              onAbrir={abrirDetalle}
+              onPublicar={() => irAVista('publicar')}
+              onBorrar={borrarLapida}
+              onIrAMiPerfil={() => irAVista('perfil')}
             />
           )}
           {vista === 'categorias' && (

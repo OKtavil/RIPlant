@@ -51,6 +51,7 @@ function montar(opciones: { lapida?: Grave; sesion?: Session | null } = {}) {
       sesion={opciones.sesion ?? null}
       onCorona={vi.fn().mockResolvedValue(undefined)}
       onBorrar={vi.fn().mockResolvedValue(undefined)}
+      onRevivir={vi.fn().mockResolvedValue(undefined)}
       onVolver={vi.fn()}
     />,
   )

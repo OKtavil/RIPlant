@@ -29,6 +29,7 @@ export type Session = {
   rol: Rol
   /** Logros obtenidos. `[]` cuando no tiene ninguno. */
   insignias: Insignia[]
+  descripcion?: string
   expiraEn: string
 }
 

@@ -11,6 +11,7 @@ type Props = {
   sesion: Session | null
   onCorona: (lapida: Grave) => Promise<void>
   onBorrar: (lapida: Grave) => Promise<void>
+  onRevivir: (lapida: Grave) => Promise<void>
   onVolver: () => void
 }
 
@@ -22,9 +23,17 @@ type Props = {
  * es solo para los comentarios, así la ficha se lee de corrido y la conversación
  * no la interrumpe.
  */
-export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, onVolver }: Props) {
+export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, onRevivir, onVolver }: Props) {
   const categoria = categorias.find((c) => c.id === lapida.categoriaId)?.nombre || 'Sin categoría'
   const mostrarBorrar = puedeBorrar(lapida, sesion)
+  const esPropia = !!sesion && lapida.duenio?.username === sesion.username
+  // Bloqueado en backend; acá se deshabilita para no ofrecer una acción que va a
+  // fallar. Se deja habilitado el quitar si ya tenía corona (datos viejos).
+  const coronaBloqueada = esPropia && !lapida.coronadaPorMi
+  const puedeRevivir =
+    !!sesion &&
+    !lapida.resucitada &&
+    (sesion.rol === 'admin' || lapida.duenio?.username === sesion.username)
 
   return (
     <div className="pantalla__contenido">
@@ -70,14 +79,33 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
         </div>
 
         <div className="detalle__acciones">
+          {puedeRevivir && (
+            <Boton
+              onClick={() => {
+                // Revivir es irreversible desde la UI: se confirma antes de
+                // disparar el POST que además otorga la insignia al dueño.
+                const confirmado = window.confirm(
+                  '¿Revivir esta lápida? Quedará marcada como resucitada y, si es la primera vez, se le dará la insignia “Superviviente Zombie” al dueño.',
+                )
+                if (confirmado) void onRevivir(lapida)
+              }}
+            >
+              REVIVIR
+            </Boton>
+          )}
+
           <Boton
             className={`detalle__corona${lapida.coronadaPorMi ? ' detalle__corona--puesta' : ''}`}
             onClick={() => void onCorona(lapida)}
+            disabled={coronaBloqueada}
+            title={coronaBloqueada ? 'No podés coronarte a vos mismo' : undefined}
             aria-pressed={lapida.coronadaPorMi ?? false}
             aria-label={
-              lapida.coronadaPorMi
-                ? 'Quitar la corona de esta lápida'
-                : 'Dar una corona a esta lápida'
+              coronaBloqueada
+                ? 'No podés coronar tu propia lápida'
+                : lapida.coronadaPorMi
+                  ? 'Quitar la corona de esta lápida'
+                  : 'Dar una corona a esta lápida'
             }
           >
             <IconoCorona size={14} stroke={lapida.coronadaPorMi ? '#E8C547' : undefined} />

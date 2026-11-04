@@ -7,7 +7,7 @@
 
 import type { ReactNode } from 'react'
 
-export type Vista = 'inicio' | 'ranking' | 'publicar' | 'detalle' | 'perfil' | 'categorias'
+export type Vista = 'inicio' | 'ranking' | 'publicar' | 'detalle' | 'perfil' | 'perfiles' | 'categorias'
 
 const ETIQUETAS: Record<Vista, string> = {
   inicio: 'INICIO',
@@ -15,6 +15,7 @@ const ETIQUETAS: Record<Vista, string> = {
   publicar: 'PUBLICAR',
   detalle: 'INICIO',
   perfil: 'PERFIL',
+  perfiles: 'PERFILES',
   categorias: 'CATEGORÍAS',
 }
 

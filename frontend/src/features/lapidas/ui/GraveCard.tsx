@@ -14,11 +14,13 @@ type Props = {
   categoria?: string
   onAbrir: (lapida: Grave) => void
   onCorona?: (lapida: Grave) => void
+  /** La lápida es del usuario de la sesión: no puede coronarse a sí mismo. */
+  propia?: boolean
   /** Cuando se pasa, la tarjeta muestra el botón de borrar. */
   onBorrar?: (lapida: Grave) => void
 }
 
-export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCorona, onBorrar }: Props) {
+export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCorona, propia = false, onBorrar }: Props) {
   return (
     <article className={`lapida${lapida.resucitada ? ' lapida--resucitada' : ''}`}>
       {lapida.resucitada && (
@@ -55,12 +57,16 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
         <button
           className={`lapida__coronas${lapida.coronadaPorMi ? ' lapida__coronas--puesta' : ''}`}
           onClick={() => onCorona?.(lapida)}
-          disabled={!onCorona}
+          disabled={!onCorona || (propia && !lapida.coronadaPorMi)}
+          // El backend también lo rechaza; acá se explica antes de que falle.
+          title={propia && !lapida.coronadaPorMi ? 'No podés coronarte a vos mismo' : undefined}
           aria-pressed={lapida.coronadaPorMi ?? false}
           aria-label={
-            lapida.coronadaPorMi
-              ? `Quitar la corona de ${lapida.nombrePlanta}`
-              : `Dar una corona a ${lapida.nombrePlanta}`
+            propia && !lapida.coronadaPorMi
+              ? `No podés coronar tu propia lápida: ${lapida.nombrePlanta}`
+              : lapida.coronadaPorMi
+                ? `Quitar la corona de ${lapida.nombrePlanta}`
+                : `Dar una corona a ${lapida.nombrePlanta}`
           }
         >
           <IconoCorona stroke={lapida.coronadaPorMi ? '#E8C547' : undefined} />
