@@ -1,12 +1,14 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   Logger,
+  NotFoundException,
   type OnModuleInit,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { isValidObjectId, Model } from 'mongoose';
 import { hashPassword, verifyPassword } from './password';
 import type { InsigniaUsuario, Rol, Usuario } from './usuario.interface';
 import { UsuarioDocumentModel } from './usuario.schema';
@@ -141,6 +143,7 @@ export class UsuariosService implements OnModuleInit {
     username: string;
     rol: Rol;
     insignias?: InsigniaUsuario[];
+    descripcion?: string;
   }): Usuario {
     return {
       id: String(doc._id),
@@ -149,6 +152,48 @@ export class UsuariosService implements OnModuleInit {
       // `?? []`: los usuarios creados antes de la feature no tienen el campo
       // guardado, y la API promete una lista, no `undefined`.
       insignias: doc.insignias ?? [],
+      descripcion: doc.descripcion ?? '',
     };
+  }
+
+  async porId(id: string) {
+    // Un id que no es un ObjectId válido hace que Mongoose lance `CastError`
+    // (500). Para el cliente es un recurso inexistente, no un fallo del server.
+    if (!isValidObjectId(id)) return null;
+    const doc = await this.usuarioModel.findById(id).lean();
+    if (!doc) return null;
+    return this.aDominio(doc as any);
+  }
+
+  async listarPublico() {
+    // `zombie` es la cuenta reservada que hereda las lápidas huérfanas, no una
+    // persona: mostrarla como perfil confundiría y expondría un usuario que
+    // nadie puede reclamar.
+    const docs = await this.usuarioModel
+      .find(
+        { rol: { $ne: 'zombie' } },
+        { username: 1, rol: 1, descripcion: 1, insignias: 1 },
+      )
+      .lean();
+    return docs.map((doc) => this.aDominio(doc as any));
+  }
+
+  async actualizarDescripcion(
+    id: string,
+    descripcion: string,
+    sesion: { usuario: { id: string; rol: string } },
+  ) {
+    if (!isValidObjectId(id)) throw new NotFoundException('Usuario no encontrado');
+    if (sesion.usuario.rol !== 'admin' && String(sesion.usuario.id) !== String(id)) {
+      throw new ForbiddenException('Solo el dueño o un admin pueden editar la descripción');
+    }
+    // El largo lo valida el DTO; acá solo se normalizan los extremos. No se
+    // recorta en silencio: guardar 280 de 300 caracteres mentiría sobre lo que
+    // el usuario escribió.
+    const doc = await this.usuarioModel
+      .findByIdAndUpdate(id, { descripcion: descripcion.trim() }, { new: true })
+      .lean();
+    if (!doc) throw new NotFoundException('Usuario no encontrado');
+    return this.aDominio(doc as any);
   }
 }

@@ -1,8 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
+  NotFoundException,
+  Param,
   Post,
+  Put,
   Req,
   Res,
 } from '@nestjs/common';
@@ -10,6 +14,7 @@ import type { Response } from 'express';
 import { escribirCookieSesion } from '../sesiones/cookie';
 import { SesionesService } from '../sesiones/sesiones.service';
 import type { RequestConSesion } from '../sesiones/sesion.interface';
+import { ActualizarDescripcionDTO } from './actualizar-descripcion.dto';
 import { CrearUsuarioDTO } from './crear-usuario.dto';
 import { UsuariosService } from './usuarios.service';
 
@@ -19,6 +24,27 @@ export class UsuariosController {
     private readonly usuarios: UsuariosService,
     private readonly sesiones: SesionesService,
   ) {}
+
+  @Get()
+  async listar() {
+    return this.usuarios.listarPublico();
+  }
+
+  @Get(':id')
+  async obtener(@Param('id') id: string) {
+    const usuario = await this.usuarios.porId(id);
+    if (!usuario) throw new NotFoundException('Usuario no encontrado');
+    return usuario;
+  }
+
+  @Put(':id/descripcion')
+  async actualizarDescripcion(
+    @Param('id') id: string,
+    @Body() dto: ActualizarDescripcionDTO,
+    @Req() req: RequestConSesion,
+  ) {
+    return this.usuarios.actualizarDescripcion(id, dto.descripcion, req.sesion!);
+  }
 
   @Post()
   @HttpCode(201)
@@ -47,6 +73,8 @@ export class UsuariosController {
       id: sesion.usuario.id,
       username: sesion.usuario.username,
       rol: sesion.usuario.rol,
+      insignias: sesion.usuario.insignias ?? [],
+      descripcion: sesion.usuario.descripcion ?? '',
       expiraEn: sesion.expiraEn.toISOString(),
     };
   }

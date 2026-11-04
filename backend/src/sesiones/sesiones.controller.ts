@@ -77,7 +77,7 @@ export class SesionesController {
   }
 
   private aRespuesta(
-    usuario: { id: string; username: string; rol: string; insignias?: unknown[] },
+    usuario: { id: string; username: string; rol: string; insignias?: unknown[]; descripcion?: string },
     expiraEn: Date,
   ) {
     return {
@@ -87,6 +87,7 @@ export class SesionesController {
       // S3: el perfil lee sus logros de acá, sin endpoint nuevo. `?? []` para
       // que la forma de la respuesta no dependa de si el usuario tiene alguna.
       insignias: usuario.insignias ?? [],
+      descripcion: usuario.descripcion ?? '',
       expiraEn: expiraEn.toISOString(),
     };
   }

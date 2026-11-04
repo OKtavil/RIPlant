@@ -26,4 +26,6 @@ export interface Usuario {
    * no tiene que defenderse de `undefined`.
    */
   insignias: InsigniaUsuario[];
+  /** Descripción del perfil. Editable solo por el dueño o admin. */
+  descripcion: string;
 }

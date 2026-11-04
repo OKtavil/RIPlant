@@ -121,4 +121,102 @@ describe('Usuarios (e2e)', () => {
       .send({ username: `corta-${sufijo}`, password: 'corta' })
       .expect(400);
   });
+
+  describe('Perfiles públicos y descripción', () => {
+    const nombrePerfil = `perfil-${sufijo}`;
+    const nombreOtra = `perfil-otra-${sufijo}`;
+    let idPerfil: string;
+    let cookiePerfil: string;
+    let cookieOtra: string;
+
+    function cookieDe(res: { headers: Record<string, string | string[] | undefined> }): string {
+      const setCookie = res.headers['set-cookie'];
+      return Array.isArray(setCookie) ? setCookie.join(';') : String(setCookie ?? '');
+    }
+
+    beforeAll(async () => {
+      const creado = await request(app.getHttpServer())
+        .post('/usuarios')
+        .send({ username: nombrePerfil, password: 'clave-larga-1' })
+        .expect(201);
+      idPerfil = creado.body.id;
+      cookiePerfil = cookieDe(creado);
+
+      const otra = await request(app.getHttpServer())
+        .post('/usuarios')
+        .send({ username: nombreOtra, password: 'clave-larga-1' })
+        .expect(201);
+      cookieOtra = cookieDe(otra);
+    });
+
+    it('el dueño edita su descripción y la sesión la refleja', async () => {
+      const texto = 'A dave le gustan los tacos, ¿quieres uno?';
+
+      const actualizado = await request(app.getHttpServer())
+        .put(`/usuarios/${idPerfil}/descripcion`)
+        .set('Cookie', cookiePerfil)
+        .send({ descripcion: texto })
+        .expect(200);
+      expect(actualizado.body).toMatchObject({ username: nombrePerfil, descripcion: texto });
+
+      const sesion = await request(app.getHttpServer())
+        .get('/sesiones/actual')
+        .set('Cookie', cookiePerfil)
+        .expect(200);
+      expect(sesion.body.descripcion).toBe(texto);
+
+      // La cadena vacía es válida: borrar la descripción.
+      const vacia = await request(app.getHttpServer())
+        .put(`/usuarios/${idPerfil}/descripcion`)
+        .set('Cookie', cookiePerfil)
+        .send({ descripcion: '' })
+        .expect(200);
+      expect(vacia.body.descripcion).toBe('');
+    });
+
+    it('un tercero no puede editar la descripción y el payload inválido es 400', async () => {
+      await request(app.getHttpServer())
+        .put(`/usuarios/${idPerfil}/descripcion`)
+        .set('Cookie', cookieOtra)
+        .send({ descripcion: 'no debería poder' })
+        .expect(403);
+
+      await request(app.getHttpServer())
+        .put(`/usuarios/${idPerfil}/descripcion`)
+        .send({ descripcion: 'sin sesión' })
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .put(`/usuarios/${idPerfil}/descripcion`)
+        .set('Cookie', cookiePerfil)
+        .send({ descripcion: 'x'.repeat(281) })
+        .expect(400);
+
+      await request(app.getHttpServer())
+        .put(`/usuarios/${idPerfil}/descripcion`)
+        .set('Cookie', cookiePerfil)
+        .send({ descripcion: 42 })
+        .expect(400);
+    });
+
+    it('lista y muestra perfiles, sin la cuenta reservada zombie', async () => {
+      const lista = await request(app.getHttpServer()).get('/usuarios').expect(200);
+      expect(lista.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ username: nombrePerfil, descripcion: expect.any(String) }),
+        ]),
+      );
+      expect(
+        (lista.body as Array<{ username: string }>).some((u) => u.username === 'zombie'),
+      ).toBe(false);
+
+      const uno = await request(app.getHttpServer())
+        .get(`/usuarios/${idPerfil}`)
+        .expect(200);
+      expect(uno.body).toMatchObject({ username: nombrePerfil });
+
+      // Un id que no es ObjectId es 404, no un 500 de Mongoose.
+      await request(app.getHttpServer()).get('/usuarios/no-es-un-id').expect(404);
+    });
+  });
 });
