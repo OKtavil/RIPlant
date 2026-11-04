@@ -10,6 +10,24 @@ import type { CreateGraveInput } from '../model/lapida'
 /** Mismo tope que aplica multer en el backend (`TAMANIO_MAXIMO_FOTO`). */
 const TAMANIO_MAXIMO_FOTO = 5 * 1024 * 1024
 
+/**
+ * Cota inferior del rango razonable de fallecimiento (E001), espejo del
+ * validador del backend. Antes de 1900 es un typo, no una lápida.
+ */
+const FECHA_MINIMA = '1900-01-01'
+
+/**
+ * `toISOString()` convierte a UTC, y en husos alejados de UTC eso mueve el día.
+ * El input `date` y el usuario trabajan en hora local, así que la comparación
+ * se hace con la fecha local.
+ */
+function fechaLocalISO(fecha: Date): string {
+  const anio = fecha.getFullYear()
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+  const dia = String(fecha.getDate()).padStart(2, '0')
+  return `${anio}-${mes}-${dia}`
+}
+
 type Props = {
   categorias: Category[]
   /**
@@ -29,6 +47,9 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
   const [foto, setFoto] = useState<File | undefined>(undefined)
   const [enviando, setEnviando] = useState(false)
   const [errores, setErrores] = useState<Record<string, string>>({})
+  // Se captura al montar: el formulario no vive más de un día, y así el render
+  // no llama a `new Date()` (función impura) en cada re-render.
+  const [hoy] = useState(() => fechaLocalISO(new Date()))
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
@@ -41,7 +62,13 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
     }
     if (!nombrePlanta.trim()) nuevosErrores.nombrePlanta = 'El nombre de la planta es obligatorio.'
     if (!categoriaId) nuevosErrores.categoriaId = 'Elegí una categoría.'
-    if (!fechaFallecimiento) nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento es obligatoria.'
+    if (!fechaFallecimiento) {
+      nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento es obligatoria.'
+    } else if (fechaFallecimiento > hoy) {
+      nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento no puede ser futura.'
+    } else if (fechaFallecimiento < FECHA_MINIMA) {
+      nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento no puede ser anterior a 1900.'
+    }
     if (!causaMuerte.trim()) nuevosErrores.causaMuerte = 'La causa de muerte es obligatoria.'
     if (!epitafio.trim()) nuevosErrores.epitafio = 'El epitafio es obligatorio.'
 
@@ -133,6 +160,8 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
             etiqueta="Fecha de fallecimiento"
             type="date"
             required
+            min={FECHA_MINIMA}
+            max={hoy}
             value={fechaFallecimiento}
             error={errores.fechaFallecimiento}
             onChange={(e) => {

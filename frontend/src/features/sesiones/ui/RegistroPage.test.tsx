@@ -43,6 +43,36 @@ describe('RegistroPage', () => {
     expect(screen.getByText('La contraseña necesita al menos 8 caracteres.')).toBeTruthy()
   })
 
+  it('no llama a la API cuando la contraseña supera los 72 caracteres', () => {
+    const onRegistrar = vi.fn()
+    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
+
+    completar(container, 'x'.repeat(73), 'x'.repeat(73))
+    fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
+
+    expect(onRegistrar).not.toHaveBeenCalled()
+    expect(screen.getByText('La contraseña no puede superar los 72 caracteres.')).toBeTruthy()
+  })
+
+  it('no llama a la API cuando el usuario supera los 50 caracteres', () => {
+    const onRegistrar = vi.fn()
+    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
+
+    fireEvent.change(container.querySelector('#registro-usuario')!, {
+      target: { value: 'x'.repeat(51) },
+    })
+    fireEvent.change(container.querySelector('#registro-password')!, {
+      target: { value: 'clave-de-prueba' },
+    })
+    fireEvent.change(container.querySelector('#registro-confirmar')!, {
+      target: { value: 'clave-de-prueba' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
+
+    expect(onRegistrar).not.toHaveBeenCalled()
+    expect(screen.getByText('El nombre de usuario no puede superar los 50 caracteres.')).toBeTruthy()
+  })
+
   it('muestra el mensaje del ApiError cuando el usuario ya existe y vuelve a habilitar el botón', async () => {
     const onRegistrar = vi
       .fn()

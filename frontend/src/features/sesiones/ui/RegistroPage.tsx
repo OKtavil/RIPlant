@@ -18,6 +18,9 @@ type Props = {
  */
 
 const MINIMO_PASSWORD = 8
+/** Espejo de los límites del backend: el username vive en 50 y bcrypt en 72. */
+const MAXIMO_USUARIO = 50
+const MAXIMO_PASSWORD = 72
 
 export function RegistroPage({ onRegistrar, onNavegar }: Props) {
   const [username, setUsername] = useState('')
@@ -32,8 +35,13 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
     const nuevosErrores: Record<string, string> = {}
 
     if (!username.trim()) nuevosErrores.username = 'El nombre de usuario es obligatorio.'
+    else if (username.trim().length > MAXIMO_USUARIO) {
+      nuevosErrores.username = `El nombre de usuario no puede superar los ${MAXIMO_USUARIO} caracteres.`
+    }
     if (password.length < MINIMO_PASSWORD) {
       nuevosErrores.password = `La contraseña necesita al menos ${MINIMO_PASSWORD} caracteres.`
+    } else if (password.length > MAXIMO_PASSWORD) {
+      nuevosErrores.password = `La contraseña no puede superar los ${MAXIMO_PASSWORD} caracteres.`
     }
     if (password !== confirmar) {
       nuevosErrores.confirmar = 'Las contraseñas no coinciden.'
@@ -76,6 +84,7 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
           placeholder="@tu_usuario"
           autoComplete="username"
           required
+          maxLength={MAXIMO_USUARIO}
           value={username}
           error={errores.username}
           onChange={(e) => {
@@ -90,6 +99,7 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
           autoComplete="new-password"
           required
           minLength={MINIMO_PASSWORD}
+          maxLength={MAXIMO_PASSWORD}
           value={password}
           error={errores.password}
           onChange={(e) => {
@@ -105,6 +115,7 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
           autoComplete="new-password"
           required
           minLength={MINIMO_PASSWORD}
+          maxLength={MAXIMO_PASSWORD}
           value={confirmar}
           error={errores.confirmar}
           onChange={(e) => {

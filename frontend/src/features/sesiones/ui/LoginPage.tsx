@@ -12,6 +12,10 @@ type Props = {
   onNavegar: (vista: VistaAuth) => void
 }
 
+/** Espejo de los límites del backend: username 50 y contraseña 72 (bcrypt). */
+const MAXIMO_USUARIO = 50
+const MAXIMO_PASSWORD = 72
+
 export function LoginPage({ onIngresar, onNavegar }: Props) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -60,6 +64,7 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
           placeholder="@tu_usuario"
           autoComplete="username"
           required
+          maxLength={MAXIMO_USUARIO}
           value={username}
           error={errores.username}
           onChange={(e) => {
@@ -74,6 +79,7 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
           type={verPassword ? 'text' : 'password'}
           autoComplete="current-password"
           required
+          maxLength={MAXIMO_PASSWORD}
           value={password}
           error={errores.password}
           onChange={(e) => {

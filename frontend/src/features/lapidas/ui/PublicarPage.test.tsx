@@ -87,6 +87,37 @@ describe('PublicarPage', () => {
     expect(foto).toBe(elegido)
   })
 
+  it('rechaza una fecha de fallecimiento futura', () => {
+    const onPublicar = vi.fn()
+    render(<PublicarPage categorias={CATEGORIAS} onPublicar={onPublicar} />)
+    completarFormulario()
+    const manana = new Date()
+    manana.setDate(manana.getDate() + 1)
+    const mananaLocal = `${manana.getFullYear()}-${String(manana.getMonth() + 1).padStart(2, '0')}-${String(manana.getDate()).padStart(2, '0')}`
+    fireEvent.change(screen.getByLabelText(/fecha de fallecimiento/i), {
+      target: { value: mananaLocal },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /publicar lápida/i }))
+
+    expect(onPublicar).not.toHaveBeenCalled()
+    expect(screen.getByText(/no puede ser futura/i)).toBeTruthy()
+  })
+
+  it('rechaza una fecha de fallecimiento anterior a 1900', () => {
+    const onPublicar = vi.fn()
+    render(<PublicarPage categorias={CATEGORIAS} onPublicar={onPublicar} />)
+    completarFormulario()
+    fireEvent.change(screen.getByLabelText(/fecha de fallecimiento/i), {
+      target: { value: '1899-12-31' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /publicar lápida/i }))
+
+    expect(onPublicar).not.toHaveBeenCalled()
+    expect(screen.getByText(/anterior a 1900/i)).toBeTruthy()
+  })
+
   it('rechaza un archivo de más de 5 MB sin llegar a publicar', async () => {
     const onPublicar = vi.fn()
     render(<PublicarPage categorias={CATEGORIAS} onPublicar={onPublicar} />)
