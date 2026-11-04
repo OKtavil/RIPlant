@@ -34,6 +34,8 @@ export class LapidasModule implements NestModule {
     // rol). La corona es de quien la puso, no del dueño de la lápida, así que
     // el DELETE no lleva DuenoOAdminLapidaMiddleware: el filtro por `usuarioId`
     // del servicio ya impide quitar la corona ajena.
+    // POST /lapidas/:id/revivir solo exige sesión: el servicio decide si sos
+    // dueño o admin y devuelve 403 en caso contrario.
     // PUT/DELETE /lapidas/:id exigen dueño o admin.
     // La sesión ya está resuelta por SesionesMiddleware global (AppModule).
     consumer
@@ -42,6 +44,7 @@ export class LapidasModule implements NestModule {
         { path: 'lapidas', method: RequestMethod.POST },
         { path: 'lapidas/:id/corona', method: RequestMethod.POST },
         { path: 'lapidas/:id/corona', method: RequestMethod.DELETE },
+        { path: 'lapidas/:id/revivir', method: RequestMethod.POST },
       );
     consumer
       .apply(DuenoOAdminLapidaMiddleware)

@@ -21,7 +21,9 @@ describe('Lapidas (e2e)', () => {
   let app: INestApplication;
   const sufijo = `${Date.now()}`;
   const nombreUsuario = `lapida-user-${sufijo}`;
+  const nombreCoronador = `lapida-coronador-${sufijo}`;
   let cookie: string;
+  let cookieCoronador: string;
   let baseDatos: string;
 
   beforeAll(async () => {
@@ -42,7 +44,13 @@ describe('Lapidas (e2e)', () => {
       password: 'clave-larga-1',
       rol: 'usuario',
     });
+    await usuarios.crear({
+      username: nombreCoronador,
+      password: 'clave-larga-1',
+      rol: 'usuario',
+    });
     cookie = await abrirSesion(app, nombreUsuario, 'clave-larga-1');
+    cookieCoronador = await abrirSesion(app, nombreCoronador, 'clave-larga-1');
   });
 
   afterAll(async () => {
@@ -77,7 +85,7 @@ describe('Lapidas (e2e)', () => {
 
     const crowned = await request(app.getHttpServer())
       .post(`/lapidas/${created.body.id}/corona`)
-      .set('Cookie', cookie)
+      .set('Cookie', cookieCoronador)
       .expect(201);
     expect(crowned.body.coronasCount).toBe(1);
     expect(crowned.body.coronadaPorMi).toBe(true);
@@ -85,7 +93,7 @@ describe('Lapidas (e2e)', () => {
     // Idempotente: la segunda corona del mismo usuario no es un error.
     const again = await request(app.getHttpServer())
       .post(`/lapidas/${created.body.id}/corona`)
-      .set('Cookie', cookie)
+      .set('Cookie', cookieCoronador)
       .expect(200);
     expect(again.body.coronasCount).toBe(1);
     expect(again.body.coronadaPorMi).toBe(true);
@@ -108,30 +116,51 @@ describe('Lapidas (e2e)', () => {
     // Poner: 201, corona presente.
     const puesta = await request(app.getHttpServer())
       .post(ruta)
-      .set('Cookie', cookie)
+      .set('Cookie', cookieCoronador)
       .expect(201);
     expect(puesta.body).toMatchObject({ coronasCount: 1, coronadaPorMi: true });
 
     // Quitar: 200, contador en cero.
     const quitada = await request(app.getHttpServer())
       .delete(ruta)
-      .set('Cookie', cookie)
+      .set('Cookie', cookieCoronador)
       .expect(200);
     expect(quitada.body).toMatchObject({ coronasCount: 0, coronadaPorMi: false });
 
     // Quitar de nuevo: idempotente, el contador NO baja de cero.
     const otraVez = await request(app.getHttpServer())
       .delete(ruta)
-      .set('Cookie', cookie)
+      .set('Cookie', cookieCoronador)
       .expect(200);
     expect(otraVez.body).toMatchObject({ coronasCount: 0, coronadaPorMi: false });
 
     // Poner de nuevo: vuelve a 1, sin haber quedado desfasado.
     const repuesta = await request(app.getHttpServer())
       .post(ruta)
-      .set('Cookie', cookie)
+      .set('Cookie', cookieCoronador)
       .expect(201);
     expect(repuesta.body).toMatchObject({ coronasCount: 1, coronadaPorMi: true });
+  });
+
+  it('rejects crowning your own grave', async () => {
+    // La regla vive en el backend: la UI deshabilita el botón, pero un cliente
+    // directo tampoco puede saltársela.
+    const creada = await request(app.getHttpServer())
+      .post('/lapidas')
+      .set('Cookie', cookie)
+      .send({
+        nombrePlanta: 'Propia',
+        epitafio: 'Mi propia lápida.',
+        fechaFallecimiento: '2025-04-05',
+        categoriaId: 1,
+      })
+      .expect(201);
+
+    const rechazo = await request(app.getHttpServer())
+      .post(`/lapidas/${creada.body.id}/corona`)
+      .set('Cookie', cookie)
+      .expect(403);
+    expect(rechazo.body.message).toBe('No podés coronarte a vos mismo');
   });
 
   it('requires a session to crown or uncrown', async () => {
@@ -236,7 +265,10 @@ describe('Lapidas (e2e)', () => {
 
     it('editar la lápida la revive y da la insignia al dueño', async () => {
       const id = await crearLapida();
-      expect(await misInsignias()).toEqual([]);
+      // La suite ya editó otras lápidas antes (tests de arriba), así que el
+      // usuario puede tener insignias previas: se comprueba que esta lápida no
+      // tenga la suya todavía, no que la lista arranque vacía.
+      expect((await misInsignias()).some((i) => i.lapidaId === id)).toBe(false);
 
       const editada = await request(app.getHttpServer())
         .put(`/lapidas/${id}`)
@@ -253,12 +285,13 @@ describe('Lapidas (e2e)', () => {
       expect(editada.body.resucitadaEn).toEqual(expect.any(String));
 
       const insignias = await misInsignias();
-      expect(insignias).toHaveLength(1);
-      expect(insignias[0]).toMatchObject({
+      const nueva = insignias.filter((i) => i.lapidaId === id);
+      expect(nueva).toHaveLength(1);
+      expect(nueva[0]).toMatchObject({
         codigo: 'superviviente-zombie',
         lapidaId: id,
       });
-      expect(insignias[0].obtenidaEn).toEqual(expect.any(String));
+      expect(nueva[0].obtenidaEn).toEqual(expect.any(String));
     });
 
     it('editar dos veces no da la insignia dos veces ni mueve la fecha', async () => {
@@ -302,7 +335,7 @@ describe('Lapidas (e2e)', () => {
         .expect(400);
 
       expect((await leer(id)).resucitada).toBe(false);
-      expect(await misInsignias()).toEqual([]);
+      expect((await misInsignias()).some((i) => i.lapidaId === id)).toBe(false);
     });
 
     it('un tercero no puede revivir una lápida ajena', async () => {
@@ -322,6 +355,43 @@ describe('Lapidas (e2e)', () => {
           categoriaId: 1,
         })
         .expect(403);
+
+      expect((await leer(id)).resucitada).toBe(false);
+    });
+
+    it('revive con el botón explícito y es idempotente', async () => {
+      const id = await crearLapida();
+
+      const primera = await request(app.getHttpServer())
+        .post(`/lapidas/${id}/revivir`)
+        .set('Cookie', cookie)
+        .expect(201);
+      expect(primera.body).toMatchObject({ id, resucitada: true });
+      expect(primera.body.resucitadaEn).toEqual(expect.any(String));
+
+      // Revivir de nuevo no mueve la fecha ni agrega otra insignia.
+      const segunda = await request(app.getHttpServer())
+        .post(`/lapidas/${id}/revivir`)
+        .set('Cookie', cookie)
+        .expect(201);
+      expect(segunda.body.resucitadaEn).toBe(primera.body.resucitadaEn);
+      expect(
+        (await misInsignias()).filter((i) => i.lapidaId === id),
+      ).toHaveLength(1);
+    });
+
+    it('solo el dueño o un admin pueden revivir por endpoint', async () => {
+      const id = await crearLapida();
+      const otra = `revivir-ajena-${sufijo}`;
+      const usuarios = app.get(UsuariosService);
+      await usuarios.crear({ username: otra, password: 'clave-larga-1', rol: 'usuario' });
+      const cookieAjena = await abrirSesion(app, otra, 'clave-larga-1');
+
+      await request(app.getHttpServer())
+        .post(`/lapidas/${id}/revivir`)
+        .set('Cookie', cookieAjena)
+        .expect(403);
+      await request(app.getHttpServer()).post(`/lapidas/${id}/revivir`).expect(401);
 
       expect((await leer(id)).resucitada).toBe(false);
     });

@@ -53,6 +53,11 @@ export class LapidasController {
     return this.lapidasService.update(id, lapida);
   }
 
+  @Post(':id/revivir')
+  revivir(@Param('id', ParseIntPipe) id: number, @Req() req: RequestConSesion) {
+    return this.lapidasService.revivir(id, req.sesion!);
+  }
+
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.lapidasService.remove(id);

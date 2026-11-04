@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Inject,
   Injectable,
   Logger,
@@ -401,13 +402,37 @@ export class LapidasService {
       .lean();
     if (!lapida) throw new NotFoundException('Lápida no encontrada');
 
-    await this.premiarSuperviviente(
-      (previa as { usuarioId?: unknown }).usuarioId,
-      id,
-      yaResucitada,
-    );
+    await this.premiarSuperviviente(previa.usuarioId, id, yaResucitada);
 
     return lapida;
+  }
+
+  async revivir(id: number, sesion: { usuario: { id: string; rol: string } }) {
+    const lapida = await this.lapidaModel.findOne({ id }).lean();
+    if (!lapida) throw new NotFoundException('Lápida no encontrada');
+    if (
+      sesion.usuario.rol !== 'admin' &&
+      String(lapida.usuarioId) !== String(sesion.usuario.id)
+    ) {
+      throw new ForbiddenException('Solo el dueño puede revivir esta lápida');
+    }
+    const previa = lapida;
+    const yaResucitada = Boolean(previa.resucitada);
+    if (yaResucitada) {
+      return this.marcarCoronadaPorMi(previa as Lapida, sesion.usuario.id);
+    }
+    const actualizada = await this.lapidaModel
+      .findOneAndUpdate(
+        { id },
+        { $set: { resucitada: true, resucitadaEn: new Date() } },
+        { new: true },
+      )
+      .lean();
+    // Si la lápida desapareció entre el `findOne` y el `findOneAndUpdate`, el
+    // resultado es `null`: para el cliente es inexistente, no un rescate.
+    if (!actualizada) throw new NotFoundException('Lápida no encontrada');
+    await this.premiarSuperviviente(previa.usuarioId, id, false);
+    return this.marcarCoronadaPorMi(actualizada as Lapida, sesion.usuario.id);
   }
 
   /**
@@ -422,7 +447,7 @@ export class LapidasService {
    * cementerio premiaría a un usuario que nunca publicó nada.
    */
   private async premiarSuperviviente(
-    usuarioId: unknown,
+    usuarioId: string,
     lapidaId: number,
     yaResucitada: boolean,
   ): Promise<void> {
@@ -432,7 +457,7 @@ export class LapidasService {
     // "haber revivido" una lápida: revivirla otra vez no es un logro nuevo.
     if (yaResucitada) return;
 
-    const id = usuarioId ? String(usuarioId) : '';
+    const id = usuarioId || '';
     if (!id) return;
 
     try {
@@ -537,6 +562,11 @@ export class LapidasService {
   ): Promise<{ lapida: Lapida; creada: boolean }> {
     const lapida = await this.lapidaModel.findOne({ id }).lean();
     if (!lapida) throw new NotFoundException('Lápida no encontrada');
+
+    // No se puede coronar la propia lápida
+    if (String(lapida.usuarioId) === String(sesion.usuario.id)) {
+      throw new ForbiddenException('No podés coronarte a vos mismo');
+    }
 
     try {
       await this.coronaModel.create({

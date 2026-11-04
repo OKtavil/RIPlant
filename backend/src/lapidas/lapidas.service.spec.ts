@@ -146,13 +146,13 @@ describe('LapidasService', () => {
     } as any, { usuario: { id: 'u1', username: 'Jardinero' } } as any)).resolves.toEqual(grave);
     await expect(service.update(1, grave)).resolves.toMatchObject({ id: 1 });
     await expect(
-      service.giveCorona(1, { usuario: { id: 'u1', username: 'Jardinero' } } as any),
+      service.giveCorona(1, { usuario: { id: 'u2', username: 'Vecino' } } as any),
     ).resolves.toMatchObject({ lapida: { coronasCount: 1 } });
     await expect(service.remove(1)).resolves.toEqual(grave);
   });
 
   it('records one corona per user (idempotent, no 409)', async () => {
-    const sesion = { usuario: { id: 'u1', username: 'Jardinero' } } as any;
+    const sesion = { usuario: { id: 'u2', username: 'Vecino' } } as any;
 
     await expect(service.giveCorona(1, sesion)).resolves.toMatchObject({
       creada: true,
@@ -160,7 +160,7 @@ describe('LapidasService', () => {
     });
     expect(coronaModel.create).toHaveBeenCalledWith({
       lapidaId: 1,
-      usuarioId: 'u1',
+      usuarioId: 'u2',
       creadaEn: expect.any(Date),
     });
 
@@ -176,6 +176,95 @@ describe('LapidasService', () => {
     expect(coronaModel.create).toHaveBeenCalledTimes(2);
     // Lo que importa: el segundo intento no incrementó el contador.
     expect(model.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('rechaza coronar la propia lápida (no hay auto-corona)', async () => {
+    // El dueño de la lápida es `u1`. El front deshabilita el botón, pero la
+    // regla vive en el backend: la API no puede confiar en la UI.
+    const dueño = { usuario: { id: 'u1', username: 'Jardinero' } } as any;
+
+    await expect(service.giveCorona(1, dueño)).rejects.toThrow(
+      'No podés coronarte a vos mismo',
+    );
+    expect(coronaModel.create).not.toHaveBeenCalled();
+    expect(model.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('revive una lápida: la marca, premia al dueño y es idempotente', async () => {
+    // Revivir es un botón explícito, no un efecto de editar: `POST
+    // /lapidas/:id/revivir`. La fecha se fija en ese momento y la insignia va
+    // al dueño de la lápida.
+    model.findOne = jest.fn(() => ({
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: false }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({
+        ...grave,
+        resucitada: true,
+        resucitadaEn: '2026-11-03T00:00:00.000Z',
+      }),
+    }) as any;
+
+    const revivida = await service.revivir(1, {
+      usuario: { id: 'u1', rol: 'usuario' },
+    } as any);
+
+    expect(revivida).toMatchObject({ resucitada: true });
+    const [, cambios] = (model.findOneAndUpdate as jest.Mock).mock.calls[0];
+    expect(cambios.$set).toMatchObject({ resucitada: true });
+    expect(cambios.$set.resucitadaEn).toEqual(expect.any(Date));
+    expect(model.updateOne).toHaveBeenCalledWith(
+      { _id: 'u1' },
+      expect.objectContaining({
+        $addToSet: { insignias: expect.objectContaining({ codigo: 'superviviente-zombie' }) },
+      }),
+    );
+  });
+
+  it('no revivir la lápida de otro si no sos admin', async () => {
+    model.findOne = jest.fn(() => ({
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: false }),
+    })) as any;
+
+    await expect(
+      service.revivir(1, { usuario: { id: 'u2', rol: 'usuario' } } as any),
+    ).rejects.toThrow('Solo el dueño puede revivir esta lápida');
+    expect(model.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('un admin puede revivir la lápida de otro', async () => {
+    model.findOne = jest.fn(() => ({
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: false }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, resucitada: true }),
+    }) as any;
+
+    await expect(
+      service.revivir(1, { usuario: { id: 'admin-1', rol: 'admin' } } as any),
+    ).resolves.toMatchObject({ resucitada: true });
+    // El premio sigue siendo del dueño (`u1`), no del admin que lo ejecutó.
+    expect(model.updateOne).toHaveBeenCalledWith(
+      { _id: 'u1' },
+      expect.objectContaining({ $addToSet: expect.anything() }),
+    );
+  });
+
+  it('revivir una lápida ya resucitada no la modifica ni repite el premio', async () => {
+    model.findOne = jest.fn(() => ({
+      lean: jest.fn().mockResolvedValue({
+        ...grave,
+        resucitada: true,
+        resucitadaEn: '2026-01-01T00:00:00.000Z',
+      }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn() as any;
+
+    await expect(
+      service.revivir(1, { usuario: { id: 'u1', rol: 'usuario' } } as any),
+    ).resolves.toMatchObject({ resucitada: true });
+    expect(model.findOneAndUpdate).not.toHaveBeenCalled();
+    expect(model.updateOne).not.toHaveBeenCalled();
   });
 
   it('takes the corona away, and is idempotent when there was none', async () => {
