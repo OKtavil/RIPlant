@@ -41,6 +41,36 @@ function clasificar(status: number): { codigo: ApiError['codigo']; mensaje: stri
   }
 }
 
+/**
+ * Extrae el mensaje que definió el backend.
+ *
+ * Nest devuelve `{ statusCode, message, error }`, y `class-validator` manda
+ * `message` como array. Ese texto es más útil que el genérico de
+ * `clasificar()` (`"No podés coronarte a vos mismo"` en vez de `"Tu cuenta no
+ * tiene permiso para esta acción."`), así que se prioriza cuando existe.
+ *
+ * El cuerpo se lee sobre un `clone()` para no consumir la respuesta original,
+ * y cualquier fallo de parseo cae al mensaje por defecto: un HTML intermedio
+ * de un proxy no debe romper el manejo de errores.
+ */
+async function leerMensajeError(response: Response, porDefecto: string): Promise<string> {
+  try {
+    const cuerpo: unknown = await response.clone().json()
+    if (cuerpo && typeof cuerpo === 'object') {
+      const { message, error } = cuerpo as { message?: unknown; error?: unknown }
+      if (typeof message === 'string' && message.trim()) return message
+      if (Array.isArray(message)) {
+        const partes = message.filter((parte): parte is string => typeof parte === 'string' && !!parte.trim())
+        if (partes.length > 0) return partes.join(' ')
+      }
+      if (typeof error === 'string' && error.trim()) return error
+    }
+  } catch {
+    // Cuerpo vacío o no-JSON: queda el mensaje por defecto.
+  }
+  return porDefecto
+}
+
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: unknown
@@ -65,7 +95,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 
   if (!response.ok) {
     const { codigo, mensaje } = clasificar(response.status)
-    throw new ApiError(response.status, codigo, mensaje)
+    throw new ApiError(response.status, codigo, await leerMensajeError(response, mensaje))
   }
 
   if (sinCuerpo || response.status === 204) {
@@ -99,7 +129,7 @@ export async function subirArchivo<T>(path: string, campo: string, archivo: File
 
   if (!response.ok) {
     const { codigo, mensaje } = clasificar(response.status)
-    throw new ApiError(response.status, codigo, mensaje)
+    throw new ApiError(response.status, codigo, await leerMensajeError(response, mensaje))
   }
 
   return (await response.json()) as T

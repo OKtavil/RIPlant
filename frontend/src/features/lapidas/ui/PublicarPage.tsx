@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { CampoArea, CampoSelect, CampoTexto } from '../../../shared/ui/Campo'
@@ -27,33 +28,47 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
   const [epitafio, setEpitafio] = useState('')
   const [foto, setFoto] = useState<File | undefined>(undefined)
   const [enviando, setEnviando] = useState(false)
-  const [error, setError] = useState('')
+  const [errores, setErrores] = useState<Record<string, string>>({})
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
-    setError('')
+    const nuevosErrores: Record<string, string> = {}
 
     // Se chequea antes de crear la lápida: si el archivo no entra, no tiene
     // sentido publicar una lápida y fallar después en la subida.
     if (foto && foto.size > TAMANIO_MAXIMO_FOTO) {
-      setError('La foto no puede superar los 5 MB.')
+      nuevosErrores.foto = 'La foto no puede superar los 5 MB.'
+    }
+    if (!nombrePlanta.trim()) nuevosErrores.nombrePlanta = 'El nombre de la planta es obligatorio.'
+    if (!categoriaId) nuevosErrores.categoriaId = 'Elegí una categoría.'
+    if (!fechaFallecimiento) nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento es obligatoria.'
+    if (!causaMuerte.trim()) nuevosErrores.causaMuerte = 'La causa de muerte es obligatoria.'
+    if (!epitafio.trim()) nuevosErrores.epitafio = 'El epitafio es obligatorio.'
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores)
       return
     }
 
+    setErrores({})
     setEnviando(true)
     try {
       await onPublicar(
         {
-          nombrePlanta,
-          epitafio,
+          nombrePlanta: nombrePlanta.trim(),
+          epitafio: epitafio.trim(),
           fechaFallecimiento,
           categoriaId: Number(categoriaId),
-          causaMuerte,
+          causaMuerte: causaMuerte.trim(),
         },
         foto,
       )
-    } catch {
-      setError('No se pudo publicar la lápida. Revisá los datos e intentalo de nuevo.')
+    } catch (fallo) {
+      if (fallo instanceof ApiError) {
+        setErrores({ general: fallo.message })
+      } else {
+        setErrores({ general: 'No se pudo publicar la lápida. Revisá los datos e intentalo de nuevo.' })
+      }
     } finally {
       setEnviando(false)
     }
@@ -61,7 +76,7 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
 
   return (
     <div className="publicar">
-      <form className="publicar__tarjeta" onSubmit={manejarEnvio}>
+      <form className="publicar__tarjeta" onSubmit={manejarEnvio} noValidate>
         <h1 className="publicar__titulo">NUEVA LÁPIDA</h1>
 
         <CampoTexto
@@ -70,7 +85,11 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
           type="file"
           accept="image/jpeg,image/png,image/webp"
           ayuda="JPEG, PNG o WebP, hasta 5 MB. Se sube después de publicar."
-          onChange={(e) => setFoto(e.target.files?.[0])}
+          error={errores.foto}
+          onChange={(e) => {
+            setFoto(e.target.files?.[0])
+            setErrores((err) => ({ ...err, foto: '' }))
+          }}
         />
 
         <CampoTexto
@@ -80,7 +99,11 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
           maxLength={40}
           required
           value={nombrePlanta}
-          onChange={(e) => setNombrePlanta(e.target.value)}
+          error={errores.nombrePlanta}
+          onChange={(e) => {
+            setNombrePlanta(e.target.value)
+            setErrores((err) => ({ ...err, nombrePlanta: '' }))
+          }}
         />
 
         <div className="fila">
@@ -89,7 +112,11 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
             etiqueta="Categoría"
             required
             value={categoriaId}
-            onChange={(e) => setCategoriaId(e.target.value)}
+            error={errores.categoriaId}
+            onChange={(e) => {
+              setCategoriaId(e.target.value)
+              setErrores((err) => ({ ...err, categoriaId: '' }))
+            }}
           >
             <option value="" disabled>
               Elegí una categoría
@@ -107,7 +134,11 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
             type="date"
             required
             value={fechaFallecimiento}
-            onChange={(e) => setFechaFallecimiento(e.target.value)}
+            error={errores.fechaFallecimiento}
+            onChange={(e) => {
+              setFechaFallecimiento(e.target.value)
+              setErrores((err) => ({ ...err, fechaFallecimiento: '' }))
+            }}
           />
         </div>
 
@@ -118,7 +149,11 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
           maxLength={80}
           required
           value={causaMuerte}
-          onChange={(e) => setCausaMuerte(e.target.value)}
+          error={errores.causaMuerte}
+          onChange={(e) => {
+            setCausaMuerte(e.target.value)
+            setErrores((err) => ({ ...err, causaMuerte: '' }))
+          }}
           ayuda="El prototipo no pedía este campo, pero la API lo exige para publicar."
         />
 
@@ -130,10 +165,14 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
           maxLength={280}
           required
           value={epitafio}
-          onChange={(e) => setEpitafio(e.target.value)}
+          error={errores.epitafio}
+          onChange={(e) => {
+            setEpitafio(e.target.value)
+            setErrores((err) => ({ ...err, epitafio: '' }))
+          }}
         />
 
-        {error && <Aviso tono="error">{error}</Aviso>}
+        {errores.general && <Aviso tono="error">{errores.general}</Aviso>}
 
         <Boton type="submit" disabled={enviando || categorias.length === 0}>
           {enviando ? 'PUBLICANDO…' : 'PUBLICAR LÁPIDA'}

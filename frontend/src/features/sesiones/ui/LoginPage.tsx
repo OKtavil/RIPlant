@@ -17,16 +17,27 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
   const [password, setPassword] = useState('')
   const [verPassword, setVerPassword] = useState(false)
   const [enviando, setEnviando] = useState(false)
-  const [error, setError] = useState('')
+  const [errores, setErrores] = useState<Record<string, string>>({})
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
+    const nuevosErrores: Record<string, string> = {}
+    if (!username.trim()) nuevosErrores.username = 'El nombre de usuario es obligatorio.'
+    if (!password) nuevosErrores.password = 'La contraseña es obligatoria.'
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores)
+      return
+    }
     setEnviando(true)
-    setError('')
+    setErrores({})
     try {
       await onIngresar({ username: username.trim(), password })
     } catch (fallo) {
-      setError(fallo instanceof ApiError ? fallo.message : 'No se pudo iniciar sesión.')
+      if (fallo instanceof ApiError) {
+        setErrores({ general: fallo.message })
+      } else {
+        setErrores({ general: 'No se pudo iniciar sesión.' })
+      }
       setEnviando(false)
     }
   }
@@ -42,7 +53,7 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
         </>
       }
     >
-      <form className="auth__form" onSubmit={manejarEnvio}>
+      <form className="auth__form" onSubmit={manejarEnvio} noValidate>
         <CampoTexto
           id="login-identidad"
           etiqueta="Nombre de usuario"
@@ -50,7 +61,11 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
           autoComplete="username"
           required
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          error={errores.username}
+          onChange={(e) => {
+            setUsername(e.target.value)
+            setErrores((err) => ({ ...err, username: '' }))
+          }}
         />
 
         <CampoTexto
@@ -60,11 +75,15 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
           autoComplete="current-password"
           required
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          error={errores.password}
+          onChange={(e) => {
+            setPassword(e.target.value)
+            setErrores((err) => ({ ...err, password: '' }))
+          }}
           accion={<AlternarMostrar visible={verPassword} onAlternar={() => setVerPassword((v) => !v)} />}
         />
 
-        {error && <Aviso tono="error">{error}</Aviso>}
+        {errores.general && <Aviso tono="error">{errores.general}</Aviso>}
 
         <Boton type="submit" bloque disabled={enviando}>
           {enviando ? 'ENTRANDO…' : 'ENTRAR'}

@@ -25,26 +25,35 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
   const [confirmar, setConfirmar] = useState('')
   const [verPassword, setVerPassword] = useState(false)
   const [enviando, setEnviando] = useState(false)
-  const [error, setError] = useState('')
+  const [errores, setErrores] = useState<Record<string, string>>({})
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
-    setError('')
+    const nuevosErrores: Record<string, string> = {}
 
+    if (!username.trim()) nuevosErrores.username = 'El nombre de usuario es obligatorio.'
     if (password.length < MINIMO_PASSWORD) {
-      setError(`La contraseña necesita al menos ${MINIMO_PASSWORD} caracteres.`)
-      return
+      nuevosErrores.password = `La contraseña necesita al menos ${MINIMO_PASSWORD} caracteres.`
     }
     if (password !== confirmar) {
-      setError('Las contraseñas no coinciden.')
+      nuevosErrores.confirmar = 'Las contraseñas no coinciden.'
+    }
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores)
       return
     }
 
+    setErrores({})
     setEnviando(true)
     try {
       await onRegistrar({ username: username.trim(), password })
     } catch (fallo) {
-      setError(fallo instanceof ApiError ? fallo.message : 'No se pudo crear la cuenta.')
+      if (fallo instanceof ApiError) {
+        setErrores({ general: fallo.message })
+      } else {
+        setErrores({ general: 'No se pudo crear la cuenta.' })
+      }
       setEnviando(false)
     }
   }
@@ -60,7 +69,7 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
         </>
       }
     >
-      <form className="auth__form" onSubmit={manejarEnvio}>
+      <form className="auth__form" onSubmit={manejarEnvio} noValidate>
         <CampoTexto
           id="registro-usuario"
           etiqueta="NOMBRE DE USUARIO"
@@ -68,7 +77,11 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
           autoComplete="username"
           required
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          error={errores.username}
+          onChange={(e) => {
+            setUsername(e.target.value)
+            setErrores((previos) => ({ ...previos, username: '' }))
+          }}
         />
         <CampoTexto
           id="registro-password"
@@ -78,7 +91,11 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
           required
           minLength={MINIMO_PASSWORD}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          error={errores.password}
+          onChange={(e) => {
+            setPassword(e.target.value)
+            setErrores((previos) => ({ ...previos, password: '', confirmar: '' }))
+          }}
           accion={<AlternarMostrar visible={verPassword} onAlternar={() => setVerPassword((v) => !v)} />}
         />
         <CampoTexto
@@ -89,10 +106,14 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
           required
           minLength={MINIMO_PASSWORD}
           value={confirmar}
-          onChange={(e) => setConfirmar(e.target.value)}
+          error={errores.confirmar}
+          onChange={(e) => {
+            setConfirmar(e.target.value)
+            setErrores((previos) => ({ ...previos, confirmar: '' }))
+          }}
         />
 
-        {error && <Aviso tono="error">{error}</Aviso>}
+        {errores.general && <Aviso tono="error">{errores.general}</Aviso>}
 
         <Boton type="submit" bloque disabled={enviando}>
           {enviando ? 'CREANDO…' : 'CREAR CUENTA'}

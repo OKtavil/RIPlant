@@ -225,6 +225,21 @@
   margin-top: 4px;
 }
 
+/* Error por campo: borde rojo + mensaje debajo. Reemplaza a la ayuda mientras
+   el campo esté inválido, para no apilar dos textos en el mismo lugar. */
+.campo--error input,
+.campo--error select,
+.campo--error textarea {
+  border-color: var(--rojo);
+}
+
+.campo__error {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rojo);
+  margin-top: 4px;
+}
+
 .campo__accion {
   text-align: right;
   font-size: 10px;

@@ -27,7 +27,10 @@ export function CategoriasPage({
   const esAdmin = sesion?.rol === 'admin'
   const [editando, setEditando] = useState<Category | null>(null)
   const [nombre, setNombre] = useState('')
-  const [error, setError] = useState('')
+  // El error del campo se pinta debajo del input; los fallos que no son del
+  // formulario (eliminar) van al aviso general para no confundir el foco.
+  const [errorNombre, setErrorNombre] = useState('')
+  const [errorGeneral, setErrorGeneral] = useState('')
   const [enviando, setEnviando] = useState(false)
 
   const nombreValido = nombre.trim().length >= CATEGORIA_MIN && nombre.trim().length <= CATEGORIA_MAX
@@ -35,20 +38,23 @@ export function CategoriasPage({
   function limpiarFormulario() {
     setEditando(null)
     setNombre('')
-    setError('')
+    setErrorNombre('')
+    setErrorGeneral('')
   }
 
   function empezarEdicion(categoria: Category) {
     setEditando(categoria)
     setNombre(categoria.nombre)
-    setError('')
+    setErrorNombre('')
+    setErrorGeneral('')
   }
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
     if (!nombreValido) return
     setEnviando(true)
-    setError('')
+    setErrorNombre('')
+    setErrorGeneral('')
     try {
       if (editando) {
         await onActualizar(editando.id, nombre.trim())
@@ -57,7 +63,7 @@ export function CategoriasPage({
       }
       limpiarFormulario()
     } catch (fallo) {
-      setError(fallo instanceof ApiError ? fallo.message : 'No se pudo guardar la categoría.')
+      setErrorNombre(fallo instanceof ApiError ? fallo.message : 'No se pudo guardar la categoría.')
     } finally {
       setEnviando(false)
     }
@@ -65,12 +71,12 @@ export function CategoriasPage({
 
   async function eliminar(categoria: Category) {
     if (!window.confirm(`¿Eliminar la categoría “${categoria.nombre}”?`)) return
-    setError('')
+    setErrorGeneral('')
     try {
       await onEliminar(categoria.id)
       if (editando?.id === categoria.id) limpiarFormulario()
     } catch (fallo) {
-      setError(fallo instanceof ApiError ? fallo.message : 'No se pudo eliminar la categoría.')
+      setErrorGeneral(fallo instanceof ApiError ? fallo.message : 'No se pudo eliminar la categoría.')
     }
   }
 
@@ -123,11 +129,15 @@ export function CategoriasPage({
             maxLength={CATEGORIA_MAX}
             value={nombre}
             disabled={!esAdmin}
-            onChange={(e) => setNombre(e.target.value)}
+            error={errorNombre}
+            onChange={(e) => {
+              setNombre(e.target.value)
+              setErrorNombre('')
+            }}
             ayuda="Máximo 20 caracteres"
           />
 
-          {error && <Aviso tono="error">{error}</Aviso>}
+          {errorGeneral && <Aviso tono="error">{errorGeneral}</Aviso>}
 
           <div className="fila">
             <Boton type="submit" disabled={!esAdmin || !nombreValido || enviando}>

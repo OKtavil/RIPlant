@@ -78,6 +78,60 @@ describe('request — errores HTTP', () => {
     expect(fallo).toMatchObject({ status, codigo, message: mensaje })
   })
 
+  it('propaga el mensaje concreto que devuelve el backend', async () => {
+    conRespuesta(
+      Response.json(
+        { statusCode: 403, message: 'No podés coronarte a vos mismo', error: 'Forbidden' },
+        { status: 403 },
+      ),
+    )
+
+    await expect(request('/lapidas/1/corona', { method: 'POST' })).rejects.toMatchObject({
+      status: 403,
+      codigo: 'prohibido',
+      message: 'No podés coronarte a vos mismo',
+    })
+  })
+
+  it('une los mensajes de class-validator en un solo texto', async () => {
+    conRespuesta(
+      Response.json(
+        {
+          statusCode: 400,
+          message: ['username must be longer than 2 characters', 'password should not be empty'],
+          error: 'Bad Request',
+        },
+        { status: 400 },
+      ),
+    )
+
+    await expect(request('/usuarios', { method: 'POST', body: {} })).rejects.toMatchObject({
+      status: 400,
+      codigo: 'invalido',
+      message: 'username must be longer than 2 characters password should not be empty',
+    })
+  })
+
+  it('usa el mensaje por defecto si el cuerpo del error no es JSON', async () => {
+    conRespuesta(new Response('<html>proxy error</html>', { status: 502 }))
+
+    await expect(request('/lapidas')).rejects.toMatchObject({
+      status: 502,
+      codigo: 'desconocido',
+      message: 'Ocurrió un error inesperado.',
+    })
+  })
+
+  it('usa el mensaje por defecto si el JSON no trae message ni error', async () => {
+    conRespuesta(Response.json({ statusCode: 401 }, { status: 401 }))
+
+    await expect(request('/sesiones')).rejects.toMatchObject({
+      status: 401,
+      codigo: 'no-autorizado',
+      message: 'Necesitás iniciar sesión.',
+    })
+  })
+
   it('una caída de red se traduce en ApiError 0 sin-conexion', async () => {
     vi.stubGlobal('fetch', fetchMock.mockRejectedValue(new TypeError('Failed to fetch')))
 

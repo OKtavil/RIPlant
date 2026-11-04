@@ -26,7 +26,10 @@ type Props = {
 export function ListaComentarios({ lapidaId, sesion }: Props) {
   const [comentarios, setComentarios] = useState<Comentario[] | null>(null)
   const [texto, setTexto] = useState('')
+  // `error` cubre carga y borrado (avisos de la lista); `errorEnvio` se pinta
+  // pegado al campo para que el usuario vea qué corregir sin buscar arriba.
   const [error, setError] = useState<string | null>(null)
+  const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
 
   // Al cambiar de lápida se recarga todo. `cancelado` evita que una respuesta
@@ -53,13 +56,13 @@ export function ListaComentarios({ lapidaId, sesion }: Props) {
     if (!esTextoValido(texto) || enviando) return
 
     setEnviando(true)
-    setError(null)
+    setErrorEnvio(null)
     try {
       const creado = await comentariosApi.crear(lapidaId, texto.trim())
       setComentarios((items) => [...(items ?? []), creado])
       setTexto('')
     } catch (e: unknown) {
-      setError(mensajeDeError(e))
+      setErrorEnvio(mensajeDeError(e))
     } finally {
       setEnviando(false)
     }
@@ -113,14 +116,18 @@ export function ListaComentarios({ lapidaId, sesion }: Props) {
       )}
 
       {sesion ? (
-        <form className="detalle__comentario-form" onSubmit={(e) => void enviar(e)}>
+        <form className="detalle__comentario-form" onSubmit={(e) => void enviar(e)} noValidate>
           <input
             type="text"
             value={texto}
             maxLength={LARGO_MAXIMO_TEXTO}
-            onChange={(e) => setTexto(e.target.value)}
+            onChange={(e) => {
+              setTexto(e.target.value)
+              setErrorEnvio(null)
+            }}
             placeholder="Escribe un comentario..."
             aria-label="Escribe un comentario"
+            aria-invalid={errorEnvio ? true : undefined}
           />
           <Boton tamano="chico" type="submit" disabled={!esTextoValido(texto) || enviando}>
             {enviando ? 'ENVIANDO…' : 'COMENTAR'}
@@ -129,6 +136,7 @@ export function ListaComentarios({ lapidaId, sesion }: Props) {
       ) : (
         <Aviso>Iniciá sesión para comentar.</Aviso>
       )}
+      {errorEnvio && <p className="campo__error">{errorEnvio}</p>}
     </div>
   )
 }
