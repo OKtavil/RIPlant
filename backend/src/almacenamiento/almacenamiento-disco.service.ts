@@ -1,7 +1,13 @@
-import { Injectable, Logger, UnsupportedMediaTypeException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnsupportedMediaTypeException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { leerDimensiones } from './dimensiones-imagen';
 import {
   EXTENSION_POR_TIPO,
   TIPOS_IMAGEN_PERMITIDOS,
@@ -21,6 +27,22 @@ export const RUTA_FISICA_UPLOADS = join('var', 'uploads');
 
 /** Tope de tamaño por archivo (S8). */
 export const TAMANIO_MAXIMO_FOTO = 5 * 1024 * 1024;
+
+/**
+ * Lado mínimo de la foto (D003). La ficha del detalle la muestra a 320 px de
+ * alto, así que por debajo de eso la imagen se ve borrosa incluso a 1x. El
+ * mínimo no pretende juzgar la foto: separa una foto de un icono o un sticker.
+ */
+export const LADO_MINIMO_FOTO = 320;
+
+/**
+ * Tope de píxeles totales (D003). El tope de 5 MB acota los bytes comprimidos,
+ * **no** lo que ocupa la imagen decodificada: un PNG de unos pocos KB puede
+ * declarar 50000×50000 y expandirse a gigabytes en el navegador de quien la
+ * abra. 50 megapíxeles es más que los 48 Mpx de un celular actual, así que no
+ * rechaza la foto que la gente saca de verdad.
+ */
+export const PIXELES_MAXIMOS_FOTO = 50_000_000;
 
 /**
  * Directorio físico de las subidas. Es la única fuente de verdad: el servicio
@@ -66,6 +88,7 @@ export class AlmacenamientoDiscoService implements AlmacenamientoService {
 
   async guardar(buffer: Buffer): Promise<ImagenGuardada> {
     const tipo = await this.detectarTipo(buffer);
+    this.validarDimensiones(buffer);
 
     const nombreArchivo = `${randomUUID()}.${EXTENSION_POR_TIPO[tipo]}`;
     await mkdir(this.directorio, { recursive: true });
@@ -92,6 +115,40 @@ export class AlmacenamientoDiscoService implements AlmacenamientoService {
           `No se pudo borrar la foto ${nombreArchivo}: ${(error as Error).message}`,
         );
       }
+    }
+  }
+
+  /**
+   * Rechaza fotos cuyas dimensiones declaradas no sirven como foto de la
+   * lápida (D003). Se lee la cabecera, nunca se decodifica la imagen.
+   *
+   * Los mensajes incluyen el tamaño real: sin eso, quien sube la foto solo ve
+   * "400" y no tiene forma de saber qué corregir.
+   */
+  private validarDimensiones(buffer: Buffer): void {
+    const dimensiones = leerDimensiones(buffer);
+
+    if (!dimensiones) {
+      throw new UnsupportedMediaTypeException(
+        'No se pudieron leer las dimensiones de la foto',
+      );
+    }
+
+    if (
+      dimensiones.ancho < LADO_MINIMO_FOTO ||
+      dimensiones.alto < LADO_MINIMO_FOTO
+    ) {
+      throw new BadRequestException(
+        `La foto es demasiado chica (${dimensiones.ancho}×${dimensiones.alto}). ` +
+          `Cada lado tiene que medir al menos ${LADO_MINIMO_FOTO} px.`,
+      );
+    }
+
+    if (dimensiones.ancho * dimensiones.alto > PIXELES_MAXIMOS_FOTO) {
+      throw new BadRequestException(
+        `La foto tiene demasiados píxeles (${dimensiones.ancho}×${dimensiones.alto}). ` +
+          `El máximo es ${PIXELES_MAXIMOS_FOTO / 1_000_000} megapíxeles.`,
+      );
     }
   }
 

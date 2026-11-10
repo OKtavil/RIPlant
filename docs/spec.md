@@ -23,7 +23,7 @@ inválido*.
 | DELETE | `/lapidas/:id` | dueño o `admin` | Elimina la lápida (`200`), `404` o `403`; borra en cascada sus comentarios, coronas y foto |
 | POST | `/lapidas/:id/corona` | sesión (cualquier rol) | Da corona (`201` si la creó, `200` si ya estaba) o `404`. **Idempotente**: la segunda corona del mismo usuario no es un error. Agrega `coronadaPorMi` a la respuesta |
 | DELETE | `/lapidas/:id/corona` | sesión (cualquier rol) | Quita la corona de **este** usuario (`200`, o `404`). **Idempotente**: si no la tenía, no baja el contador. Agrega `coronadaPorMi: false`. Cada usuario solo puede quitar la suya |
-| POST | `/lapidas/:id/foto` | dueño o `admin` | Sube la foto (multipart, campo `foto`); `201`, o `400` sin archivo, `404`, `403`, `413` si supera 5 MB, `415` si no es JPEG, PNG o WebP |
+| POST | `/lapidas/:id/foto` | dueño o `admin` | Sube la foto (multipart, campo `foto`); `201`, `400` sin archivo o si no cumple dimensiones, `403`, `404`, `413` si supera 5 MB, `415` si no es JPEG, PNG o WebP o no se pueden leer sus dimensiones |
 | GET | `/lapidas/:id/comentarios` | público | Comentarios de la lápida, por fecha ascendente; `404` si la lápida no existe |
 | POST | `/lapidas/:id/comentarios` | sesión (cualquier rol) | Crea un comentario (`201`); `400` si `texto` falta o supera 500 caracteres, `404` si la lápida no existe. `autor` y `usuarioId` salen de la sesión |
 | DELETE | `/comentarios/:id` | solo `admin` | Elimina el comentario (`200`) o `404`. El autor no borra el suyo |
@@ -57,8 +57,11 @@ Quién puede mutar una lápida:
 `POST /lapidas/:id/foto` es la **única** vía para cargar la foto. El JSON de
 crear/editar ignora `fotoUrl`. El servidor decide el nombre del archivo
 (`randomUUID()` más la extensión del tipo detectado) y valida el tipo por **magic
-bytes**, no por el `mimetype` ni la extensión que declara el cliente. Se guarda en
-disco local y se sirve en `/uploads/<archivo>`.
+bytes**, no por el `mimetype` ni la extensión que declara el cliente. El servidor
+también valida las dimensiones desde la cabecera, sin decodificar la imagen: cada lado
+debe medir al menos **320 px** y el total no puede superar **50 megapíxeles**. Esto
+evita aceptar imágenes diminutas o con dimensiones que impliquen un consumo excesivo
+al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
 
 ## Criterios de aceptación
 
@@ -96,8 +99,10 @@ disco local y se sirve en `/uploads/<archivo>`.
 - Un comentario exige sesión, un `texto` de hasta 500 caracteres, y lo borra solo un
   `admin`: sin sesión, `401`; con rol `usuario`, `403`.
 - La foto se guarda con un nombre generado por el servidor y validada por magic bytes;
-  un archivo que no es JPEG, PNG ni WebP devuelve `415` y uno de más de 5 MB, `413`.
-  Al reemplazarla se borra la anterior, y al borrar la lápida se borra la suya.
+  un archivo que no es JPEG, PNG ni WebP devuelve `415`, uno de más de 5 MB devuelve
+  `413`, y uno con un lado menor a 320 px o más de 50 megapíxeles devuelve `400`.
+  Las dimensiones se leen de la cabecera, sin decodificar la imagen. Al reemplazarla
+  se borra la anterior, y al borrar la lápida se borra la suya.
 - `GET /lapidas/asesinos` agrupa por dueño, ordena de mayor a menor y excluye al
   usuario `zombie`.
 - La insignia **Superviviente Zombie** se otorga al dueño de una lápida que revive:

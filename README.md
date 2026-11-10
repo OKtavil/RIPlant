@@ -759,6 +759,10 @@ foto: el JSON de crear/editar ignora `fotoUrl`.
 - El tipo se valida por **magic bytes** (JPEG, PNG o WebP), no por el `mimetype` ni la
   extensión declarados. Un archivo que no es imagen → `415`.
 - Tope de **5 MB** por archivo → `413` si lo supera. Sin archivo → `400`.
+- La calidad mínima y el tamaño seguro también se validan en el servidor: cada lado debe
+  medir al menos **320 px** y la imagen no puede superar **50 megapíxeles**. Las
+  dimensiones se leen desde la cabecera, sin descomprimir la imagen; una foto que no
+  cumple devuelve `400` con el motivo.
 - Se guarda en `backend/var/uploads/` (ignorado por git) y se sirve estático en
   `/uploads/<archivo>`. Al reemplazar la foto se borra la anterior, y al borrar la lápida
   se borra la suya (ambos best-effort).

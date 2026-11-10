@@ -446,8 +446,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 ### Validación de datos (Crítico)
 - [x] **D001** - Formularios (registro, publicar lápida, comentarios): Agregar límites de longitud y validación suficiente tanto en frontend como backend. Los campos de texto aceptan cualquier contenido.
   **Resuelto** — `5fbfbab` + `3c03252`. Backend: `create-lapida.dto.ts` recorta con `@Transform` y limita `nombrePlanta` a 40, `epitafio` a 280 y `causaMuerte` a 80; `create-comentario.dto.ts` a 500; `crear-usuario.dto.ts` a 50. Frontend: `maxLength` en los formularios.
-- [ ] **D003** - Subida de foto (publicar lápida): Validar tipo, extensión y calidad de la imagen **en el servidor**. Actualmente solo hay validación en frontend.
-  **Parcial** — tipo y extensión **sí** se validan en el servidor: `almacenamiento-disco.service.ts:103` detecta el tipo por *magic bytes* con `file-type` y rechaza lo que no sea JPEG/PNG/WebP (ignora el `mimetype` y el nombre que manda el cliente), `lapidas.controller.ts:109` aplica el tope de 5 MB y el nombre lo decide el servidor. **Falta la calidad:** no se validan dimensiones ni resolución.
+- [x] **D003** - Subida de foto (publicar lápida): Validar tipo, extensión y calidad de la imagen **en el servidor**.
+  **Resuelto** — el servidor detecta JPEG/PNG/WebP por *magic bytes*, deriva la extensión del tipo real y valida las dimensiones leyendo la cabecera sin decodificar la imagen. Rechaza fotos con algún lado menor a 320 px o más de 50 megapíxeles; conserva el tope de 5 MB. Cubierto en `almacenamiento-disco.service.spec.ts`, `dimensiones-imagen.spec.ts` y `lapidas.e2e-spec.ts`.
 - [x] **E001** - Publicar lápida (fecha de fallecimiento): Limitar el año a un rango razonable (no posterior a la fecha actual ni demasiado antiguo).
   **Resuelto** — `5fbfbab`. `fecha-fallecimiento.validator.ts` exige un instante entre 1900-01-01 y hoy, y se combina con `@IsDateString` para el mensaje de formato.
 - [x] **V001** - Usuarios (registro y datos): Agregar límite de caracteres y validación de cadenas en todos los campos de texto del usuario.

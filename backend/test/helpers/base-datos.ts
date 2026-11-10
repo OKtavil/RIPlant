@@ -97,7 +97,11 @@ export async function borrarBaseAislada(
   nombreBase: string,
   uri: string = process.env.MONGODB_URI ?? '',
 ): Promise<void> {
-  const cliente = new (MongoClientDeMongoose())(sinNombreDeBase(uri));
+  const cliente = new (MongoClientDeMongoose())(sinNombreDeBase(uri), {
+    connectTimeoutMS: TIMEOUT_SELECCION_MS,
+    serverSelectionTimeoutMS: TIMEOUT_SELECCION_MS,
+    socketTimeoutMS: TIMEOUT_SELECCION_MS,
+  });
   try {
     await cliente.connect();
     await cliente.db(nombreBase).dropDatabase();
@@ -118,7 +122,11 @@ export async function borrarBaseAislada(
  */
 function MongoClientDeMongoose(): new (
   uri: string,
-  opciones?: { serverSelectionTimeoutMS?: number },
+  opciones?: {
+    serverSelectionTimeoutMS?: number;
+    connectTimeoutMS?: number;
+    socketTimeoutMS?: number;
+  },
 ) => {
   connect(): Promise<unknown>;
   db(nombre?: string): {
@@ -163,7 +171,9 @@ export async function borrarBasesViejasE2E(
     process.env.MONGODB_URI ??
     'mongodb://localhost:27018/riplanta';
   const cliente = new (MongoClientDeMongoose())(sinNombreDeBase(uri), {
+    connectTimeoutMS: TIMEOUT_SELECCION_MS,
     serverSelectionTimeoutMS: TIMEOUT_SELECCION_MS,
+    socketTimeoutMS: TIMEOUT_SELECCION_MS,
   });
   try {
     await cliente.connect();

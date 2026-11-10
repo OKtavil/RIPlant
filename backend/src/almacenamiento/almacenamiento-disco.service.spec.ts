@@ -1,4 +1,4 @@
-import { UnsupportedMediaTypeException } from '@nestjs/common';
+import { BadRequestException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { mkdtemp, readFile, rm, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -6,26 +6,67 @@ import { join } from 'node:path';
 import { AlmacenamientoDiscoService, directorioDeSubidas } from './almacenamiento-disco.service';
 
 /**
- * Fixtures reales de magic bytes, no inventadas: son los encabezados que
- * `file-type` reconoce. Un PNG, un JPEG y un WebP de verdad, más un GIF y un
+ * Fixtures con cabecera real: `file-type` reconoce el tipo y el parser lee las
+ * dimensiones que declara. Un PNG, un JPEG y un WebP válidos, más un GIF y un
  * texto plano para probar el rechazo.
+ *
+ * Tienen 640×480 y no 1×1 porque desde D003 una imagen por debajo del mínimo
+ * se rechaza: un fixture de 1×1 ya no representa una foto que un usuario
+ * podría subir.
  */
-const PNG = Buffer.from(
-  '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489',
-  'hex',
-);
-const JPEG = Buffer.from(
-  'ffd8ffe000104a46494600010100000100010000ffdb004300',
-  'hex',
-);
-const WEBP = (() => {
-  const b = Buffer.alloc(30);
-  b.write('RIFF', 0, 'ascii');
-  b.writeUInt32LE(22, 4);
-  b.write('WEBP', 8, 'ascii');
-  b.write('VP8 ', 12, 'ascii');
-  return b;
-})();
+const ANCHO_VALIDO = 640;
+const ALTO_VALIDO = 480;
+
+function png(ancho: number, alto: number): Buffer {
+  const buffer = Buffer.alloc(33);
+  Buffer.from('89504e470d0a1a0a', 'hex').copy(buffer, 0);
+  buffer.writeUInt32BE(13, 8);
+  buffer.write('IHDR', 12, 'ascii');
+  buffer.writeUInt32BE(ancho, 16);
+  buffer.writeUInt32BE(alto, 20);
+  buffer[24] = 8;
+  buffer[25] = 6;
+  return buffer;
+}
+
+function jpeg(ancho: number, alto: number): Buffer {
+  const app0 = Buffer.from('ffe000104a46494600010100000100010000', 'hex');
+  const segmento = Buffer.alloc(19);
+  segmento.writeUInt16BE(0xffc0, 0);
+  segmento.writeUInt16BE(17, 2);
+  segmento[4] = 8;
+  segmento.writeUInt16BE(alto, 5);
+  segmento.writeUInt16BE(ancho, 7);
+  segmento[9] = 3;
+  return Buffer.concat([
+    Buffer.from('ffd8', 'hex'),
+    app0,
+    segmento,
+    Buffer.from('ffd9', 'hex'),
+  ]);
+}
+
+function webp(ancho: number, alto: number): Buffer {
+  const buffer = Buffer.alloc(30);
+  buffer.write('RIFF', 0, 'ascii');
+  buffer.writeUInt32LE(22, 4);
+  buffer.write('WEBP', 8, 'ascii');
+  buffer.write('VP8X', 12, 'ascii');
+  buffer.writeUInt32LE(10, 16);
+  const anchoCrudo = ancho - 1;
+  const altoCrudo = alto - 1;
+  buffer[24] = anchoCrudo & 0xff;
+  buffer[25] = (anchoCrudo >> 8) & 0xff;
+  buffer[26] = (anchoCrudo >> 16) & 0xff;
+  buffer[27] = altoCrudo & 0xff;
+  buffer[28] = (altoCrudo >> 8) & 0xff;
+  buffer[29] = (altoCrudo >> 16) & 0xff;
+  return buffer;
+}
+
+const PNG = png(ANCHO_VALIDO, ALTO_VALIDO);
+const JPEG = jpeg(ANCHO_VALIDO, ALTO_VALIDO);
+const WEBP = webp(ANCHO_VALIDO, ALTO_VALIDO);
 const GIF = Buffer.from('474946383961', 'hex');
 const TEXTO = Buffer.from('esto no es una imagen en absoluto', 'utf8');
 
@@ -89,6 +130,51 @@ describe('AlmacenamientoDiscoService (S8)', () => {
     const base = join(scratch, 'var', 'uploads');
     const archivos = existsSync(base) ? await readdir(base) : [];
     expect(archivos).toHaveLength(0);
+  });
+
+  describe('dimensiones (D003)', () => {
+    it('rechaza una foto de menos de 320 px de lado', async () => {
+      await expect(service.guardar(png(319, 400))).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      await expect(service.guardar(png(400, 319))).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('dice en el mensaje que el problema son las dimensiones', async () => {
+      // Si el mensaje no lo aclara, el frontend solo puede mostrar "400" y la
+      // persona no tiene forma de saber que su foto es demasiado chica.
+      await expect(service.guardar(png(64, 64))).rejects.toThrow(
+        /dimensiones|chica/i,
+      );
+    });
+
+    it('acepta una foto justo en el mínimo', async () => {
+      await expect(service.guardar(png(320, 320))).resolves.toBeDefined();
+    });
+
+    it('acepta una foto de 48 megapíxeles (una cámara de celular)', async () => {
+      // 8000×6000 es el tamaño típico de un celular de 48 Mpx. El tope no debe
+      // rechazar la foto que la gente realmente saca.
+      const guardada = await service.guardar(png(8000, 6000));
+      expect(guardada.tipo).toBe('image/png');
+    });
+
+    it('rechaza una imagen con más píxeles de los permitidos', async () => {
+      await expect(service.guardar(png(8000, 7000))).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('no deja archivo en disco cuando rechaza por dimensiones', async () => {
+      await expect(service.guardar(png(319, 400))).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      const base = join(scratch, 'var', 'uploads');
+      const archivos = existsSync(base) ? await readdir(base) : [];
+      expect(archivos).toHaveLength(0);
+    });
   });
 
   it('genera un nombre distinto en cada guardado', async () => {

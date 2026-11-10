@@ -442,10 +442,23 @@ describe('Lapidas (e2e)', () => {
   });
 
   describe('POST /lapidas/:id/foto (S8)', () => {
-    const PNG = Buffer.from(
-      '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489',
-      'hex',
-    );
+    /**
+     * PNG de 640×480 construido a mano: firma + IHDR. Es una foto plausible
+     * (supera el mínimo de lado de D003) sin arrastrar un binario al repo.
+     */
+    function png(ancho: number, alto: number): Buffer {
+      const buffer = Buffer.alloc(33);
+      Buffer.from('89504e470d0a1a0a', 'hex').copy(buffer, 0);
+      buffer.writeUInt32BE(13, 8);
+      buffer.write('IHDR', 12, 'ascii');
+      buffer.writeUInt32BE(ancho, 16);
+      buffer.writeUInt32BE(alto, 20);
+      buffer[24] = 8;
+      buffer[25] = 6;
+      return buffer;
+    }
+
+    const PNG = png(640, 480);
     const GIF = Buffer.from('474946383961', 'hex');
 
     /** Crea una lápida propia y devuelve su id. */
@@ -502,6 +515,34 @@ describe('Lapidas (e2e)', () => {
         .set('Cookie', cookie)
         .field('foto', 'esto-no-es-un-archivo')
         .expect(400);
+    });
+
+    it('rechaza una foto por debajo del tamaño mínimo (D003)', async () => {
+      const id = await crearLapida();
+
+      const rechazo = await request(app.getHttpServer())
+        .post(`/lapidas/${id}/foto`)
+        .set('Cookie', cookie)
+        .attach('foto', png(200, 150), 'chica.png')
+        .expect(400);
+
+      // El mensaje tiene que decir por qué: un 400 pelado no le sirve a nadie.
+      expect(rechazo.body.message).toMatch(/demasiado chica/i);
+      // Y la lápida no puede quedar con una foto a medias.
+      const sinFoto = await request(app.getHttpServer()).get(`/lapidas/${id}`);
+      expect(sinFoto.body.fotoUrl).toBe('');
+    });
+
+    it('rechaza una foto con más píxeles de los permitidos (D003)', async () => {
+      const id = await crearLapida();
+
+      const rechazo = await request(app.getHttpServer())
+        .post(`/lapidas/${id}/foto`)
+        .set('Cookie', cookie)
+        .attach('foto', png(9000, 9000), 'enorme.png')
+        .expect(400);
+
+      expect(rechazo.body.message).toMatch(/demasiados píxeles/i);
     });
 
     it('404 en lápida inexistente y 403 en lápida ajena', async () => {

@@ -5,7 +5,7 @@
 | Capa | Comando | Cobertura |
 |---|---|---|
 | Backend unitario | `pnpm --filter backend run test` | Servicios y controladores |
-| Backend HTTP + MongoDB | `pnpm --filter backend run test:e2e` | CRUD, validación, `404` y coronas |
+| Backend HTTP + MongoDB | `pnpm --filter backend run test:e2e` | CRUD, validación, `404`, coronas y límites de dimensiones al subir fotos |
 | Backend compilación | `pnpm --filter backend run build` | TypeScript, Nest y esquemas Mongoose |
 | Frontend unitario | `pnpm --filter frontend run test` | Cliente HTTP, contratos de los módulos de API y login (Vitest) |
 | Frontend compilación | `pnpm --filter frontend run build` | TypeScript y bundle Vite |
