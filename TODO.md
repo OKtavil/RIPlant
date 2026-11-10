@@ -436,8 +436,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 
 ## Incidencias a corregir (Pruebas 22/10/2026)
 
-> **Estado:** revisado contra el código en `edbd250` (2026-11-10). De las 18
-> incidencias, **10 están resueltas**, **2 parciales** y **6 abiertas**. Cada resuelta
+> **Estado:** revisado contra el código en `da1cd06` (2026-11-10). De las 18
+> incidencias, **11 están resueltas**, **2 parciales** y **5 abiertas**. Cada resuelta
 > lleva el commit o archivo que la cubre, para que nadie vuelva a "arreglar" algo que
 > ya funciona. Ojo: `[x]` significa *verificado en el código*, no *probado a mano* —
 > salvo donde la evidencia lo diga, no hubo humo con la base levantada.
@@ -478,8 +478,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 ### Usabilidad (Medio)
 - [ ] **J001** - Pantalla de ingreso: Agregar explicación/contexto para usuarios nuevos sobre qué es la aplicación y cómo usarla.
   **Abierta.** Verificado: `LoginPage` no tiene ninguna explicación de qué es R.I.Planta.
-- [ ] **R002** - Publicar lápida: Agregar vista previa de cómo quedará la imagen en la lápida antes de publicar.
-  **Abierta.** Verificado: no hay `URL.createObjectURL` ni equivalente en `PublicarPage`; la foto se elige a ciegas.
+- [x] **R002** - Publicar lápida: Agregar vista previa de cómo quedará la imagen en la lápida antes de publicar.
+  **Resuelto** — `da1cd06`. Al elegir la foto aparece una tarjeta con "ASÍ SE VA A VER" que reusa las clases de `GraveCard` (`.lapida__foto`, `.lapida__foto-img`, `.lapida__nombre`, `.lapida__epitafio`), así que muestra el diseño real y no una aproximación que se desincronice. Incluye el nombre y el epitafio que se están escribiendo, con placeholder mientras están vacíos. El object URL se crea en el manejador del `input` (no en un efecto: en StrictMode se duplicaría y un blob quedaría sin revocar) y se revoca al cambiar de foto y al desmontar.
 
 ### Interfaz / Diseño (Medio)
 - [ ] **J002** - Varias pantallas: Corregir espacios vacíos excesivos entre secciones del diseño.
