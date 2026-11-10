@@ -190,3 +190,55 @@ describe('E006 — el borrador de publicación no sobrevive a un cambio de sesi�
     expect(epitafio.value).toBe('')
   })
 })
+
+describe('J003 — una lápida recién publicada aparece en MI PERFIL', () => {
+  it('no depende de que el POST devuelva `duenio`', async () => {
+    vi.mocked(sesionesApi.actual).mockResolvedValue(sesion())
+    // `POST /lapidas` devuelve el documento crudo: sin `duenio`. Solo
+    // `GET /lapidas` lo enriquece, así que la lista local queda sin ese campo.
+    vi.mocked(lapidasApi.create).mockResolvedValue(
+      lapida({ id: 7, nombrePlanta: 'Aloe', autor: 'zombie', usuarioId: 'u1', duenio: undefined }),
+    )
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /^publicar$/i }))
+    // El select se puebla con las categorías, que llegan por red.
+    await screen.findByRole('option', { name: 'Suculentas' })
+    fireEvent.change(screen.getByLabelText(/nombre de la planta/i), {
+      target: { value: 'Aloe' },
+    })
+    fireEvent.change(screen.getByLabelText(/categoría/i), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText(/fecha de fallecimiento/i), {
+      target: { value: '2025-01-01' },
+    })
+    fireEvent.change(screen.getByLabelText(/causa de muerte/i), {
+      target: { value: 'Poca luz' },
+    })
+    fireEvent.change(screen.getByLabelText(/epitafio/i), { target: { value: 'Se fue' } })
+    fireEvent.click(screen.getByRole('button', { name: /publicar lápida/i }))
+
+    // Publicar vuelve a INICIO; desde ahí, al perfil propio.
+    fireEvent.click(await screen.findByRole('button', { name: /@zombie/i }))
+
+    expect(
+      await screen.findByRole('button', { name: /ver la lápida de aloe/i }),
+    ).toBeTruthy()
+  })
+})
+
+describe('E003 — ver lo que se publicó en otra sesión sin recargar la página', () => {
+  it('ACTUALIZAR vuelve a pedir las lápidas', async () => {
+    vi.mocked(lapidasApi.findAll)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([lapida({ id: 5, nombrePlanta: 'Helecho' })])
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /^actualizar$/i }))
+
+    expect(
+      await screen.findByRole('button', { name: /ver la lápida de helecho/i }),
+    ).toBeTruthy()
+  })
+})

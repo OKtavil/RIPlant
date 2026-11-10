@@ -1,7 +1,9 @@
 import { IconoCorona } from '../../../shared/ui/iconos'
+import { Boton } from '../../../shared/ui/Boton'
 import type { Category } from '../../categorias/model/categoria'
 import type { Session } from '../../sesiones/model/sesion'
 import type { Asesino, Grave } from '../model/lapida'
+import { esDuenio } from '../model/lapida'
 import { GraveCard, GraveCardNueva } from './GraveCard'
 import { AvisoAsesinos, ListaAsesinos } from './ListaAsesinos'
 
@@ -14,6 +16,9 @@ type Props = {
   onAbrir: (lapida: Grave) => void
   onCorona: (lapida: Grave) => void
   onPublicar: () => void
+  /** Vuelve a pedir las lápidas, para ver lo que publicó otra sesión (E003). */
+  onActualizar: () => void
+  actualizando: boolean
 }
 
 function nombreCategoria(categorias: Category[], id: number): string | undefined {
@@ -29,6 +34,8 @@ export function InicioPage({
   onAbrir,
   onCorona,
   onPublicar,
+  onActualizar,
+  actualizando,
 }: Props) {
   const salonDelHonor = [...lapidas].sort((a, b) => b.coronasCount - a.coronasCount).slice(0, 3)
 
@@ -37,6 +44,11 @@ export function InicioPage({
       <section className="feed">
         <div className="panel-oscuro">
           <h1 className="panel-oscuro__titulo">CEMENTERIO DE PLANTAS</h1>
+          {/* El slot derecho del panel ya existía (`space-between`): el botón
+              entra ahí sin tocar el layout de la grilla. */}
+          <Boton tamano="chico" onClick={onActualizar} disabled={actualizando}>
+            {actualizando ? 'ACTUALIZANDO…' : 'ACTUALIZAR'}
+          </Boton>
         </div>
 
         <div className="grilla grilla--tres">
@@ -47,7 +59,7 @@ export function InicioPage({
               categoria={nombreCategoria(categorias, lapida.categoriaId)}
               onAbrir={onAbrir}
               onCorona={onCorona}
-              propia={!!sesion && lapida.duenio?.username === sesion.username}
+              propia={esDuenio(lapida, sesion)}
             />
           ))}
           <GraveCardNueva texto="Publica tu lápida" onClick={onPublicar} />

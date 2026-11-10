@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import type { Grave } from '../model/lapida'
 import { PerfilPage } from './PerfilPage'
 
 vi.mock('./GraveCard', () => ({
@@ -71,5 +72,28 @@ describe('PerfilPage (S4)', () => {
 
     const stat = document.querySelector('.perfil__stat--insignia')!
     expect(stat.className).not.toContain('perfil__stat--obtenida')
+  })
+
+  it('lista una lápida propia recién publicada, aunque el POST no traiga `duenio`', () => {
+    // `POST /lapidas` devuelve el documento crudo; `duenio` solo lo agrega
+    // `GET /lapidas`. Filtrar por `duenio.username` escondía la lápida recién
+    // publicada del perfil de su dueño hasta recargar (J003).
+    const recienPublicada: Grave = {
+      id: 42,
+      nombrePlanta: 'Aloe',
+      epitafio: 'Se fue',
+      fechaFallecimiento: '2025-01-01',
+      fechaPublicacion: '2025-01-02',
+      autor: 'jardinero',
+      categoriaId: 1,
+      causaMuerte: 'Poca luz',
+      fotoUrl: '',
+      coronasCount: 0,
+      usuarioId: 'u1',
+    }
+
+    render(<PerfilPage {...base} lapidas={[recienPublicada]} />)
+
+    expect(screen.getByTestId('lapida-42')).toBeTruthy()
   })
 })

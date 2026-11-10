@@ -35,6 +35,7 @@ export default function App() {
   const [errorAsesinos, setErrorAsesinos] = useState('')
   const [sesion, setSesion] = useState<Session | null>(null)
   const [cargando, setCargando] = useState(true)
+  const [actualizando, setActualizando] = useState(false)
   const [aviso, setAviso] = useState('')
   // Lápida esperando confirmación de borrado (E004). `null` = no hay modal.
   const [lapidaAConfirmar, setLapidaAConfirmar] = useState<Grave | null>(null)
@@ -149,6 +150,36 @@ export default function App() {
     }
 
     navegar(rutaDeVista('inicio'))
+  }
+
+  /**
+   * Vuelve a pedir el cementerio (E003). Sin polling ni SSE, esta es la forma
+   * de ver lo que publicó otra sesión sin recargar la página entera: la lista
+   * local solo conoce lo que este navegador publicó o borró.
+   */
+  async function refrescarLapidas() {
+    setActualizando(true)
+    try {
+      const lapidasCargadas = await lapidasApi.findAll()
+      setLapidas(lapidasCargadas)
+      setAviso('')
+    } catch (fallo) {
+      setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo actualizar el cementerio.')
+      setActualizando(false)
+      return
+    }
+
+    // El ranking se recarga aparte y best-effort: si falla, el cementerio ya
+    // está actualizado y avisar "no se pudo actualizar" sería mentir.
+    try {
+      const ranking = await lapidasApi.asesinos()
+      setAsesinos(ranking)
+      setErrorAsesinos('')
+    } catch {
+      // El aviso del ranking ya se muestra en su propia sección.
+    } finally {
+      setActualizando(false)
+    }
   }
 
   async function darCorona(lapida: Grave) {
@@ -318,6 +349,8 @@ export default function App() {
               onAbrir={abrirDetalle}
               onCorona={(l) => void darCorona(l)}
               onPublicar={() => irAVista('publicar')}
+              onActualizar={() => void refrescarLapidas()}
+              actualizando={actualizando}
             />
           )}
           {vista === 'ranking' && (

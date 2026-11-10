@@ -6,8 +6,9 @@ import { IconoInsignia, IconoPersona } from '../../../shared/ui/iconos'
 import { insigniaSuperviviente, type Session } from '../../sesiones/model/sesion'
 import type { Category } from '../../categorias/model/categoria'
 import type { Asesino, Grave } from '../model/lapida'
-import { puedeBorrar } from '../model/lapida'
+import { esDuenio, puedeBorrar } from '../model/lapida'
 import { GraveCard, GraveCardNueva } from './GraveCard'
+
 type Props = {
   sesion: Session | null
   lapidas: Grave[]
@@ -58,11 +59,9 @@ export function PerfilPage({
     setDescripcionPrevia(descripcionSesion)
     setDescripcion(descripcionSesion)
   }
-  // La identidad sale de `duenio.username` (resuelto por el backend contra
-  // `usuarios.username`), no de `autor`: ese es texto libre y puede no coincidir.
-  const propias = sesion
-    ? lapidas.filter((lapida) => lapida.duenio?.username === sesion.username)
-    : []
+  // La identidad sale de `usuarioId` (presente incluso en la lápida recién
+  // publicada) y, si falta, de `duenio.username`. Ver `esDuenio`.
+  const propias = lapidas.filter((lapida) => esDuenio(lapida, sesion))
   const coronasRecibidas = propias.reduce((total, lapida) => total + lapida.coronasCount, 0)
   const misMuertes = asesinos.find((a) => a.username === sesion?.username)?.muertes ?? 0
   const nombreCategoria = (id: number) => categorias.find((c) => c.id === id)?.nombre

@@ -91,19 +91,31 @@ export function nombreDelDuenio(lapida: Grave): string {
 type SesionParaPermisos = { username: string; rol: string; id?: string } | null
 
 /**
+ * ¿La lápida es de esta persona?
+ *
+ * Compara `usuarioId` **antes** que `duenio.username` porque `POST /lapidas`,
+ * `POST /lapidas/:id/corona` y `POST /lapidas/:id/revivir` devuelven el
+ * documento crudo, sin `duenio`: solo `GET /lapidas` lo enriquece. Mirar solo
+ * `duenio` hacía que una lápida recién publicada no apareciera en el perfil de
+ * su dueño hasta recargar la página (J003).
+ *
+ * No incluye el rol admin: ser admin no te vuelve dueño de la lápida, solo te
+ * da permiso para administrarla (`puedeBorrar`).
+ */
+export function esDuenio(lapida: Grave, sesion: SesionParaPermisos): boolean {
+  if (!sesion) return false
+  if (lapida.usuarioId && sesion.id && lapida.usuarioId === sesion.id) return true
+  return lapida.duenio?.username === sesion.username
+}
+
+/**
  * Espeja la regla del backend (`dueno-o-admin-lapida.middleware.ts`): el dueño
  * de la lápida o un admin. La UI la usa para mostrar u ocultar el control, pero
  * la decisión real la toma el backend: ocultar el botón no es un control de
  * seguridad.
- *
- * Compara contra `usuarioId` y no contra `duenio.username` porque `POST
- * /lapidas` y `POST /lapidas/:id/corona` **no devuelven `duenio`** (solo
- * `GET /lapidas` lo enriquece). Confiar solo en `duenio` haría desaparecer el
- * botón al publicar una lápida o al darle una corona.
  */
 export function puedeBorrar(lapida: Grave, sesion: SesionParaPermisos): boolean {
   if (!sesion) return false
   if (sesion.rol === 'admin') return true
-  if (lapida.usuarioId && sesion.id && lapida.usuarioId === sesion.id) return true
-  return lapida.duenio?.username === sesion.username
+  return esDuenio(lapida, sesion)
 }

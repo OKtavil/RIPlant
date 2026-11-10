@@ -3,6 +3,7 @@ import { Boton } from '../../../shared/ui/Boton'
 import { usuariosApi, type UsuarioPublico } from '../api/usuarios.api'
 import type { Category } from '../../categorias/model/categoria'
 import type { Asesino, Grave } from '../../lapidas/model/lapida'
+import { esDuenio } from '../../lapidas/model/lapida'
 import type { Session } from '../../sesiones/model/sesion'
 import { PerfilPage } from '../../lapidas/ui/PerfilPage'
 
@@ -52,7 +53,9 @@ export function PerfilesPage({
     }
 
     const esPropio = sesion?.id === usuario.id
-    const propias = lapidas.filter((l) => l.duenio?.username === usuario.username)
+    const propias = lapidas.filter((l) =>
+      esDuenio(l, { id: usuario.id, username: usuario.username, rol: usuario.rol }),
+    )
 
     return (
       <>
