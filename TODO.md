@@ -436,8 +436,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 
 ## Incidencias a corregir (Pruebas 22/10/2026)
 
-> **Estado:** revisado contra el código en `bb90034` (2026-11-10). De las 18
-> incidencias, **9 están resueltas**, **1 parcial** y **8 abiertas**. Cada resuelta
+> **Estado:** revisado contra el código en `edbd250` (2026-11-10). De las 18
+> incidencias, **10 están resueltas**, **2 parciales** y **6 abiertas**. Cada resuelta
 > lleva el commit o archivo que la cubre, para que nadie vuelva a "arreglar" algo que
 > ya funciona. Ojo: `[x]` significa *verificado en el código*, no *probado a mano* —
 > salvo donde la evidencia lo diga, no hubo humo con la base levantada.
@@ -465,15 +465,15 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 - [x] **E002** - Mensajes de error: Los mensajes de error permanecen en pantalla hasta recargar. Deben limpiarse al cambiar de pestaña o al modificar el formulario.
   **Resuelto** — `bb90034`. Corrección parcial del diagnóstico original: los errores por campo ya se limpiaban al escribir (`setErrores({...err, campo: ''})`); lo que quedaba pegado era el `aviso` global de `App.tsx`, que solo se borraba al acertar una acción. Ahora `irAVista`, `abrirDetalle` y `abrirAuth` lo limpian. Excepción deliberada: en `publicar` el aviso de foto fallida tiene que sobrevivir a la navegación, así que se limpia al empezar y se vuelve a setear si falla.
 - [ ] **E003** - Inicio (cementerio): Las lápidas nuevas no aparecen automáticamente. Debe actualizarse la lista sin necesidad de recargar la página.
-  **Abierta.** La lista se carga una vez y solo se actualiza tras borrar; publicar no la refresca.
+  **Parcial** — `edbd250`. El diagnóstico original ("publicar no refresca la lista") era falso: `publicar` prepende la lápida creada al estado desde `b015cde`, así que en INICIO aparece al instante. Lo que faltaba era ver lo de **otra sesión**: sin polling ni SSE, antes solo quedaba F5. Ahora hay un botón ACTUALIZAR en el panel del cementerio que vuelve a pedir `GET /lapidas`. Sigue sin ser automático entre sesiones: es bajo demanda. El bug real de propiedad (perfil) está en J003.
 - [x] **E004** - Borrar lápida: Agregar modal de confirmación antes de eliminar una lápida.
   **Resuelto** — `bb90034`. `pedirConfirmacionBorrado` abre `shared/ui/Confirmacion.tsx` (`role="dialog"`, `aria-modal`, foco inicial en CANCELAR, Escape y clic en el fondo cancelan) y el DELETE solo corre al confirmar. Modal propio en vez de `window.confirm`: el nativo bloquea el hilo, no se puede estilar y en móvil algunos navegadores lo suprimen.
 - [x] **E005** - Perfil de usuario: Corregir para que la descripción del perfil persista y pueda modificarse correctamente.
   **Resuelto** — `23a9d7e`. `descripcion` en schema e interface, `PUT /usuarios/:id/descripcion` con chequeo de dueño-o-admin y normalización de extremos, y edición en `PerfilesPage`.
 - [x] **E006** - Publicar lápida / Sesiones: Corregir para que el mensaje/epitafio no se conserve entre diferentes usuarios/perfiles al cambiar de sesión.
   **Resuelto** — `bb90034` (con una salvedad honesta). `PublicarPage` recibe `sesionId` y descarta el borrador cuando cambia, con ajuste de estado durante el render. Salvedad: el síntoma literal **no se reprodujo** en el flujo de una sola pestaña, porque `PublicarPage` se desmonta al salir y al entrar; la garantía existía por el desmontaje, no por contrato. Ahora es explícita y está cubierta por test, así que no depende de cómo el padre monte la pantalla.
-- [ ] **J003** - Perfil / Inicio: Las lápidas nuevas deben aparecer en el perfil y en el inicio sin recargar. Agregar botón de actualizar si es necesario.
-  **Abierta.** Misma raíz que E003.
+- [x] **J003** - Perfil / Inicio: Las lápidas nuevas deben aparecer en el perfil y en el inicio sin recargar. Agregar botón de actualizar si es necesario.
+  **Resuelto** — `edbd250`. El bug real era de identidad: `PerfilPage` y `PerfilesPage` filtraban por `duenio.username`, y `POST /lapidas` no devuelve `duenio` (solo `GET /lapidas` lo enriquece), así que la lápida recién publicada no aparecía en SU CEMENTERIO hasta recargar. Ahora las tres pantallas usan `esDuenio` (`usuarioId` primero, `duenio.username` de respaldo), la misma regla que ya usaba `puedeBorrar`. En INICIO ya andaba. Se agregó el botón ACTUALIZAR pedido acá, para lo de otras sesiones.
 
 ### Usabilidad (Medio)
 - [ ] **J001** - Pantalla de ingreso: Agregar explicación/contexto para usuarios nuevos sobre qué es la aplicación y cómo usarla.
