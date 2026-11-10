@@ -142,3 +142,24 @@ describe('PublicarPage', () => {
     expect(await screen.findByRole('alert')).toBeTruthy()
   })
 })
+
+describe('E006 — el borrador está atado a la identidad de la sesión', () => {
+  it('descarta lo escrito cuando cambia la sesión', () => {
+    const onPublicar = vi.fn()
+    const { rerender } = render(
+      <PublicarPage categorias={CATEGORIAS} sesionId="u1" onPublicar={onPublicar} />,
+    )
+    fireEvent.change(screen.getByLabelText(/epitafio/i), {
+      target: { value: 'Borrador privado de u1' },
+    })
+    fireEvent.change(screen.getByLabelText(/nombre de la planta/i), {
+      target: { value: 'Pepino' },
+    })
+
+    // Otra persona inicia sesión en el mismo navegador.
+    rerender(<PublicarPage categorias={CATEGORIAS} sesionId="u2" onPublicar={onPublicar} />)
+
+    expect((screen.getByLabelText(/epitafio/i) as HTMLTextAreaElement).value).toBe('')
+    expect((screen.getByLabelText(/nombre de la planta/i) as HTMLInputElement).value).toBe('')
+  })
+})

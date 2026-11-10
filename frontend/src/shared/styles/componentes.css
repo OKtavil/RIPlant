@@ -1003,3 +1003,47 @@
     padding: 20px;
   }
 }
+
+/* Confirmación modal (E004): borrar no se deshace, así que pide un paso más. */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--padding-pantalla);
+  background: rgba(21, 8, 0, 0.62);
+}
+
+.modal__caja {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-bloque);
+  padding: 20px;
+  background: var(--panel);
+  border: 3px solid var(--borde-panel);
+  border-radius: var(--radio-panel);
+  color: var(--crema);
+}
+
+.modal__titulo {
+  margin: 0;
+  font-family: var(--fuente-pixel);
+  font-size: 12px;
+  color: var(--amarillo);
+}
+
+.modal__texto {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.modal__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

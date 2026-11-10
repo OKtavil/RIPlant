@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ApiError } from '../shared/api/client'
 import { Aviso } from '../shared/ui/Aviso'
+import { Confirmacion } from '../shared/ui/Confirmacion'
 import { Nav, type Vista } from '../shared/ui/Nav'
 import { CategoriasPage } from '../features/categorias/ui/CategoriasPage'
 import { categoriasApi } from '../features/categorias/api/categorias.api'
@@ -35,6 +36,8 @@ export default function App() {
   const [sesion, setSesion] = useState<Session | null>(null)
   const [cargando, setCargando] = useState(true)
   const [aviso, setAviso] = useState('')
+  // Lápida esperando confirmación de borrado (E004). `null` = no hay modal.
+  const [lapidaAConfirmar, setLapidaAConfirmar] = useState<Grave | null>(null)
 
   // La URL es la fuente de verdad de qué se muestra. El detalle se resuelve
   // contra la lista ya cargada; si el id no está (link viejo, lápida borrada),
@@ -91,10 +94,19 @@ export default function App() {
     [lapidas],
   )
 
+  /**
+   * Abrir o cerrar una pantalla de autenticación limpia el aviso (E002): el
+   * error de la sesión anterior no tiene por qué seguir en pantalla.
+   */
+  function abrirAuth(destino: VistaAuth | null) {
+    setAviso('')
+    setVistaAuth(destino)
+  }
+
   async function ingresar(credenciales: Credenciales) {
     const actual = await sesionesApi.iniciar(credenciales)
     setSesion(actual)
-    setVistaAuth(null)
+    abrirAuth(null)
     navegar(rutaDeVista('inicio'))
   }
 
@@ -102,17 +114,21 @@ export default function App() {
   async function registrar(credenciales: Credenciales) {
     const actual = await sesionesApi.registrar(credenciales)
     setSesion(actual)
-    setVistaAuth(null)
+    abrirAuth(null)
     navegar(rutaDeVista('inicio'))
   }
 
   async function cerrarSesion() {
     await sesionesApi.cerrar()
     setSesion(null)
+    abrirAuth(null)
     navegar(rutaDeVista('inicio'))
   }
 
   async function publicar(input: CreateGraveInput, foto?: File) {
+    // Un aviso viejo no debe sobrevivir a una publicación nueva (E002). Si la
+    // foto falla, más abajo se vuelve a setear y ese sí tiene que quedar.
+    setAviso('')
     const creada = await lapidasApi.create(input)
     setLapidas((items) => [creada, ...items])
 
@@ -165,19 +181,39 @@ export default function App() {
     }
   }
 
-  async function borrarLapida(lapida: Grave) {
+  /**
+   * Primer paso del borrado (E004): abrir el modal. No se llama a la API acá.
+   * La firma sigue siendo `Promise<void>` para no tocar los tres llamadores.
+   */
+  async function pedirConfirmacionBorrado(lapida: Grave) {
+    setLapidaAConfirmar(lapida)
+  }
+
+  /** Segundo paso: el usuario confirmó en el modal. */
+  async function confirmarBorrado() {
+    const lapida = lapidaAConfirmar
+    if (!lapida) return
+    setLapidaAConfirmar(null)
     try {
       await lapidasApi.remove(lapida.id)
       setLapidas((items) => items.filter((item) => item.id !== lapida.id))
       // Si se borró la que estaba abierta, la URL apunta a algo que ya no
       // existe: se vuelve al inicio para no quedar en un detalle fantasma.
       if (detalleId === lapida.id) navegar(rutaDeVista('inicio'))
-      // Borrar cambia el ranking de asesinos: se recarga en vez de recalcularlo
-      // en cliente, que daría una cuenta distinta a la del backend.
-      const ranking = await lapidasApi.asesinos()
-      setAsesinos(ranking)
     } catch (fallo) {
       setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo borrar la lápida.')
+      return
+    }
+
+    // Borrar cambia el ranking de asesinos: se recarga en vez de recalcularlo
+    // en cliente, que daría una cuenta distinta a la del backend. Va aparte a
+    // propósito: si esta recarga falla, la lápida YA se borró y decir "no se
+    // pudo borrar" sería mentir.
+    try {
+      const ranking = await lapidasApi.asesinos()
+      setAsesinos(ranking)
+    } catch {
+      setAviso('La lápida se borró, pero no se pudo actualizar el ranking de asesinos.')
     }
   }
 
@@ -200,23 +236,34 @@ export default function App() {
   const vistaActiva: Vista | null = vistaAuth ? null : vista
 
   /** Navegar por el menú escribe la URL de esa vista. */
-  const irAVista = useCallback((destino: Vista) => navegar(rutaDeVista(destino)), [navegar])
+  const irAVista = useCallback(
+    (destino: Vista) => {
+      // Cambiar de pestaña descarta los errores de la anterior (E002); el aviso
+      // global no tiene por qué seguir en una pantalla donde ya no aplica.
+      setAviso('')
+      navegar(rutaDeVista(destino))
+    },
+    [navegar],
+  )
   /** Abrir una lápida escribe la URL del detalle. */
   const abrirDetalle = useCallback(
-    (lapida: Grave) => navegar(rutaDeDetalle(lapida.id)),
+    (lapida: Grave) => {
+      setAviso('')
+      navegar(rutaDeDetalle(lapida.id))
+    },
     [navegar],
   )
 
   if (vistaAuth) {
     return (
       <div className="pantalla">
-        <Nav activa={null} items={[]} onNavegar={() => setVistaAuth(null)} />
-        {vistaAuth === 'login' && <LoginPage onIngresar={ingresar} onNavegar={setVistaAuth} />}
+        <Nav activa={null} items={[]} onNavegar={() => abrirAuth(null)} />
+        {vistaAuth === 'login' && <LoginPage onIngresar={ingresar} onNavegar={abrirAuth} />}
         {vistaAuth === 'registro' && (
-          <RegistroPage onRegistrar={registrar} onNavegar={setVistaAuth} />
+          <RegistroPage onRegistrar={registrar} onNavegar={abrirAuth} />
         )}
-        {vistaAuth === 'recuperar' && <RecuperarPage onNavegar={setVistaAuth} />}
-        {vistaAuth === 'restablecer' && <RestablecerPage onNavegar={setVistaAuth} />}
+        {vistaAuth === 'recuperar' && <RecuperarPage onNavegar={abrirAuth} />}
+        {vistaAuth === 'restablecer' && <RestablecerPage onNavegar={abrirAuth} />}
       </div>
     )
   }
@@ -238,7 +285,7 @@ export default function App() {
               </button>
             </>
           ) : (
-            <button className="nav__item" onClick={() => setVistaAuth('login')}>
+            <button className="nav__item" onClick={() => abrirAuth('login')}>
               INICIAR SESIÓN
             </button>
           )
@@ -255,7 +302,7 @@ export default function App() {
           categorias={categorias}
           sesion={sesion}
           onCorona={darCorona}
-          onBorrar={borrarLapida}
+          onBorrar={pedirConfirmacionBorrado}
           onRevivir={revivirLapida}
           onVolver={() => irAVista('inicio')}
         />
@@ -282,7 +329,13 @@ export default function App() {
               onAbrir={abrirDetalle}
             />
           )}
-          {vista === 'publicar' && <PublicarPage categorias={categorias} onPublicar={publicar} />}
+          {vista === 'publicar' && (
+            <PublicarPage
+              categorias={categorias}
+              sesionId={sesion?.id ?? null}
+              onPublicar={publicar}
+            />
+          )}
           {vista === 'perfil' && (
             <PerfilPage
               sesion={sesion}
@@ -291,8 +344,8 @@ export default function App() {
               asesinos={asesinos}
               onAbrir={abrirDetalle}
               onPublicar={() => irAVista('publicar')}
-              onBorrar={borrarLapida}
-              onIniciarSesion={() => setVistaAuth('login')}
+              onBorrar={pedirConfirmacionBorrado}
+              onIniciarSesion={() => abrirAuth('login')}
               onActualizarDescripcion={async (descripcion) => {
                 if (!sesion) return
                 const actualizado = await usuariosApi.actualizarDescripcion(sesion.id, descripcion)
@@ -308,7 +361,7 @@ export default function App() {
               asesinos={asesinos}
               onAbrir={abrirDetalle}
               onPublicar={() => irAVista('publicar')}
-              onBorrar={borrarLapida}
+              onBorrar={pedirConfirmacionBorrado}
               onIrAMiPerfil={() => irAVista('perfil')}
             />
           )}
@@ -329,6 +382,18 @@ export default function App() {
         <button className="nav__item" onClick={() => irAVista('categorias')}>
           ADMINISTRAR CATEGORÍAS
         </button>
+      )}
+
+      {lapidaAConfirmar && (
+        <Confirmacion
+          titulo="BORRAR LÁPIDA"
+          etiquetaConfirmar="BORRAR"
+          onConfirmar={() => void confirmarBorrado()}
+          onCancelar={() => setLapidaAConfirmar(null)}
+        >
+          ¿Borrar la lápida de «{lapidaAConfirmar.nombrePlanta}»? Esta acción no se puede
+          deshacer.
+        </Confirmacion>
       )}
     </div>
   )

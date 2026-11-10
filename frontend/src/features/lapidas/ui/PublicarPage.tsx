@@ -31,6 +31,11 @@ function fechaLocalISO(fecha: Date): string {
 type Props = {
   categorias: Category[]
   /**
+   * Identidad de la sesión actual. El borrador se descarta cuando cambia (E006):
+   * el formulario no puede mostrarle a una persona lo que escribió otra.
+   */
+  sesionId?: string | null
+  /**
    * Publica la lápida. El segundo argumento es la foto elegida, si hay: el
    * padre la sube después de crear la lápida, porque el endpoint de la foto
    * cuelga del `id` que devuelve el `POST /lapidas`.
@@ -38,21 +43,51 @@ type Props = {
   onPublicar: (input: CreateGraveInput, foto?: File) => Promise<void>
 }
 
-export function PublicarPage({ categorias, onPublicar }: Props) {
-  const [nombrePlanta, setNombrePlanta] = useState('')
-  const [categoriaId, setCategoriaId] = useState('')
-  const [fechaFallecimiento, setFechaFallecimiento] = useState('')
-  const [causaMuerte, setCausaMuerte] = useState('')
-  const [epitafio, setEpitafio] = useState('')
-  const [foto, setFoto] = useState<File | undefined>(undefined)
+/** Todo lo que la persona escribió y todavía no publicó. */
+type Borrador = {
+  nombrePlanta: string
+  categoriaId: string
+  fechaFallecimiento: string
+  causaMuerte: string
+  epitafio: string
+  foto?: File
+}
+
+const BORRADOR_VACIO: Borrador = {
+  nombrePlanta: '',
+  categoriaId: '',
+  fechaFallecimiento: '',
+  causaMuerte: '',
+  epitafio: '',
+  foto: undefined,
+}
+
+export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props) {
+  const [borrador, setBorrador] = useState<Borrador>(BORRADOR_VACIO)
+  // La sesión dueña del borrador. Si cambia, lo escrito se descarta (E006).
+  const [sesionDelBorrador, setSesionDelBorrador] = useState<string | null>(sesionId)
   const [enviando, setEnviando] = useState(false)
   const [errores, setErrores] = useState<Record<string, string>>({})
   // Se captura al montar: el formulario no vive más de un día, y así el render
   // no llama a `new Date()` (función impura) en cada re-render.
   const [hoy] = useState(() => fechaLocalISO(new Date()))
 
+  // Ajuste de estado durante el render, el patrón que recomienda React para
+  // reaccionar a un cambio de props: se aplica antes de pintar, sin el frame
+  // con los datos viejos que dejaría un `useEffect`.
+  if (sesionId !== sesionDelBorrador) {
+    setSesionDelBorrador(sesionId)
+    setBorrador(BORRADOR_VACIO)
+    setErrores({})
+  }
+
+  function actualizar<K extends keyof Borrador>(campo: K, valor: Borrador[K]) {
+    setBorrador((previo) => ({ ...previo, [campo]: valor }))
+  }
+
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
+    const { nombrePlanta, categoriaId, fechaFallecimiento, causaMuerte, epitafio, foto } = borrador
     const nuevosErrores: Record<string, string> = {}
 
     // Se chequea antes de crear la lápida: si el archivo no entra, no tiene
@@ -114,7 +149,7 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
           ayuda="JPEG, PNG o WebP, hasta 5 MB. Se sube después de publicar."
           error={errores.foto}
           onChange={(e) => {
-            setFoto(e.target.files?.[0])
+            actualizar('foto', e.target.files?.[0])
             setErrores((err) => ({ ...err, foto: '' }))
           }}
         />
@@ -125,10 +160,10 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
           placeholder="Ej. Pepino"
           maxLength={40}
           required
-          value={nombrePlanta}
+          value={borrador.nombrePlanta}
           error={errores.nombrePlanta}
           onChange={(e) => {
-            setNombrePlanta(e.target.value)
+            actualizar('nombrePlanta', e.target.value)
             setErrores((err) => ({ ...err, nombrePlanta: '' }))
           }}
         />
@@ -138,10 +173,10 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
             id="categoria"
             etiqueta="Categoría"
             required
-            value={categoriaId}
+            value={borrador.categoriaId}
             error={errores.categoriaId}
             onChange={(e) => {
-              setCategoriaId(e.target.value)
+              actualizar('categoriaId', e.target.value)
               setErrores((err) => ({ ...err, categoriaId: '' }))
             }}
           >
@@ -162,10 +197,10 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
             required
             min={FECHA_MINIMA}
             max={hoy}
-            value={fechaFallecimiento}
+            value={borrador.fechaFallecimiento}
             error={errores.fechaFallecimiento}
             onChange={(e) => {
-              setFechaFallecimiento(e.target.value)
+              actualizar('fechaFallecimiento', e.target.value)
               setErrores((err) => ({ ...err, fechaFallecimiento: '' }))
             }}
           />
@@ -177,10 +212,10 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
           placeholder="Ej. exceso de agua"
           maxLength={80}
           required
-          value={causaMuerte}
+          value={borrador.causaMuerte}
           error={errores.causaMuerte}
           onChange={(e) => {
-            setCausaMuerte(e.target.value)
+            actualizar('causaMuerte', e.target.value)
             setErrores((err) => ({ ...err, causaMuerte: '' }))
           }}
           ayuda="El prototipo no pedía este campo, pero la API lo exige para publicar."
@@ -193,10 +228,10 @@ export function PublicarPage({ categorias, onPublicar }: Props) {
           rows={4}
           maxLength={280}
           required
-          value={epitafio}
+          value={borrador.epitafio}
           error={errores.epitafio}
           onChange={(e) => {
-            setEpitafio(e.target.value)
+            actualizar('epitafio', e.target.value)
             setErrores((err) => ({ ...err, epitafio: '' }))
           }}
         />
