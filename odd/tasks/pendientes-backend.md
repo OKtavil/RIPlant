@@ -817,12 +817,27 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   faltantes y siga siendo idempotente. Verificado que **E6 había validado explícitamente
   "id 1 y 2 intactos, sin renombrar"** como si fuera correcto: era el bug, verificado.
 
-  **Verificación observada:** unit 99/99. La semántica de `$set` versus `$setOnInsert` se
-  comprobó aislada para el caso que importa (documento preexistente → `$set` gana:
-  `Descuido` → `Suculentas`; con `$setOnInsert` solo, `Descuido` sobrevive).
-  **Sin verificar contra Mongo real:** el contenedor no está corriendo en esta WSL
-  (Docker Desktop sin integración), así que el humo en vivo que hizo E5/E6 sobre base
-  pre-sembrada **queda pendiente de repetir** cuando Mongo esté disponible.
+  **Verificación observada (2026-11-10):** unit **102/102**, e2e **47/47** (5 suites,
+  bases aisladas `riplanta_e2e_*`; la base de desarrollo no se toca). La semántica de
+  `$set` versus `$setOnInsert` se comprobó aislada para el caso que importa (documento
+  preexistente → `$set` gana: `Descuido` → `Suculentas`; con `$setOnInsert` solo,
+  `Descuido` sobrevive).
+
+  **Humo en vivo contra Mongo real** (el que antes quedaba pendiente). Base scratch
+  `riplanta_humo_categorias` **pre-sembrada con el vocabulario viejo**
+  (`[{id:1,"Descuido"},{id:2,"Exceso de cariño"}]`, 0 lápidas) —el camino real de una base
+  ya levantada, no una base limpia—, backend en `:3999` con uploads en `/tmp`. Resultado
+  tras el boot:
+  - `GET /categorias` → los 6 tipos de planta, con `Descuido` y `Exceso de cariño`
+    reemplazados por `Suculentas` y `Cactus`. Eso prueba el `$set`, no la teoría.
+  - 6 categorías exactas, sin duplicados de `id`.
+  - 10 lápidas, **0 referencias a categorías inexistentes**, cada planta en su tipo
+    (`Cactusus Maximus`→Cactus, `Fernanda`/`Helecho *`→Helechos, `Echeveria Rebelde`→
+    Suculentas, `Tomatera`/`Cilantro`/`Orégano`→Aromáticas, `Jazmín Desaparecido`→
+    Trepadoras, `Roble Soñador`→Árboles) y los 6 tipos usados.
+  - **Segundo arranque idempotente:** 6 categorías y 10 lápidas, sin errores ni duplicados.
+  - Base scratch borrada y temporales eliminados; la base de desarrollo quedó intacta
+    (6 categorías, 40 lápidas).
 
   **Documentación:** se agregan **D-014** (categoría = tipo de planta) y **D-015** (`$set`
   para que el seed corrija, no solo inserte) en `docs/decisions.md`. (Corrección: una
