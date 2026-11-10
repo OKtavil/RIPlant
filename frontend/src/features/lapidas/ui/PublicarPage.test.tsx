@@ -46,6 +46,18 @@ function archivo(nombre = 'planta.png', bytes = 'bytes', tipo = 'image/png') {
   return new File([bytes], nombre, { type: tipo })
 }
 
+/**
+ * jsdom no implementa `URL.createObjectURL`. Se stubea para poder verificar
+ * tanto el `src` de la vista previa como la liberación del object URL.
+ */
+function stubObjectUrl() {
+  const crear = vi.fn(() => 'blob:vista-previa')
+  const revocar = vi.fn()
+  URL.createObjectURL = crear
+  URL.revokeObjectURL = revocar
+  return { crear, revocar }
+}
+
 describe('PublicarPage', () => {
   it('ya no muestra el aviso de que la subida no está disponible', () => {
     render(<PublicarPage categorias={CATEGORIAS} onPublicar={vi.fn()} />)
@@ -161,5 +173,43 @@ describe('E006 — el borrador está atado a la identidad de la sesión', () => 
 
     expect((screen.getByLabelText(/epitafio/i) as HTMLTextAreaElement).value).toBe('')
     expect((screen.getByLabelText(/nombre de la planta/i) as HTMLInputElement).value).toBe('')
+  })
+})
+
+describe('R002 — vista previa de la foto en la lápida', () => {
+  it('muestra la foto elegida dentro del marco de la tarjeta real', async () => {
+    stubObjectUrl()
+    render(<PublicarPage categorias={CATEGORIAS} onPublicar={vi.fn()} />)
+
+    fireEvent.change(screen.getByLabelText(/foto/i), {
+      target: { files: [archivo('planta.png')] },
+    })
+
+    const previa = await screen.findByAltText(/vista previa de la foto elegida/i)
+    expect(previa.getAttribute('src')).toBe('blob:vista-previa')
+    // Mismo marco que `GraveCard`, no un thumbnail aparte: si cambia el diseño
+    // de la tarjeta, la previa cambia con él.
+    expect(previa.className).toContain('lapida__foto-img')
+    expect(previa.parentElement?.className).toContain('lapida__foto')
+    expect(screen.getByText(/así se va a ver/i)).toBeTruthy()
+  })
+
+  it('libera el object URL al cambiar de foto y al desmontar', async () => {
+    const { revocar } = stubObjectUrl()
+    const { unmount } = render(<PublicarPage categorias={CATEGORIAS} onPublicar={vi.fn()} />)
+
+    fireEvent.change(screen.getByLabelText(/foto/i), {
+      target: { files: [archivo('primera.png')] },
+    })
+    await screen.findByAltText(/vista previa de la foto elegida/i)
+    expect(revocar).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByLabelText(/foto/i), {
+      target: { files: [archivo('segunda.png')] },
+    })
+    await waitFor(() => expect(revocar).toHaveBeenCalledTimes(1))
+
+    unmount()
+    expect(revocar).toHaveBeenCalledTimes(2)
   })
 })

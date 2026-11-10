@@ -1047,3 +1047,22 @@
   justify-content: flex-end;
   gap: 10px;
 }
+
+/* Vista previa de la foto al publicar (R002). Reusa `.lapida__foto*`, así que
+   acá solo se ubica la tarjeta; el marco lo define la tarjeta real. */
+.vista-previa {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vista-previa__titulo {
+  font-family: var(--fuente-pixel);
+  font-size: 8px;
+  color: var(--texto-muted);
+}
+
+.vista-previa__lapida {
+  width: 170px;
+}

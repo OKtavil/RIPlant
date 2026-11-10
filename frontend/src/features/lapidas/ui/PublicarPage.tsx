@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
@@ -51,6 +51,8 @@ type Borrador = {
   causaMuerte: string
   epitafio: string
   foto?: File
+  /** Object URL de `foto`, solo para la vista previa (R002). */
+  fotoUrl: string | null
 }
 
 const BORRADOR_VACIO: Borrador = {
@@ -60,6 +62,7 @@ const BORRADOR_VACIO: Borrador = {
   causaMuerte: '',
   epitafio: '',
   foto: undefined,
+  fotoUrl: null,
 }
 
 export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props) {
@@ -71,6 +74,31 @@ export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props)
   // Se captura al montar: el formulario no vive más de un día, y así el render
   // no llama a `new Date()` (función impura) en cada re-render.
   const [hoy] = useState(() => fechaLocalISO(new Date()))
+  /**
+   * Último object URL vivo. Se crea en el manejador del `input`, no en un
+   * efecto: crear el blob durante el render lo duplicaría en StrictMode y uno
+   * de los dos quedaría sin revocar.
+   */
+  const urlViva = useRef<string | null>(null)
+
+  useEffect(
+    () => () => {
+      if (urlViva.current) URL.revokeObjectURL(urlViva.current)
+    },
+    [],
+  )
+
+  /**
+   * Cambia la foto y su vista previa. Revoca el blob anterior en el acto: sin
+   * esto, cada foto elegida dejaría uno retenido hasta desmontar el formulario.
+   */
+  function elegirFoto(archivo: File | undefined) {
+    if (urlViva.current) URL.revokeObjectURL(urlViva.current)
+    const url = archivo ? URL.createObjectURL(archivo) : null
+    urlViva.current = url
+    setBorrador((previo) => ({ ...previo, foto: archivo, fotoUrl: url }))
+    setErrores((err) => ({ ...err, foto: '' }))
+  }
 
   // Ajuste de estado durante el render, el patrón que recomienda React para
   // reaccionar a un cambio de props: se aplica antes de pintar, sin el frame
@@ -148,11 +176,32 @@ export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props)
           accept="image/jpeg,image/png,image/webp"
           ayuda="JPEG, PNG o WebP, hasta 5 MB. Se sube después de publicar."
           error={errores.foto}
-          onChange={(e) => {
-            actualizar('foto', e.target.files?.[0])
-            setErrores((err) => ({ ...err, foto: '' }))
-          }}
+          onChange={(e) => elegirFoto(e.target.files?.[0])}
         />
+
+        {/* R002: la foto se elige a ciegas si no se muestra cómo entra en la
+            tarjeta. Se reusan las clases de `GraveCard` para que la previa sea
+            el diseño real y no una aproximación que se desincronice. */}
+        {borrador.fotoUrl && (
+          <figure className="vista-previa">
+            <figcaption className="vista-previa__titulo">ASÍ SE VA A VER</figcaption>
+            <div className="lapida vista-previa__lapida">
+              <div className="lapida__foto lapida__foto--alta">
+                <img
+                  className="lapida__foto-img"
+                  src={borrador.fotoUrl}
+                  alt="Vista previa de la foto elegida"
+                />
+              </div>
+              <p className="lapida__nombre">
+                “{borrador.nombrePlanta.trim() || 'Nombre de la planta'}”
+              </p>
+              <p className="lapida__epitafio">
+                {borrador.epitafio.trim() || 'Tu epitafio acá'}
+              </p>
+            </div>
+          </figure>
+        )}
 
         <CampoTexto
           id="nombre"
