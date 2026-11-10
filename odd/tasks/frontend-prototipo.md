@@ -337,6 +337,16 @@ copia (`401`, `403`, `429`, `400`, `404`, red).
   - Los datos de prueba se revirtieron: cementerio y categorías volvieron a su estado
     inicial.
 
+  > **Corrección (2026-11-10):** el valor observado arriba para `GET /categorias`
+  > (`[{id:1,"Descuido"},{id:2,"Exceso de cariño"}]`) **quedó obsoleto y era incorrecto
+  > desde el principio**. `Descuido` y `Exceso de cariño` son causas de muerte, no tipos
+  > de planta: la categoría clasifica qué era la planta y la causa vive solo en
+  > `causaMuerte`. El seed se corrigió a `Suculentas`, `Cactus`, `Helechos`,
+  > `Aromáticas`, `Trepadoras`, `Árboles` (ids 1-6) en `ba74fd3`, con la decisión
+  > documentada en `docs/decisions.md` (D-014). La observación original se conserva
+  > porque es un registro de lo que la API devolvía ese día; lo que ya no vale es usarla
+  > como contrato. El front no se rompe con el cambio: solo consume `{ id, nombre }`.
+
 - **E7 (2026-10-19, verificación de render):** `pnpm build` (tsc -b && vite build) y
   `pnpm lint` (oxlint) pasan. Renderizado SSR de las 10 pantallas con `react-dom/server`
   y un loader de Vite, alimentado con la API real: **10/10** pantallas contienen la copia

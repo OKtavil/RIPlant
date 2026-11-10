@@ -431,3 +431,60 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 | 8 | Borrar categoría en uso | Paso 9 |
 | 9 | ¿Solo admin administra categorías? | Resuelto: middleware + rol admin (Fase 3) |
 | 1 | Dónde se guarda la foto | Fase 2 |
+
+---
+
+## Incidencias a corregir (Pruebas 22/10/2026)
+
+> **Estado:** revisado contra el código en `3c03252` (2026-11-10). De las 18
+> incidencias, **6 están resueltas**, **1 parcial** y **11 abiertas**. Cada resuelta
+> lleva el commit o archivo que la cubre, para que nadie vuelva a "arreglar" algo que
+> ya funciona. Ojo: `[x]` significa *verificado en el código*, no *probado a mano* —
+> salvo donde la evidencia lo diga, no hubo humo con la base levantada.
+> **Supervisado por:** Octavio Castillón Cortés
+
+### Validación de datos (Crítico)
+- [x] **D001** - Formularios (registro, publicar lápida, comentarios): Agregar límites de longitud y validación suficiente tanto en frontend como backend. Los campos de texto aceptan cualquier contenido.
+  **Resuelto** — `5fbfbab` + `3c03252`. Backend: `create-lapida.dto.ts` recorta con `@Transform` y limita `nombrePlanta` a 40, `epitafio` a 280 y `causaMuerte` a 80; `create-comentario.dto.ts` a 500; `crear-usuario.dto.ts` a 50. Frontend: `maxLength` en los formularios.
+- [ ] **D003** - Subida de foto (publicar lápida): Validar tipo, extensión y calidad de la imagen **en el servidor**. Actualmente solo hay validación en frontend.
+  **Parcial** — tipo y extensión **sí** se validan en el servidor: `almacenamiento-disco.service.ts:103` detecta el tipo por *magic bytes* con `file-type` y rechaza lo que no sea JPEG/PNG/WebP (ignora el `mimetype` y el nombre que manda el cliente), `lapidas.controller.ts:109` aplica el tope de 5 MB y el nombre lo decide el servidor. **Falta la calidad:** no se validan dimensiones ni resolución.
+- [x] **E001** - Publicar lápida (fecha de fallecimiento): Limitar el año a un rango razonable (no posterior a la fecha actual ni demasiado antiguo).
+  **Resuelto** — `5fbfbab`. `fecha-fallecimiento.validator.ts` exige un instante entre 1900-01-01 y hoy, y se combina con `@IsDateString` para el mensaje de formato.
+- [x] **V001** - Usuarios (registro y datos): Agregar límite de caracteres y validación de cadenas en todos los campos de texto del usuario.
+  **Resuelto** — `crear-usuario.dto.ts`: `username` con `@MaxLength(50)` y `@Matches(/\S/)` (rechaza solo espacios, que antes daban 500), contraseña entre 8 y 72 (bcrypt trunca en 72 bytes y no lo avisa).
+- [x] **V002** - Formularios: Corregir mensajes de validación para que sean propios de la aplicación (no usar validaciones nativas del navegador cuando sean incorrectas o confusas).
+  **Resuelto** — `6cfcc22`. Errores por campo vía `Campo.tsx` y `leerMensajeError()` en el cliente, con `noValidate` en los cuatro formularios: el `required` que queda es pista de accesibilidad, no validación nativa del navegador.
+
+### Rendimiento (Alto)
+- [ ] **D002** - Toda la aplicación: Optimizar las solicitudes y la carga de páginas. Las peticiones son lentas de forma constante.
+  **Abierta.** Sin diagnóstico todavía: falta medir si el costo está en el backend, en los re-renders del front o en el arranque en frío.
+
+### Funcional (Alto)
+- [x] **F001** - Perfil (botones según propietario): El botón "Agregar lápida" y el botón "Eliminar" solo deben mostrarse cuando el perfil es propio del usuario autenticado. Actualmente se muestran también en perfiles ajenos.
+  **Resuelto** — `PerfilesPage.tsx:54`: `esPropio` gatea "Agregar lápida", el botón de editar y pasa `soloLectura` a la lista de lápidas.
+- [ ] **E002** - Mensajes de error: Los mensajes de error permanecen en pantalla hasta recargar. Deben limpiarse al cambiar de pestaña o al modificar el formulario.
+  **Abierta.** Verificado: `errores` es estado local de cada página y ninguna lo limpia al cambiar de vista ni al escribir en el campo.
+- [ ] **E003** - Inicio (cementerio): Las lápidas nuevas no aparecen automáticamente. Debe actualizarse la lista sin necesidad de recargar la página.
+  **Abierta.** La lista se carga una vez y solo se actualiza tras borrar; publicar no la refresca.
+- [ ] **E004** - Borrar lápida: Agregar modal de confirmación antes de eliminar una lápida.
+  **Abierta.** Verificado: `App.tsx:168` (`borrarLapida`) llama al DELETE directo, sin ninguna confirmación. El borrado de comentarios sí usa `window.confirm`; la lápida no tiene ni eso.
+- [x] **E005** - Perfil de usuario: Corregir para que la descripción del perfil persista y pueda modificarse correctamente.
+  **Resuelto** — `23a9d7e`. `descripcion` en schema e interface, `PUT /usuarios/:id/descripcion` con chequeo de dueño-o-admin y normalización de extremos, y edición en `PerfilesPage`.
+- [ ] **E006** - Publicar lápida / Sesiones: Corregir para que el mensaje/epitafio no se conserve entre diferentes usuarios/perfiles al cambiar de sesión.
+  **Abierta.** Verificado: `PublicarPage.tsx:42-47` guarda epitafio, causa, categoría y foto en `useState` sin reset al cambiar de sesión. Es estado de un usuario filtrándose a otro, no un detalle cosmético.
+- [ ] **J003** - Perfil / Inicio: Las lápidas nuevas deben aparecer en el perfil y en el inicio sin recargar. Agregar botón de actualizar si es necesario.
+  **Abierta.** Misma raíz que E003.
+
+### Usabilidad (Medio)
+- [ ] **J001** - Pantalla de ingreso: Agregar explicación/contexto para usuarios nuevos sobre qué es la aplicación y cómo usarla.
+  **Abierta.** Verificado: `LoginPage` no tiene ninguna explicación de qué es R.I.Planta.
+- [ ] **R002** - Publicar lápida: Agregar vista previa de cómo quedará la imagen en la lápida antes de publicar.
+  **Abierta.** Verificado: no hay `URL.createObjectURL` ni equivalente en `PublicarPage`; la foto se elige a ciegas.
+
+### Interfaz / Diseño (Medio)
+- [ ] **J002** - Varias pantallas: Corregir espacios vacíos excesivos entre secciones del diseño.
+  **Abierta.** No verificada en esta revisión: es visual y requiere mirar la pantalla, no el código.
+- [ ] **J004** - Inicio y Ranking: Alinear correctamente las publicaciones en ambas vistas.
+  **Abierta.** No verificada en esta revisión (visual).
+- [ ] **R001** - Inicio (Salón del Honor): Corregir colores de coronas y nombres para que coincidan con el estilo visual del resto de la página.
+  **Abierta.** No verificada en esta revisión (visual).

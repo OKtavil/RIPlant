@@ -824,8 +824,11 @@ Todas pendientes: este documento registra decisiones, no autoriza implementació
   (Docker Desktop sin integración), así que el humo en vivo que hizo E5/E6 sobre base
   pre-sembrada **queda pendiente de repetir** cuando Mongo esté disponible.
 
-  **Documentación:** se agregan D-012 (categoría = tipo de planta) y D-013 (`$set` para
-  que el seed corrija, no solo inserte) en `docs/decisions.md`. `odd/tasks/frontend-prototipo.md:327`
-  queda con el vocabulario viejo — es del otro actor y **no se toca desde acá**; su
-  corrección de nombre de categoría es alcance del front (el front solo muestra
-  `{ id, nombre }`, así que un nombre distinto no rompe su contrato).
+  **Documentación:** se agregan **D-014** (categoría = tipo de planta) y **D-015** (`$set`
+  para que el seed corrija, no solo inserte) en `docs/decisions.md`. (Corrección: una
+  versión previa de este párrafo las citaba como D-012/D-013, que ya estaban ocupadas por
+  otros temas.) `odd/tasks/frontend-prototipo.md:327` tenía el vocabulario viejo escrito
+  como contrato; **se corrigió con una nota** en `2026-11-10` que apunta a D-014 y a
+  `ba74fd3`, sin reescribir la observación histórica de E6 —el registro de lo que la API
+  devolvía ese día se conserva, lo que se invalida es usarlo como contrato—. El front no
+  se rompe con el cambio de nombres: solo consume `{ id, nombre }`.

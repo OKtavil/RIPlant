@@ -77,9 +77,12 @@ disco local y se sirve en `/uploads/<archivo>`.
   quince minutos responde `429` sin gastar otra comparación bcrypt, y un tope global de
   comparaciones simultáneas evita que un flood sature el event loop.
 - Crear una cuenta pide `{ username, password }` y nada más: no hay email (D1) y el rol
-  siempre es `usuario`, aunque el cuerpo intente mandar otro. La contraseña tiene un
-  mínimo de **8 caracteres**. El nombre `admin` y el nombre `zombie` están reservados y
-  devuelven `400`; un nombre ya registrado, `409`. Al crearla, la sesión queda iniciada.
+  siempre es `usuario`, aunque el cuerpo intente mandar otro. El `username` acepta hasta
+  **50** caracteres y no puede ser solo espacios; la contraseña tiene un mínimo de **8** y
+  un máximo de **72** caracteres (bcrypt trunca en 72 bytes y no lo avisa, así que aceptar
+  más guardaría el hash de otra contraseña). El nombre `admin` y el nombre `zombie` están
+  reservados y devuelven `400`; un nombre ya registrado, `409`. Al crearla, la sesión queda
+  iniciada.
 - Editar o borrar una lápida sin sesión devuelve `401`; con la sesión de otra persona y
   sin rol `admin`, `403`. Igual para subir la foto.
 - Una corona exige sesión y solo se puede dar una vez por usuario y lápida. **No es un

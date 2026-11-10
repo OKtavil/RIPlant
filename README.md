@@ -82,8 +82,8 @@ Pantalla para registrar un nuevo jardinero. **Implementada** contra `POST /usuar
 - **Campos:**
   - `Nombre de usuario` — obligatorio y único; máximo 50 caracteres. `admin` y `zombie`
     están reservados.
-  - `Contraseña` — obligatoria, mínimo 8 caracteres, con los requisitos visibles antes
-    de enviar.
+  - `Contraseña` — obligatoria, entre 8 y 72 caracteres (el tope es el de bcrypt), con
+    los requisitos visibles antes de enviar.
   - `Confirmar contraseña` — debe coincidir con la contraseña.
 - **Acciones:**
   - `Crear cuenta` — valida y registra al usuario.
@@ -773,7 +773,8 @@ foto: el JSON de crear/editar ignora `fotoUrl`.
   del seed. `admin` y `zombie` están reservados → `400`.
 - `409` si el nombre ya está en uso, y lo decide el índice `unique` de `username` en vez
   de una consulta previa (evita la carrera entre comprobar e insertar).
-- `password`: mínimo 8 caracteres. `username`: máximo 50.
+- `password`: mínimo 8 caracteres y máximo 72 (bcrypt trunca en 72 bytes). `username`:
+  máximo 50, y no puede ser solo espacios.
 - **Auto-login**: devuelve la misma cookie httpOnly que el login, así que el front queda
   logueado al crear la cuenta. Comparte el rate-limit de `POST /sesiones`.
 - La respuesta nunca incluye `passwordHash`.
