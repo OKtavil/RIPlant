@@ -436,8 +436,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 
 ## Incidencias a corregir (Pruebas 22/10/2026)
 
-> **Estado:** revisado contra el código en `18d35be` (2026-11-12). De las 18
-> incidencias, **16 están resueltas**, **1 parcial** y **1 abierta**. Cada resuelta
+> **Estado:** revisado contra el código en `d4828ef` (2026-11-12). De las 18
+> incidencias, **17 están resueltas**, **1 parcial** y **0 abiertas**. Cada resuelta
 > lleva el commit o archivo que la cubre, para que nadie vuelva a "arreglar" algo que
 > ya funciona. Ojo: `[x]` significa *verificado en el código*, no *probado a mano* —
 > salvo donde la evidencia lo diga, no hubo humo con la base levantada.
@@ -476,8 +476,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
   **Resuelto** — `edbd250`. El bug real era de identidad: `PerfilPage` y `PerfilesPage` filtraban por `duenio.username`, y `POST /lapidas` no devuelve `duenio` (solo `GET /lapidas` lo enriquece), así que la lápida recién publicada no aparecía en SU CEMENTERIO hasta recargar. Ahora las tres pantallas usan `esDuenio` (`usuarioId` primero, `duenio.username` de respaldo), la misma regla que ya usaba `puedeBorrar`. En INICIO ya andaba. Se agregó el botón ACTUALIZAR pedido acá, para lo de otras sesiones.
 
 ### Usabilidad (Medio)
-- [ ] **J001** - Pantalla de ingreso: Agregar explicación/contexto para usuarios nuevos sobre qué es la aplicación y cómo usarla.
-  **Abierta.** Verificado: `LoginPage` no tiene ninguna explicación de qué es R.I.Planta.
+- [x] **J001** - Pantalla de ingreso: Agregar explicación/contexto para usuarios nuevos sobre qué es la aplicación y cómo usarla.
+  **Resuelto** — `d4828ef`. El prototipo no trae explicación, así que es copy nuevo: un bloque compacto `.auth__contexto` entre el subtítulo y el formulario de `LoginPage` con dos párrafos — qué es el sitio (cementerio de plantas con humor; lápida = recuerdo, corona = voto) y cómo empezar (crear cuenta, publicar la primera lápida, rankings del Salón del Honor y Asesinos Seriales). Usa la paleta existente (`--menta`, borde izquierdo `--madera`, `--radio-control`, 11px/1.6 en `--texto-suave`). Solo en el ingreso: quien ya está en el registro ya decidió crear la cuenta. Test en `LoginPage.test.tsx`.
 - [x] **R002** - Publicar lápida: Agregar vista previa de cómo quedará la imagen en la lápida antes de publicar.
   **Resuelto** — `da1cd06`. Al elegir la foto aparece una tarjeta con "ASÍ SE VA A VER" que reusa las clases de `GraveCard` (`.lapida__foto`, `.lapida__foto-img`, `.lapida__nombre`, `.lapida__epitafio`), así que muestra el diseño real y no una aproximación que se desincronice. Incluye el nombre y el epitafio que se están escribiendo, con placeholder mientras están vacíos. El object URL se crea en el manejador del `input` (no en un efecto: en StrictMode se duplicaría y un blob quedaría sin revocar) y se revoca al cambiar de foto y al desmontar.
 
