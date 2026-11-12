@@ -912,6 +912,22 @@
   color: var(--texto-suave);
 }
 
+/* J001: orientación para quien llega nuevo. No está en el prototipo; usa la
+   paleta existente y se queda compacto para no competir con la marca ni con el
+   formulario. El borde izquierdo lo separa del subtítulo sin abrir otra caja. */
+.auth__contexto {
+  background: var(--menta);
+  border-left: 3px solid var(--madera);
+  border-radius: var(--radio-control);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--texto-suave);
+}
+
 .auth__pie {
   text-align: center;
   font-size: 11px;

@@ -57,6 +57,21 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
         </>
       }
     >
+      {/* J001: quien llega nuevo no sabe qué es R.I.Planta ni qué hacer acá.
+          El prototipo no trae explicación, así que el copy es nuevo y vive
+          antes del formulario, no después: primero el contexto, después las
+          credenciales. */}
+      <div className="auth__contexto">
+        <p>
+          R.I.Planta es un cementerio de plantas con humor: cada lápida recuerda a una
+          planta que no sobrevivió, y las coronas son el voto de quien la visitó.
+        </p>
+        <p>
+          Para empezar, creá tu cuenta, publicá tu primera lápida y competí en el Salón
+          del Honor y en Asesinos Seriales.
+        </p>
+      </div>
+
       <form className="auth__form" onSubmit={manejarEnvio} noValidate>
         <CampoTexto
           id="login-identidad"

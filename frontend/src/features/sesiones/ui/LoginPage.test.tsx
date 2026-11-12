@@ -18,6 +18,26 @@ describe('LoginPage', () => {
     expect(onNavegar).not.toHaveBeenCalled()
   })
 
+  it('explica qué es R.I.Planta y cómo empezar a quien entra por primera vez (J001)', () => {
+    const { container } = render(<LoginPage onIngresar={vi.fn()} onNavegar={vi.fn()} />)
+
+    // El prototipo no trae explicación: es copy nuevo para quien llega sin
+    // contexto. Va antes del formulario, no después, porque explica qué está
+    // por hacer antes de pedir las credenciales.
+    const contexto = container.querySelector('.auth__contexto')
+    expect(contexto).toBeTruthy()
+
+    const texto = contexto!.textContent ?? ''
+    expect(texto).toMatch(/cementerio de plantas/i)
+    expect(texto).toMatch(/lápida/i)
+    expect(texto).toMatch(/corona/i)
+    expect(texto).toMatch(/cuenta/i)
+
+    const tarjeta = container.querySelector('.auth__tarjeta')!
+    const hijos = [...tarjeta.children]
+    expect(hijos.indexOf(contexto as Element)).toBeLessThan(hijos.indexOf(container.querySelector('.auth__form')!))
+  })
+
   it('no muestra el link de recuperación de contraseña', () => {
     render(<LoginPage onIngresar={vi.fn()} onNavegar={vi.fn()} />)
 
