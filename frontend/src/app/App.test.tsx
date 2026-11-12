@@ -82,6 +82,21 @@ function sesion(parcial: Partial<Session> = {}): Session {
   }
 }
 
+/**
+ * Promesa que el test resuelve cuando quiere. Sirve para mirar qué llamadas ya
+ * salieron mientras las anteriores siguen pendientes: si el código encadena
+ * `await`, la segunda llamada no existe todavía.
+ */
+function diferida<T>() {
+  let resolver!: (valor: T) => void
+  let rechazar!: (motivo: unknown) => void
+  const promesa = new Promise<T>((res, rej) => {
+    resolver = res
+    rechazar = rej
+  })
+  return { promesa, resolver, rechazar }
+}
+
 beforeEach(() => {
   window.history.replaceState(null, '', '/')
   // `DetallePage` monta los comentarios, que salen a la red al montar.
@@ -224,6 +239,63 @@ describe('J003 — una lápida recién publicada aparece en MI PERFIL', () => {
     expect(
       await screen.findByRole('button', { name: /ver la lápida de aloe/i }),
     ).toBeTruthy()
+  })
+})
+
+describe('D002 — las lecturas de la pantalla no se encadenan', () => {
+  it('el montaje dispara cementerio, categorías, sesión y ranking a la vez', async () => {
+    const cementerio = diferida<Grave[]>()
+    const categorias = diferida<{ id: number; nombre: string }[]>()
+    const sesionActual = diferida<Session>()
+    const ranking = diferida<{ username: string; muertes: number }[]>()
+
+    vi.mocked(lapidasApi.findAll).mockReturnValue(cementerio.promesa)
+    vi.mocked(categoriasApi.findAll).mockReturnValue(categorias.promesa)
+    vi.mocked(sesionesApi.actual).mockReturnValue(sesionActual.promesa)
+    vi.mocked(lapidasApi.asesinos).mockReturnValue(ranking.promesa)
+
+    render(<App />)
+
+    // Nada respondió todavía. Encadenar los `await` deja solo las dos primeras
+    // llamadas (las del `Promise.all`), y las otras dos esperan un viaje de red
+    // completo antes de salir: tres viajes de ida y vuelta donde alcanza uno.
+    expect(lapidasApi.findAll).toHaveBeenCalled()
+    expect(categoriasApi.findAll).toHaveBeenCalled()
+    expect(sesionesApi.actual).toHaveBeenCalled()
+    expect(lapidasApi.asesinos).toHaveBeenCalled()
+
+    // Liberar las promesas para no dejar la app a medio montar.
+    cementerio.resolver([])
+    categorias.resolver([])
+    sesionActual.rechazar(new Error('sin sesión'))
+    ranking.resolver([])
+    await waitFor(() => expect(screen.queryByText(/cargando el cementerio/i)).toBeNull())
+  })
+
+  it('ACTUALIZAR pide el cementerio y el ranking a la vez', async () => {
+    render(<App />)
+
+    // El montaje ya resolvió todo; se limpian los contadores para mirar solo
+    // lo que dispara el botón.
+    await screen.findByRole('button', { name: /^actualizar$/i })
+    vi.mocked(lapidasApi.findAll).mockClear()
+    vi.mocked(lapidasApi.asesinos).mockClear()
+
+    const cementerio = diferida<Grave[]>()
+    const ranking = diferida<{ username: string; muertes: number }[]>()
+    vi.mocked(lapidasApi.findAll).mockReturnValue(cementerio.promesa)
+    vi.mocked(lapidasApi.asesinos).mockReturnValue(ranking.promesa)
+
+    fireEvent.click(screen.getByRole('button', { name: /^actualizar$/i }))
+
+    expect(lapidasApi.findAll).toHaveBeenCalled()
+    expect(lapidasApi.asesinos).toHaveBeenCalled()
+
+    cementerio.resolver([])
+    ranking.resolver([])
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^actualizar$/i })).toBeTruthy(),
+    )
   })
 })
 

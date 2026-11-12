@@ -17,7 +17,12 @@ export class LapidaDocumentModel {
   @Prop({ required: true })
   fechaFallecimiento: string;
 
-  @Prop({ required: true })
+  /**
+   * La lista del cementerio ordena por esta fecha (`findAll`). El índice evita
+   * que Mongo resuelva el orden en memoria leyendo la colección entera en cada
+   * carga (D002); un índice ascendente sirve para el `sort` descendente.
+   */
+  @Prop({ required: true, index: true })
   fechaPublicacion: string;
 
   @Prop({ required: true, trim: true, maxlength: 40 })

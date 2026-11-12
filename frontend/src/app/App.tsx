@@ -49,7 +49,15 @@ export default function App() {
 
   useEffect(() => {
     let vigente = true
-    ;(async () => {
+
+    // Las lecturas del arranque son independientes: ninguna necesita la
+    // respuesta de otra, y cada una cuesta un viaje de red completo. Se
+    // disparan juntas y cada una resuelve cuando llega (D002). Encadenarlas
+    // triplicaba la espera sin ganar nada.
+    //
+    // El cementerio y las categorías solos gatean el esqueleto de carga: son
+    // lo que la pantalla necesita para pintar algo útil.
+    void (async () => {
       try {
         const [lapidasCargadas, categoriasCargadas] = await Promise.all([
           lapidasApi.findAll(),
@@ -63,16 +71,20 @@ export default function App() {
       } finally {
         if (vigente) setCargando(false)
       }
+    })()
 
+    void (async () => {
       try {
         const actual = await sesionesApi.actual()
         if (vigente) setSesion(actual)
       } catch {
         // Sin sesión: es un estado válido, no un error.
       }
+    })()
 
-      // El ranking de asesinos se carga aparte: si falla, el cementerio igual
-      // se muestra y la sección avisa su propio error.
+    // El ranking de asesinos se carga aparte: si falla, el cementerio igual
+    // se muestra y la sección avisa su propio error.
+    void (async () => {
       try {
         const ranking = await lapidasApi.asesinos()
         if (vigente) setAsesinos(ranking)
@@ -85,6 +97,7 @@ export default function App() {
           )
       }
     })()
+
     return () => {
       vigente = false
     }
@@ -159,27 +172,34 @@ export default function App() {
    */
   async function refrescarLapidas() {
     setActualizando(true)
-    try {
-      const lapidasCargadas = await lapidasApi.findAll()
-      setLapidas(lapidasCargadas)
+
+    // Las dos lecturas son independientes: el cementerio no necesita el
+    // ranking ni al revés. Van juntas (D002) y `allSettled` deja que un fallo
+    // del ranking no cancele el cementerio, que es el que el usuario pidió.
+    const [cementerio, ranking] = await Promise.allSettled([
+      lapidasApi.findAll(),
+      lapidasApi.asesinos(),
+    ])
+
+    if (cementerio.status === 'fulfilled') {
+      setLapidas(cementerio.value)
       setAviso('')
-    } catch (fallo) {
-      setAviso(fallo instanceof ApiError ? fallo.message : 'No se pudo actualizar el cementerio.')
-      setActualizando(false)
-      return
+    } else {
+      setAviso(
+        cementerio.reason instanceof ApiError
+          ? cementerio.reason.message
+          : 'No se pudo actualizar el cementerio.',
+      )
     }
 
-    // El ranking se recarga aparte y best-effort: si falla, el cementerio ya
-    // está actualizado y avisar "no se pudo actualizar" sería mentir.
-    try {
-      const ranking = await lapidasApi.asesinos()
-      setAsesinos(ranking)
+    // Best-effort: si falla, el cementerio ya está actualizado y el aviso del
+    // ranking se muestra en su propia sección, no como error de la recarga.
+    if (ranking.status === 'fulfilled') {
+      setAsesinos(ranking.value)
       setErrorAsesinos('')
-    } catch {
-      // El aviso del ranking ya se muestra en su propia sección.
-    } finally {
-      setActualizando(false)
     }
+
+    setActualizando(false)
   }
 
   async function darCorona(lapida: Grave) {
