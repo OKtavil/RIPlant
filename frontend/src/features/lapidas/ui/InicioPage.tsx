@@ -74,8 +74,11 @@ export function InicioPage({
               <span>
                 {indice + 1}. “{lapida.nombrePlanta}”
               </span>
-              <span className="sidebar__valor sidebar__valor--rojo">
-                <IconoCorona size={10} stroke="#C0392B" />
+              {/* Corona dorada y contador en madera, como en el prototipo. El
+                  rojo (`--rojo`) es el color de "Asesinos seriales" y de los
+                  errores: usarlo acá convertía una ofrenda en una alarma. */}
+              <span className="sidebar__valor">
+                <IconoCorona size={10} />
                 {lapida.coronasCount}
               </span>
             </button>
