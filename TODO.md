@@ -436,8 +436,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 
 ## Incidencias a corregir (Pruebas 22/10/2026)
 
-> **Estado:** revisado contra el código en `0642d28` (2026-11-12). De las 18
-> incidencias, **12 están resueltas**, **1 parcial** y **5 abiertas**. Cada resuelta
+> **Estado:** revisado contra el código en `1349b50` (2026-11-12). De las 18
+> incidencias, **13 están resueltas**, **1 parcial** y **4 abiertas**. Cada resuelta
 > lleva el commit o archivo que la cubre, para que nadie vuelva a "arreglar" algo que
 > ya funciona. Ojo: `[x]` significa *verificado en el código*, no *probado a mano* —
 > salvo donde la evidencia lo diga, no hubo humo con la base levantada.
@@ -456,8 +456,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
   **Resuelto** — `6cfcc22`. Errores por campo vía `Campo.tsx` y `leerMensajeError()` en el cliente, con `noValidate` en los cuatro formularios: el `required` que queda es pista de accesibilidad, no validación nativa del navegador.
 
 ### Rendimiento (Alto)
-- [ ] **D002** - Toda la aplicación: Optimizar las solicitudes y la carga de páginas. Las peticiones son lentas de forma constante.
-  **Abierta.** Sin diagnóstico todavía: falta medir si el costo está en el backend, en los re-renders del front o en el arranque en frío.
+- [x] **D002** - Toda la aplicación: Optimizar las solicitudes y la carga de páginas. Las peticiones son lentas de forma constante.
+  **Resuelto** — `1349b50`. El costo estructural estaba en el cliente: el montaje encadenaba tres tramos de red (cementerio + categorías → sesión → ranking) y `refrescarLapidas` repetía el patrón, así que cuatro lecturas independientes costaban tres viajes de ida y vuelta en vez de uno. Ahora se disparan juntas y cada una resuelve por su cuenta. En el backend, el cementerio ordena por `fechaPublicacion` en cada carga y ese campo no tenía índice: Mongo resolvía el orden en memoria; se agregó el índice. **Queda fuera de este cambio** que `SesionesMiddleware` resuelva la sesión contra Mongo en **cada** request (cachearla toca autenticación, no rendimiento aislado).
 
 ### Funcional (Alto)
 - [x] **F001** - Perfil (botones según propietario): El botón "Agregar lápida" y el botón "Eliminar" solo deben mostrarse cuando el perfil es propio del usuario autenticado. Actualmente se muestran también en perfiles ajenos.
