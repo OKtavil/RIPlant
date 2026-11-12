@@ -442,6 +442,10 @@
   align-items: center;
   gap: 12px;
   color: var(--texto);
+  /* La fila del Salón del Honor es un `<button>`, y el navegador centra el
+     texto de los botones. El prototipo usa un enlace alineado a la izquierda:
+     sin esto, el nombre y el epitafio quedan centrados cuando envuelven. */
+  text-align: left;
 }
 
 .ranking__fila:hover {
@@ -524,6 +528,9 @@
   justify-content: space-between;
   gap: 10px;
   color: var(--texto);
+  /* Igual que `.ranking__fila`: es un `<button>` y el navegador centra su
+     texto. El prototipo alinea la fila a la izquierda. */
+  text-align: left;
 }
 
 .sidebar__fila:hover {

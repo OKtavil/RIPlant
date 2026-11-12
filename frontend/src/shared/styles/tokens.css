@@ -66,6 +66,23 @@ body {
   background: var(--fondo);
 }
 
+/*
+ * El diseño separa con `gap` y `padding`, no con márgenes: los bloques del
+ * prototipo son `<div>` sin margen. El navegador sí les pone margen a los
+ * `<p>` (`1em`) y a los títulos (`0.67em`, `0.83em`), y dentro de un contenedor
+ * flex ese margen no colapsa con el `gap`: cada bloque abría un hueco que el
+ * diseño no tiene (J002). Lo que necesita separación propia la declara por
+ * clase (`margin-top`), así que el reset no borra ninguna separación
+ * intencional.
+ */
+p {
+  margin: 0;
+}
+
+h1, h2, h3 {
+  margin: 0;
+}
+
 button,
 input,
 select,
