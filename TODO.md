@@ -436,8 +436,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 
 ## Incidencias a corregir (Pruebas 22/10/2026)
 
-> **Estado:** revisado contra el código en `1349b50` (2026-11-12). De las 18
-> incidencias, **13 están resueltas**, **1 parcial** y **4 abiertas**. Cada resuelta
+> **Estado:** revisado contra el código en `18d35be` (2026-11-12). De las 18
+> incidencias, **16 están resueltas**, **1 parcial** y **1 abierta**. Cada resuelta
 > lleva el commit o archivo que la cubre, para que nadie vuelva a "arreglar" algo que
 > ya funciona. Ojo: `[x]` significa *verificado en el código*, no *probado a mano* —
 > salvo donde la evidencia lo diga, no hubo humo con la base levantada.
@@ -482,9 +482,9 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
   **Resuelto** — `da1cd06`. Al elegir la foto aparece una tarjeta con "ASÍ SE VA A VER" que reusa las clases de `GraveCard` (`.lapida__foto`, `.lapida__foto-img`, `.lapida__nombre`, `.lapida__epitafio`), así que muestra el diseño real y no una aproximación que se desincronice. Incluye el nombre y el epitafio que se están escribiendo, con placeholder mientras están vacíos. El object URL se crea en el manejador del `input` (no en un efecto: en StrictMode se duplicaría y un blob quedaría sin revocar) y se revoca al cambiar de foto y al desmontar.
 
 ### Interfaz / Diseño (Medio)
-- [ ] **J002** - Varias pantallas: Corregir espacios vacíos excesivos entre secciones del diseño.
-  **Abierta.** No verificada en esta revisión: es visual y requiere mirar la pantalla, no el código.
-- [ ] **J004** - Inicio y Ranking: Alinear correctamente las publicaciones en ambas vistas.
-  **Abierta.** No verificada en esta revisión (visual).
-- [ ] **R001** - Inicio (Salón del Honor): Corregir colores de coronas y nombres para que coincidan con el estilo visual del resto de la página.
-  **Abierta.** No verificada en esta revisión (visual).
+- [x] **J002** - Varias pantallas: Corregir espacios vacíos excesivos entre secciones del diseño.
+  **Resuelto** — `18d35be`. No había reset de márgenes: el navegador aplica `1em` a los `<p>` y `0.67em`/`0.83em` a los títulos, y dentro de un contenedor flex ese margen no colapsa con el `gap`, así que cada bloque abría un hueco que el prototipo no tiene (usa `<div>` sin margen y separa con `gap`/`padding`). Se resetean `p` y `h1..h3` en `tokens.css`; las separaciones propias declaradas por clase (`margin-top`) se conservan. El inventario de usos quedó revisado: todos viven en contenedores flex con `gap` o en `.perfil__stat`, cuyo prototipo tampoco tiene margen. Contrato en `estilos.test.ts`; ojo, jsdom no reproduce el margen del UA, así que el test fija la declaración, no el estilo computado.
+- [x] **J004** - Inicio y Ranking: Alinear correctamente las publicaciones en ambas vistas.
+  **Resuelto** — `18d35be`. Las filas del Salón del Honor en Inicio y Ranking son `<button>`, y el navegador centra el texto de los botones; el prototipo usa `<a>`/`<div>` alineados a la izquierda, así que con nombres largos la fila se veía descentrada. `text-align: left` en `.ranking__fila` y `.sidebar__fila`.
+- [x] **R001** - Inicio (Salón del Honor): Corregir colores de coronas y nombres para que coincidan con el estilo visual del resto de la página.
+  **Resuelto** — `8053da6`. El defecto era el rojo: la corona se forzaba con `stroke="#C0392B"` y el contador usaba `.sidebar__valor--rojo`, pero el rojo está reservado a "Asesinos seriales" y a los errores. El prototipo usa la corona dorada `#C9924F` (default de `IconoCorona`, la misma de las tarjetas) y el contador en `#8B4513` (`--madera`). Los nombres ya estaban en `#3B2A1A` (`--texto`), igual que el prototipo, así que no cambian. La clase roja se mantiene en el ranking de asesinos, donde sí corresponde. Test nuevo de `InicioPage`.
