@@ -436,8 +436,8 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 
 ## Incidencias a corregir (Pruebas 22/10/2026)
 
-> **Estado:** revisado contra el código en `da1cd06` (2026-11-10). De las 18
-> incidencias, **11 están resueltas**, **2 parciales** y **5 abiertas**. Cada resuelta
+> **Estado:** revisado contra el código en `0642d28` (2026-11-12). De las 18
+> incidencias, **12 están resueltas**, **1 parcial** y **5 abiertas**. Cada resuelta
 > lleva el commit o archivo que la cubre, para que nadie vuelva a "arreglar" algo que
 > ya funciona. Ojo: `[x]` significa *verificado en el código*, no *probado a mano* —
 > salvo donde la evidencia lo diga, no hubo humo con la base levantada.
@@ -447,7 +447,7 @@ Si devuelve `201`, el pipe no está haciendo su trabajo.
 - [x] **D001** - Formularios (registro, publicar lápida, comentarios): Agregar límites de longitud y validación suficiente tanto en frontend como backend. Los campos de texto aceptan cualquier contenido.
   **Resuelto** — `5fbfbab` + `3c03252`. Backend: `create-lapida.dto.ts` recorta con `@Transform` y limita `nombrePlanta` a 40, `epitafio` a 280 y `causaMuerte` a 80; `create-comentario.dto.ts` a 500; `crear-usuario.dto.ts` a 50. Frontend: `maxLength` en los formularios.
 - [x] **D003** - Subida de foto (publicar lápida): Validar tipo, extensión y calidad de la imagen **en el servidor**.
-  **Resuelto** — el servidor detecta JPEG/PNG/WebP por *magic bytes*, deriva la extensión del tipo real y valida las dimensiones leyendo la cabecera sin decodificar la imagen. Rechaza fotos con algún lado menor a 320 px o más de 50 megapíxeles; conserva el tope de 5 MB. Cubierto en `almacenamiento-disco.service.spec.ts`, `dimensiones-imagen.spec.ts` y `lapidas.e2e-spec.ts`.
+  **Resuelto** — `0642d28`. El servidor detecta JPEG/PNG/WebP por *magic bytes*, deriva la extensión del tipo real y valida las dimensiones leyendo la cabecera sin decodificar la imagen. Rechaza fotos con algún lado menor a 320 px o más de 50 megapíxeles; conserva el tope de 5 MB. Cubierto en `almacenamiento-disco.service.spec.ts`, `dimensiones-imagen.spec.ts` y `lapidas.e2e-spec.ts`. El cliente no pre-valida dimensiones: una foto fuera de rango se descubre después de crear la lápida, y el aviso de `publicar` ya explica que quedó publicada sin foto.
 - [x] **E001** - Publicar lápida (fecha de fallecimiento): Limitar el año a un rango razonable (no posterior a la fecha actual ni demasiado antiguo).
   **Resuelto** — `5fbfbab`. `fecha-fallecimiento.validator.ts` exige un instante entre 1900-01-01 y hoy, y se combina con `@IsDateString` para el mensaje de formato.
 - [x] **V001** - Usuarios (registro y datos): Agregar límite de caracteres y validación de cadenas en todos los campos de texto del usuario.
