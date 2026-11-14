@@ -330,6 +330,36 @@ describe('Usuarios (e2e)', () => {
       expect(consumido?.codigoRecuperacionHash).toBeUndefined();
     });
 
+    it('dos recuperaciones simultáneas con el mismo código: gana una sola', async () => {
+      const { username, codigo } = await registrar(
+        `recupera-carrera-${sufijo}`,
+      );
+
+      const pedir = (password: string) =>
+        request(app.getHttpServer())
+          .post('/usuarios/recuperar')
+          .send({ username, codigo, password });
+
+      // El `$unset` va en la misma escritura que el cambio de contraseña: el
+      // segundo pedido ya no encuentra el hash. Sin eso, dos pedidos a la vez
+      // con el mismo código podrían ganar los dos.
+      const respuestas = await Promise.all([
+        pedir('clave-carrera-a'),
+        pedir('clave-carrera-b'),
+      ]);
+      expect(respuestas.map((r) => r.status).sort()).toEqual([200, 400]);
+
+      const entradas = await Promise.all(
+        ['clave-carrera-a', 'clave-carrera-b'].map((password) =>
+          request(app.getHttpServer())
+            .post('/sesiones')
+            .send({ username, password })
+            .then((res) => res.status),
+        ),
+      );
+      expect(entradas.sort()).toEqual([201, 401]);
+    });
+
     it('no distingue usuario inexistente de código incorrecto', async () => {
       const { username, codigo } = await registrar(
         `recupera-error-${sufijo}`,
