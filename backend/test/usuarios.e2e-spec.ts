@@ -4,9 +4,14 @@ import request from 'supertest';
 import { getModelToken } from '@nestjs/mongoose';
 import { AppModule } from '../src/app.module';
 import { applyValidationPipe } from '../src/shared/validation-pipe';
+import { UsuariosService } from '../src/usuarios/usuarios.service';
 import { UsuarioDocumentModel } from '../src/usuarios/usuario.schema';
 import { SesionDocumentModel } from '../src/sesiones/sesion.schema';
+import { abrirSesion, extraerCookieSesion } from './helpers/auth';
 import { borrarBaseAislada, prepararBaseAislada } from './helpers/base-datos';
+
+/** Mensaje único de recuperación: no revela si el usuario existe. */
+const CODIGO_INVALIDO = 'El usuario y el código no coinciden.';
 
 describe('Usuarios (e2e)', () => {
   let app: INestApplication;
@@ -237,6 +242,220 @@ describe('Usuarios (e2e)', () => {
 
       // Un id que no es ObjectId es 404, no un 500 de Mongoose.
       await request(app.getHttpServer()).get('/usuarios/no-es-un-id').expect(404);
+    });
+  });
+
+  describe('Recuperación de contraseña', () => {
+    const usuariosModel = () => app.get(getModelToken(UsuarioDocumentModel.name));
+
+    /** Alta real: devuelve identidad, código en claro y cookie de auto-login. */
+    async function registrar(username: string, password = 'clave-vieja-1') {
+      const res = await request(app.getHttpServer())
+        .post('/usuarios')
+        .send({ username, password })
+        .expect(201);
+      return {
+        username,
+        id: res.body.id as string,
+        codigo: res.body.codigoRecuperacion as string,
+        cookie: extraerCookieSesion(res.headers['set-cookie']),
+      };
+    }
+
+    it('el alta devuelve el código una vez y la base guarda solo su hash', async () => {
+      const { username, codigo } = await registrar(`recupera-alta-${sufijo}`);
+
+      expect(codigo).toMatch(/^[A-Z2-7]{4}(-[A-Z2-7]{4}){3}$/);
+
+      // `select: false`: la lectura normal no trae el hash.
+      const sinSelect = await usuariosModel()
+        .findOne({ username })
+        .lean();
+      expect(sinSelect?.codigoRecuperacionHash).toBeUndefined();
+
+      // La lectura explícita sí, y es un SHA-256: nunca el código en claro.
+      const guardado = await usuariosModel()
+        .findOne({ username })
+        .select('+codigoRecuperacionHash')
+        .lean();
+      expect(guardado?.codigoRecuperacionHash).toMatch(/^[0-9a-f]{64}$/);
+      expect(guardado?.codigoRecuperacionHash).not.toContain(
+        codigo.replace(/-/g, ''),
+      );
+    });
+
+    it('recupera con el código normalizado, cierra sesiones y es de un solo uso', async () => {
+      const { username, codigo, cookie } = await registrar(
+        `recupera-flujo-${sufijo}`,
+      );
+
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({
+          username,
+          // Sin guiones y en minúsculas: lo que un usuario tipea de verdad.
+          codigo: codigo.toLowerCase().replace(/-/g, ''),
+          password: 'clave-nueva-1',
+        })
+        .expect(200)
+        .expect(({ body }) => expect(body.mensaje).toMatch(/actualizó/i));
+
+      // La sesión abierta al registrarse ya no vale: el cambio la invalidó.
+      await request(app.getHttpServer())
+        .get('/sesiones/actual')
+        .set('Cookie', cookie)
+        .expect(401);
+
+      // La contraseña vieja deja de entrar; la nueva sí.
+      await request(app.getHttpServer())
+        .post('/sesiones')
+        .send({ username, password: 'clave-vieja-1' })
+        .expect(401);
+      await request(app.getHttpServer())
+        .post('/sesiones')
+        .send({ username, password: 'clave-nueva-1' })
+        .expect(201);
+
+      // Reusar el código es el mismo error genérico que uno inventado.
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({ username, codigo, password: 'otra-clave-1' })
+        .expect(400)
+        .expect(({ body }) => expect(body.message).toBe(CODIGO_INVALIDO));
+
+      const consumido = await usuariosModel()
+        .findOne({ username })
+        .select('+codigoRecuperacionHash')
+        .lean();
+      expect(consumido?.codigoRecuperacionHash).toBeUndefined();
+    });
+
+    it('no distingue usuario inexistente de código incorrecto', async () => {
+      const { username, codigo } = await registrar(
+        `recupera-error-${sufijo}`,
+      );
+      const inventado =
+        codigo === 'AAAA-AAAA-AAAA-AAAA'
+          ? 'BBBB-BBBB-BBBB-BBBB'
+          : 'AAAA-AAAA-AAAA-AAAA';
+
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({ username, codigo: inventado, password: 'clave-nueva-1' })
+        .expect(400)
+        .expect(({ body }) => expect(body.message).toBe(CODIGO_INVALIDO));
+
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({
+          username: `no-existe-${sufijo}`,
+          codigo,
+          password: 'clave-nueva-1',
+        })
+        .expect(400)
+        .expect(({ body }) => expect(body.message).toBe(CODIGO_INVALIDO));
+    });
+
+    it('un payload inválido de recuperación es 400', async () => {
+      const { username, codigo } = await registrar(
+        `recupera-payload-${sufijo}`,
+      );
+
+      await request(app.getHttpServer()).post('/usuarios/recuperar').send({}).expect(400);
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({ username, codigo, password: 'corta' })
+        .expect(400);
+    });
+
+    it('emisión: 401 sin sesión y 403 para un tercero', async () => {
+      const duenio = await registrar(`recupera-duenio-${sufijo}`);
+      const tercero = await registrar(`recupera-tercero-${sufijo}`);
+
+      await request(app.getHttpServer())
+        .post(`/usuarios/${duenio.id}/codigo-recuperacion`)
+        .send({})
+        .expect(401);
+
+      await request(app.getHttpServer())
+        .post(`/usuarios/${duenio.id}/codigo-recuperacion`)
+        .set('Cookie', tercero.cookie)
+        .send({ passwordActual: 'clave-vieja-1' })
+        .expect(403);
+    });
+
+    it('el dueño rota su código solo con la contraseña actual', async () => {
+      const { username, id, codigo, cookie } = await registrar(
+        `recupera-rotar-${sufijo}`,
+      );
+
+      await request(app.getHttpServer())
+        .post(`/usuarios/${id}/codigo-recuperacion`)
+        .set('Cookie', cookie)
+        .send({})
+        .expect(403);
+
+      await request(app.getHttpServer())
+        .post(`/usuarios/${id}/codigo-recuperacion`)
+        .set('Cookie', cookie)
+        .send({ passwordActual: 'incorrecta' })
+        .expect(403);
+
+      const emitido = await request(app.getHttpServer())
+        .post(`/usuarios/${id}/codigo-recuperacion`)
+        .set('Cookie', cookie)
+        .send({ passwordActual: 'clave-vieja-1' })
+        .expect(200);
+      const nuevo = emitido.body.codigoRecuperacion as string;
+      expect(nuevo).toMatch(/^[A-Z2-7]{4}(-[A-Z2-7]{4}){3}$/);
+      expect(nuevo).not.toBe(codigo);
+
+      // Rotar invalida el anterior; el nuevo es el que sirve.
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({ username, codigo, password: 'clave-nueva-1' })
+        .expect(400);
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({ username, codigo: nuevo, password: 'clave-nueva-1' })
+        .expect(200);
+    });
+
+    it('un admin emite para cualquiera y ese código recupera', async () => {
+      const objetivo = await registrar(`recupera-ajeno-${sufijo}`);
+      const nombreAdmin = `recupera-admin-${sufijo}`;
+      await app.get(UsuariosService).crear({
+        username: nombreAdmin,
+        password: 'clave-admin-1',
+        rol: 'admin',
+      });
+      const cookieAdmin = await abrirSesion(
+        app,
+        nombreAdmin,
+        'clave-admin-1',
+      );
+
+      const emitido = await request(app.getHttpServer())
+        .post(`/usuarios/${objetivo.id}/codigo-recuperacion`)
+        .set('Cookie', cookieAdmin)
+        .send({})
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({
+          username: objetivo.username,
+          codigo: emitido.body.codigoRecuperacion,
+          password: 'clave-nueva-1',
+        })
+        .expect(200);
+
+      // Un id con formato inválido es 404, no un 500 de Mongoose.
+      await request(app.getHttpServer())
+        .post('/usuarios/no-es-un-id/codigo-recuperacion')
+        .set('Cookie', cookieAdmin)
+        .send({})
+        .expect(404);
     });
   });
 });

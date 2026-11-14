@@ -14,6 +14,7 @@ describe('SesionesService', () => {
     create: jest.Mock;
     findOne: jest.Mock;
     deleteOne: jest.Mock;
+    deleteMany: jest.Mock;
   };
   let usuarios: {
     validarCredenciales: jest.Mock;
@@ -37,6 +38,7 @@ describe('SesionesService', () => {
       create: jest.fn().mockResolvedValue({}),
       findOne: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
       deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+      deleteMany: jest.fn().mockResolvedValue({ deletedCount: 3 }),
     };
     usuarios = {
       validarCredenciales: jest.fn(),
@@ -208,5 +210,17 @@ describe('SesionesService', () => {
     expect(model.deleteOne).toHaveBeenCalledWith({
       tokenHash: expect.stringMatching(/^[0-9a-f]{64}$/),
     });
+  });
+
+  it('should close every session of a user after a password recovery', async () => {
+    const usuarioId = '5f7b1c9e4b3a2d1f0e9d8c7b';
+
+    await service.cerrarTodasDeUsuario(usuarioId);
+
+    // Un cambio de contraseña tiene que dejar fuera a cualquier sesión abierta
+    // en otro dispositivo: si no, un token robado sobrevive al cambio.
+    expect(model.deleteMany).toHaveBeenCalledTimes(1);
+    const filtro = model.deleteMany.mock.calls[0][0];
+    expect(String(filtro.usuarioId)).toBe(usuarioId);
   });
 });

@@ -1,13 +1,26 @@
 import type { Model } from 'mongoose';
-import { verifyPassword } from './password';
+import { hashearCodigoRecuperacion } from './codigo-recuperacion';
+import { hashPassword, verifyPassword } from './password';
 import { UsuariosService } from './usuarios.service';
 import type { UsuarioDocument } from './usuario.schema';
+
+/** Consulta Mongoose mínima: `.select()` encadenable y `.lean()` resoluble. */
+function consultaLean<T>(valor: T) {
+  const consulta = {
+    select: jest.fn(),
+    lean: jest.fn().mockResolvedValue(valor),
+  };
+  consulta.select.mockReturnValue(consulta);
+  return consulta;
+}
 
 describe('UsuariosService', () => {
   let service: UsuariosService;
   let model: {
+    create: jest.Mock;
     updateOne: jest.Mock;
     findOne: jest.Mock;
+    findOneAndUpdate: jest.Mock;
     find: jest.Mock;
     findById: jest.Mock;
     findByIdAndUpdate: jest.Mock;
@@ -23,13 +36,13 @@ describe('UsuariosService', () => {
 
   beforeEach(() => {
     model = {
+      create: jest.fn().mockResolvedValue({ ...dave }),
       updateOne: jest.fn().mockResolvedValue({}),
-      findOne: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+      findOne: jest.fn().mockReturnValue(consultaLean(null)),
+      findOneAndUpdate: jest.fn().mockReturnValue(consultaLean(null)),
       find: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) }),
-      findById: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
-      findByIdAndUpdate: jest
-        .fn()
-        .mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+      findById: jest.fn().mockReturnValue(consultaLean(null)),
+      findByIdAndUpdate: jest.fn().mockReturnValue(consultaLean(null)),
     };
     service = new UsuariosService(
       model as unknown as Model<UsuarioDocument>,
@@ -143,5 +156,160 @@ describe('UsuariosService', () => {
         usuario: { id: 'admin-1', rol: 'admin' },
       }),
     ).resolves.toMatchObject({ username: 'dave' });
+  });
+
+  describe('código de recuperación', () => {
+    const CODIGO = 'ABCD-EFGH-IJKL-MNOP';
+
+    it('al crear la cuenta devuelve el código una vez y guarda solo su hash', async () => {
+      const { usuario, codigoRecuperacion } = await service.crear({
+        username: '  dave  ',
+        password: 'clave-larga-1',
+        rol: 'usuario',
+      });
+
+      expect(usuario.username).toBe('dave');
+      expect(codigoRecuperacion).toMatch(/^[A-Z2-7]{4}(-[A-Z2-7]{4}){3}$/);
+
+      const guardado = model.create.mock.calls[0][0];
+      expect(guardado.codigoRecuperacionHash).toBe(
+        hashearCodigoRecuperacion(codigoRecuperacion),
+      );
+      expect(guardado.codigoRecuperacionHash).not.toBe(codigoRecuperacion);
+      expect(guardado.codigoRecuperacionHash).toMatch(/^[0-9a-f]{64}$/);
+    });
+
+    it('recuperar rechaza con el mensaje genérico cuando el código no coincide', async () => {
+      model.findOne.mockReturnValue(consultaLean(null));
+
+      await expect(
+        service.recuperar({
+          username: 'dave',
+          codigo: CODIGO,
+          password: 'clave-nueva-1',
+        }),
+      ).rejects.toThrow('El usuario y el código no coinciden.');
+
+      // Lo importante: no se gastó bcrypt ni se tocó la contraseña.
+      expect(model.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('recuperar normaliza el código antes de buscarlo', async () => {
+      model.findOne.mockReturnValue(consultaLean({ _id: ID }));
+      model.findOneAndUpdate.mockReturnValue(consultaLean({ _id: ID }));
+
+      await service.recuperar({
+        username: '  dave  ',
+        codigo: 'abcd-efgh ijkl-mnop',
+        password: 'clave-nueva-1',
+      });
+
+      expect(model.findOne).toHaveBeenCalledWith({
+        username: 'dave',
+        codigoRecuperacionHash: hashearCodigoRecuperacion('ABCDEFGHIJKLMNOP'),
+      });
+      // `select: false` exige pedir el hash explícitamente.
+      expect(model.findOne.mock.results[0].value.select).toHaveBeenCalledWith(
+        '_id',
+      );
+    });
+
+    it('recuperar cambia la contraseña y borra el código de un solo uso', async () => {
+      model.findOne.mockReturnValue(consultaLean({ _id: ID }));
+      model.findOneAndUpdate.mockReturnValue(consultaLean({ _id: ID }));
+
+      const id = await service.recuperar({
+        username: 'dave',
+        codigo: CODIGO,
+        password: 'clave-nueva-1',
+      });
+
+      expect(id).toBe(ID);
+      const [filtro, update, opciones] = model.findOneAndUpdate.mock.calls[0];
+      expect(filtro).toEqual({
+        _id: ID,
+        codigoRecuperacionHash: hashearCodigoRecuperacion(CODIGO),
+      });
+      expect(update.$unset).toEqual({ codigoRecuperacionHash: '' });
+      expect(update.$set.passwordHash).toMatch(/^\$2[aby]\$/);
+      expect(
+        await verifyPassword('clave-nueva-1', update.$set.passwordHash),
+      ).toBe(true);
+      expect(opciones).toEqual({ new: true });
+    });
+
+    it('el dueño solo emite un código nuevo con su contraseña actual', async () => {
+      model.findById.mockReturnValue(
+        consultaLean({ ...dave, passwordHash: await hashPassword('correcta') }),
+      );
+
+      await expect(
+        service.emitirCodigoRecuperacion(ID, 'incorrecta', {
+          usuario: { id: ID, rol: 'usuario' },
+        }),
+      ).rejects.toThrow('La contraseña actual no es correcta');
+      expect(model.findByIdAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('el dueño con la contraseña correcta recibe un código nuevo', async () => {
+      model.findById.mockReturnValue(
+        consultaLean({ ...dave, passwordHash: await hashPassword('correcta') }),
+      );
+      model.findByIdAndUpdate.mockReturnValue(consultaLean({ ...dave }));
+
+      const { codigoRecuperacion } = await service.emitirCodigoRecuperacion(
+        ID,
+        'correcta',
+        { usuario: { id: ID, rol: 'usuario' } },
+      );
+
+      expect(codigoRecuperacion).toMatch(/^[A-Z2-7]{4}(-[A-Z2-7]{4}){3}$/);
+      expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
+        ID,
+        {
+          $set: {
+            codigoRecuperacionHash:
+              hashearCodigoRecuperacion(codigoRecuperacion),
+          },
+        },
+        { new: true },
+      );
+    });
+
+    it('un admin emite para cualquiera sin pedir contraseña', async () => {
+      model.findByIdAndUpdate.mockReturnValue(consultaLean({ ...dave }));
+
+      const { codigoRecuperacion } = await service.emitirCodigoRecuperacion(
+        ID,
+        undefined,
+        { usuario: { id: 'admin-1', rol: 'admin' } },
+      );
+
+      expect(codigoRecuperacion).toMatch(/^[A-Z2-7]{4}(-[A-Z2-7]{4}){3}$/);
+      // Sin contraseña que probar: ni siquiera se lee el usuario.
+      expect(model.findById).not.toHaveBeenCalled();
+      expect(model.findByIdAndUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it('un tercero no puede emitir un código para otro', async () => {
+      await expect(
+        service.emitirCodigoRecuperacion(ID, 'lo-que-sea', {
+          usuario: { id: 'otro-usuario', rol: 'usuario' },
+        }),
+      ).rejects.toThrow(
+        'Solo el dueño o un admin pueden emitir un código de recuperación',
+      );
+      expect(model.findById).not.toHaveBeenCalled();
+      expect(model.findByIdAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('un id inválido al emitir es 404, no un 500 de Mongoose', async () => {
+      await expect(
+        service.emitirCodigoRecuperacion('no-es-un-id', undefined, {
+          usuario: { id: 'admin-1', rol: 'admin' },
+        }),
+      ).rejects.toThrow('Usuario no encontrado');
+      expect(model.findByIdAndUpdate).not.toHaveBeenCalled();
+    });
   });
 });

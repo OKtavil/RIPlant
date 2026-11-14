@@ -21,6 +21,12 @@ export class UsuariosModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(SesionRequeridaMiddleware)
-      .forRoutes({ path: 'usuarios/:id/descripcion', method: RequestMethod.PUT });
+      .forRoutes(
+        { path: 'usuarios/:id/descripcion', method: RequestMethod.PUT },
+        {
+          path: 'usuarios/:id/codigo-recuperacion',
+          method: RequestMethod.POST,
+        },
+      );
   }
 }

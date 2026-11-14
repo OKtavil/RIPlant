@@ -13,6 +13,19 @@ export class UsuarioDocumentModel {
   @Prop({ required: true })
   passwordHash: string;
 
+  /**
+   * SHA-256 del código de recuperación normalizado. Nunca el código en claro.
+   *
+   * `select: false` a propósito: el hash es tan sensible como `passwordHash`.
+   * Las lecturas que lo necesitan (recuperar, emitir) lo piden explícitamente
+   * con `.select('+codigoRecuperacionHash')`; el resto no lo ve.
+   *
+   * Es opcional porque los usuarios previos a esta feature no lo tienen: un
+   * código se emite al registrarse o cuando el dueño/admin lo regenera.
+   */
+  @Prop({ type: String, required: false, select: false })
+  codigoRecuperacionHash?: string;
+
   @Prop({
     required: true,
     type: String,

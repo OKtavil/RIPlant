@@ -164,4 +164,15 @@ export class SesionesService {
   async cerrar(token: string): Promise<void> {
     await this.sesionModel.deleteOne({ tokenHash: hashearToken(token) });
   }
+
+  /**
+   * Cierra **todas** las sesiones del usuario. Se llama al cambiar la
+   * contraseña: si un token robado sobreviviera al cambio, cambiar la
+   * contraseña no habría servido de nada.
+   */
+  async cerrarTodasDeUsuario(usuarioId: string): Promise<void> {
+    await this.sesionModel.deleteMany({
+      usuarioId: new Types.ObjectId(usuarioId),
+    });
+  }
 }

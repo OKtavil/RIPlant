@@ -9,6 +9,10 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model } from 'mongoose';
+import {
+  generarCodigoRecuperacion,
+  hashearCodigoRecuperacion,
+} from './codigo-recuperacion';
 import { hashPassword, verifyPassword } from './password';
 import type { InsigniaUsuario, Rol, Usuario } from './usuario.interface';
 import { UsuarioDocumentModel } from './usuario.schema';
@@ -20,6 +24,13 @@ import { UsuarioDocumentModel } from './usuario.schema';
  * dueño, o el panel de administración.
  */
 const NOMBRES_RESERVADOS = ['admin', 'zombie'];
+
+/**
+ * Único error de `POST /usuarios/recuperar`. Es genérico a propósito: no
+ * distingue "ese usuario no existe" de "ese código no es", porque esa
+ * diferencia le diría a un atacante qué nombres están registrados.
+ */
+const CODIGO_INVALIDO = 'El usuario y el código no coinciden.';
 
 @Injectable()
 export class UsuariosService implements OnModuleInit {
@@ -85,6 +96,10 @@ export class UsuariosService implements OnModuleInit {
    * Crea una cuenta nueva. El `rol` no se decide acá: lo elige quien llama, y
    * `POST /usuarios` siempre pasa `'usuario'`. El administrador sale del seed.
    *
+   * Devuelve también `codigoRecuperacion` en claro: es la **única** vez que
+   * existe fuera de la cabeza del usuario, porque en la base solo queda su
+   * SHA-256. Sin email, ese código es su forma de recuperar la contraseña.
+   *
    * Los dos rechazos que importan:
    * - Nombre reservado → `400`. No es `409`: no choca con un registro previo,
    *   es un nombre prohibido.
@@ -96,7 +111,7 @@ export class UsuariosService implements OnModuleInit {
     username: string;
     password: string;
     rol: Rol;
-  }): Promise<Usuario> {
+  }): Promise<{ usuario: Usuario; codigoRecuperacion: string }> {
     const username = datos.username.trim();
     if (NOMBRES_RESERVADOS.includes(username.toLowerCase())) {
       throw new BadRequestException(
@@ -104,13 +119,17 @@ export class UsuariosService implements OnModuleInit {
       );
     }
 
+    const codigoRecuperacion = generarCodigoRecuperacion();
+
     try {
       const creado = await this.usuarioModel.create({
         username,
         passwordHash: await hashPassword(datos.password),
         rol: datos.rol,
+        codigoRecuperacionHash:
+          hashearCodigoRecuperacion(codigoRecuperacion),
       });
-      return this.aDominio(creado);
+      return { usuario: this.aDominio(creado), codigoRecuperacion };
     } catch (error) {
       // 11000 = duplicate key: el índice `unique` de `username` ya lo tiene.
       if ((error as { code?: number }).code === 11000) {
@@ -195,5 +214,105 @@ export class UsuariosService implements OnModuleInit {
       .lean();
     if (!doc) throw new NotFoundException('Usuario no encontrado');
     return this.aDominio(doc as any);
+  }
+
+  /**
+   * Cambia la contraseña con el código de recuperación. Devuelve el id del
+   * usuario para que quien llama cierre sus sesiones.
+   *
+   * **Orden de costos a propósito.** Primero se busca por `username` + hash del
+   * código (SHA-256, barato). Solo si hay coincidencia se gasta bcrypt en la
+   * contraseña nueva. `POST /usuarios/recuperar` es público: hashear siempre
+   * convertiría un flood de códigos inválidos en un ataque de CPU.
+   *
+   * El código es de un solo uso: el `$unset` lo borra en la misma escritura que
+   * cambia la contraseña. Si dos pedidos llegan a la vez, el segundo ya no
+   * encuentra el hash y recibe el mismo error genérico.
+   */
+  async recuperar(datos: {
+    username: string;
+    codigo: string;
+    password: string;
+  }): Promise<string> {
+    const username = datos.username.trim();
+    const codigoRecuperacionHash = hashearCodigoRecuperacion(datos.codigo);
+
+    const candidato = await this.usuarioModel
+      .findOne({ username, codigoRecuperacionHash })
+      .select('_id')
+      .lean();
+
+    if (!candidato) throw new BadRequestException(CODIGO_INVALIDO);
+
+    const actualizado = await this.usuarioModel
+      .findOneAndUpdate(
+        { _id: candidato._id, codigoRecuperacionHash },
+        {
+          $set: { passwordHash: await hashPassword(datos.password) },
+          $unset: { codigoRecuperacionHash: '' },
+        },
+        { new: true },
+      )
+      .lean();
+
+    // Carrera con otra recuperación o con una rotación desde el perfil: el
+    // código dejó de valer entre la lectura y la escritura.
+    if (!actualizado) throw new BadRequestException(CODIGO_INVALIDO);
+
+    return String(candidato._id);
+  }
+
+  /**
+   * Emite un código nuevo. El admin puede hacerlo por cualquiera (es el
+   * reemplazo del "me olvidé la contraseña y también el código"); el dueño
+   * solo por sí mismo y probando su contraseña actual, porque un código nuevo
+   * invalida el anterior y no debe poder rotarlo quien tenga una sesión robada.
+   *
+   * Devuelve el código en claro una única vez.
+   */
+  async emitirCodigoRecuperacion(
+    id: string,
+    passwordActual: string | undefined,
+    sesion: { usuario: { id: string; rol: string } },
+  ): Promise<{ codigoRecuperacion: string }> {
+    if (!isValidObjectId(id)) throw new NotFoundException('Usuario no encontrado');
+
+    const esAdmin = sesion.usuario.rol === 'admin';
+    const esDuenio = String(sesion.usuario.id) === String(id);
+    if (!esAdmin && !esDuenio) {
+      throw new ForbiddenException(
+        'Solo el dueño o un admin pueden emitir un código de recuperación',
+      );
+    }
+
+    if (!esAdmin) {
+      const doc = await this.usuarioModel.findById(id).lean();
+      if (!doc) throw new NotFoundException('Usuario no encontrado');
+      const coincide = await verifyPassword(
+        passwordActual ?? '',
+        doc.passwordHash,
+      );
+      if (!coincide) {
+        throw new ForbiddenException('La contraseña actual no es correcta');
+      }
+    }
+
+    const codigoRecuperacion = generarCodigoRecuperacion();
+    const actualizado = await this.usuarioModel
+      .findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            codigoRecuperacionHash:
+              hashearCodigoRecuperacion(codigoRecuperacion),
+          },
+        },
+        { new: true },
+      )
+      .lean();
+
+    if (!actualizado) throw new NotFoundException('Usuario no encontrado');
+
+    return { codigoRecuperacion };
   }
 }
