@@ -52,6 +52,8 @@ export function LoginPage({ onIngresar, onNavegar }: Props) {
       subtitulo="Inicia sesión para cuidar tus recuerdos."
       pie={
         <>
+          <EnlaceBoton onClick={() => onNavegar('recuperar')}>¿OLVIDASTE TU CONTRASEÑA?</EnlaceBoton>
+          <br />
           ¿AÚN NO TIENES CUENTA?{' '}
           <EnlaceBoton onClick={() => onNavegar('registro')}>CREAR UNA CUENTA</EnlaceBoton>
         </>

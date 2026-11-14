@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { ApiError } from '../../../shared/api/client'
+import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { usuariosApi, type UsuarioPublico } from '../api/usuarios.api'
 import type { Category } from '../../categorias/model/categoria'
@@ -31,6 +33,16 @@ export function PerfilesPage({
 }: Props) {
   const [usuarios, setUsuarios] = useState<UsuarioPublico[]>([])
   const [seleccionado, setSeleccionado] = useState<string | null>(null)
+  /** Código recién emitido para el perfil ajeno. Vive solo en esta pantalla. */
+  const [codigoEmitido, setCodigoEmitido] = useState('')
+  const [errorEmision, setErrorEmision] = useState('')
+  const [emitiendo, setEmitiendo] = useState(false)
+
+  function volverALista() {
+    setSeleccionado(null)
+    setCodigoEmitido('')
+    setErrorEmision('')
+  }
 
   useEffect(() => {
     void usuariosApi.listar().then(setUsuarios).catch(() => setUsuarios([]))
@@ -44,7 +56,7 @@ export function PerfilesPage({
     if (!usuario) {
       return (
         <div className="pantalla__contenido">
-          <Boton tamano="chico" onClick={() => setSeleccionado(null)}>
+          <Boton tamano="chico" onClick={volverALista}>
             VOLVER A PERFILES
           </Boton>
           <p className="lista__conteo">Ese perfil ya no está disponible.</p>
@@ -60,7 +72,7 @@ export function PerfilesPage({
     return (
       <>
         <div style={{ padding: '0 24px', marginBottom: 12, display: 'flex', gap: 8 }}>
-          <Boton tamano="chico" onClick={() => setSeleccionado(null)}>
+          <Boton tamano="chico" onClick={volverALista}>
             VOLVER A PERFILES
           </Boton>
           {esPropio && (
@@ -68,7 +80,49 @@ export function PerfilesPage({
               IR A MI PERFIL
             </Boton>
           )}
+          {/* El admin es el último recurso cuando alguien perdió la contraseña
+              Y el código. No pide contraseña ajena: sería imposible de probar. */}
+          {!esPropio && sesion?.rol === 'admin' && (
+            <Boton
+              tamano="chico"
+              disabled={emitiendo}
+              onClick={async () => {
+                setErrorEmision('')
+                setEmitiendo(true)
+                try {
+                  const { codigoRecuperacion } = await usuariosApi.emitirCodigoRecuperacion(
+                    usuario.id,
+                  )
+                  setCodigoEmitido(codigoRecuperacion)
+                } catch (fallo) {
+                  setErrorEmision(
+                    fallo instanceof ApiError
+                      ? fallo.message
+                      : 'No se pudo emitir el código de recuperación.',
+                  )
+                } finally {
+                  setEmitiendo(false)
+                }
+              }}
+            >
+              {emitiendo ? 'EMITIENDO…' : 'EMITIR CÓDIGO DE RECUPERACIÓN'}
+            </Boton>
+          )}
         </div>
+        {codigoEmitido && (
+          <div style={{ padding: '0 24px', marginBottom: 12 }}>
+            <p>
+              <strong>Entregáselo a @{usuario.username}:</strong> no se vuelve a mostrar y
+              reemplaza al anterior.
+            </p>
+            <p style={{ fontFamily: 'var(--fuente-pixel)', fontSize: 16, letterSpacing: 1, wordBreak: 'break-all', margin: '8px 0' }}>{codigoEmitido}</p>
+          </div>
+        )}
+        {errorEmision && (
+          <div style={{ padding: '0 24px', marginBottom: 12 }}>
+            <Aviso tono="error">{errorEmision}</Aviso>
+          </div>
+        )}
         <PerfilPage
           // Sesión sintética: `PerfilPage` filtra las lápidas por `username`,
           // así que necesita la identidad del perfil retratado. `expiraEn` no
@@ -108,7 +162,11 @@ export function PerfilesPage({
           {usuarios.map((usuario) => (
             <button
               key={usuario.id}
-              onClick={() => setSeleccionado(usuario.id)}
+              onClick={() => {
+                setCodigoEmitido('')
+                setErrorEmision('')
+                setSeleccionado(usuario.id)
+              }}
               style={{
                 textAlign: 'left',
                 background: '#f5f1e8',

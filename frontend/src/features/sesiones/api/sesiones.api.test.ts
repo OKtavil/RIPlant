@@ -42,14 +42,28 @@ describe('sesionesApi', () => {
     expect(init.body).toBe(JSON.stringify({ username: 'admin', password: 'clave-de-prueba' }))
   })
 
-  it('registrar hace POST /usuarios con las credenciales y devuelve la sesión', async () => {
+  it('registrar hace POST /usuarios y separa la sesión del código de recuperación', async () => {
     conRespuesta(
-      Response.json({ id: 2, username: 'pepe', rol: 'usuario', insignias: [], expiraEn: '2026-10-20T00:00:00.000Z' }),
+      Response.json({
+        id: 2,
+        username: 'pepe',
+        rol: 'usuario',
+        insignias: [],
+        expiraEn: '2026-10-20T00:00:00.000Z',
+        codigoRecuperacion: 'ABCD-EFGH-IJKL-MNOP',
+      }),
     )
 
-    const sesion = await sesionesApi.registrar({ username: 'pepe', password: 'clave-de-prueba' })
+    const { sesion, codigoRecuperacion } = await sesionesApi.registrar({
+      username: 'pepe',
+      password: 'clave-de-prueba',
+    })
 
     expect(sesion).toMatchObject({ username: 'pepe', rol: 'usuario' })
+    // El código no es parte de la sesión: mezclarlos lo dejaría guardado junto
+    // al usuario en cualquier lugar que persista la sesión.
+    expect(sesion).not.toHaveProperty('codigoRecuperacion')
+    expect(codigoRecuperacion).toBe('ABCD-EFGH-IJKL-MNOP')
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(url).toBe(`${BASE}/usuarios`)
     expect(init.method).toBe('POST')
@@ -85,5 +99,33 @@ describe('sesionesApi', () => {
       status: 401,
       codigo: 'no-autorizado',
     })
+  })
+
+  it('recuperar hace POST /usuarios/recuperar y devuelve el mensaje del backend', async () => {
+    conRespuesta(Response.json({ mensaje: 'Tu contraseña se actualizó. Iniciá sesión con la nueva.' }))
+
+    const resultado = await sesionesApi.recuperar({
+      username: 'pepe',
+      codigo: 'ABCD-EFGH-IJKL-MNOP',
+      password: 'clave-nueva-1',
+    })
+
+    expect(resultado.mensaje).toBe('Tu contraseña se actualizó. Iniciá sesión con la nueva.')
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    // No cuelga de /sesiones porque se usa, justamente, sin sesión.
+    expect(url).toBe(`${BASE}/usuarios/recuperar`)
+    expect(init.method).toBe('POST')
+    expect(init.credentials).toBe('include')
+    expect(init.body).toBe(
+      JSON.stringify({ username: 'pepe', codigo: 'ABCD-EFGH-IJKL-MNOP', password: 'clave-nueva-1' }),
+    )
+  })
+
+  it('un 400 en recuperar se propaga como ApiError invalido', async () => {
+    conRespuesta(Response.json({ message: 'El usuario y el código no coinciden.' }, { status: 400 }))
+
+    await expect(
+      sesionesApi.recuperar({ username: 'pepe', codigo: 'MAL', password: 'clave-nueva-1' }),
+    ).rejects.toMatchObject({ status: 400, codigo: 'invalido' })
   })
 })

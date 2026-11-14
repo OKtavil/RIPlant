@@ -11,8 +11,10 @@ function completar(container: HTMLElement, password: string, confirmar: string) 
 
 describe('RegistroPage', () => {
   it('registra con el usuario recortado cuando las contraseñas coinciden', () => {
-    const onRegistrar = vi.fn().mockResolvedValue(undefined)
-    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
+    const onRegistrar = vi.fn().mockResolvedValue('ABCD-EFGH-IJKL-MNOP')
+    const { container } = render(
+      <RegistroPage onRegistrar={onRegistrar} onContinuar={vi.fn()} onNavegar={vi.fn()} />,
+    )
 
     completar(container, 'clave-de-prueba', 'clave-de-prueba')
     fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
@@ -21,9 +23,32 @@ describe('RegistroPage', () => {
     expect(onRegistrar).toHaveBeenCalledWith({ username: 'pepe', password: 'clave-de-prueba' })
   })
 
+  it('muestra el código una sola vez y espera confirmación antes de continuar', async () => {
+    const onContinuar = vi.fn()
+    const { container } = render(
+      <RegistroPage
+        onRegistrar={vi.fn().mockResolvedValue('ABCD-EFGH-IJKL-MNOP')}
+        onContinuar={onContinuar}
+        onNavegar={vi.fn()}
+      />,
+    )
+
+    completar(container, 'clave-de-prueba', 'clave-de-prueba')
+    fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
+
+    // El código es la única vía de recuperación sin email: si la pantalla
+    // navegara sola, el usuario se lo perdería para siempre.
+    expect(await screen.findByText('ABCD-EFGH-IJKL-MNOP')).toBeTruthy()
+    expect(onContinuar).not.toHaveBeenCalled()
+    expect(container.querySelector('.auth__form')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'ENTRAR AL CEMENTERIO' }))
+    expect(onContinuar).toHaveBeenCalledTimes(1)
+  })
+
   it('no llama a la API y avisa cuando las contraseñas no coinciden', () => {
     const onRegistrar = vi.fn()
-    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
+    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onContinuar={vi.fn()} onNavegar={vi.fn()} />)
 
     completar(container, 'clave-de-prueba', 'otra-cosa')
     fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
@@ -34,7 +59,7 @@ describe('RegistroPage', () => {
 
   it('no llama a la API y avisa cuando la contraseña es corta', () => {
     const onRegistrar = vi.fn()
-    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
+    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onContinuar={vi.fn()} onNavegar={vi.fn()} />)
 
     completar(container, 'corta', 'corta')
     fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
@@ -45,7 +70,7 @@ describe('RegistroPage', () => {
 
   it('no llama a la API cuando la contraseña supera los 72 caracteres', () => {
     const onRegistrar = vi.fn()
-    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
+    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onContinuar={vi.fn()} onNavegar={vi.fn()} />)
 
     completar(container, 'x'.repeat(73), 'x'.repeat(73))
     fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
@@ -56,7 +81,7 @@ describe('RegistroPage', () => {
 
   it('no llama a la API cuando el usuario supera los 50 caracteres', () => {
     const onRegistrar = vi.fn()
-    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
+    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onContinuar={vi.fn()} onNavegar={vi.fn()} />)
 
     fireEvent.change(container.querySelector('#registro-usuario')!, {
       target: { value: 'x'.repeat(51) },
@@ -77,7 +102,7 @@ describe('RegistroPage', () => {
     const onRegistrar = vi
       .fn()
       .mockRejectedValue(new ApiError(409, 'conflicto', 'Ese nombre de usuario ya está en uso.'))
-    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onNavegar={vi.fn()} />)
+    const { container } = render(<RegistroPage onRegistrar={onRegistrar} onContinuar={vi.fn()} onNavegar={vi.fn()} />)
 
     completar(container, 'clave-de-prueba', 'clave-de-prueba')
     fireEvent.click(screen.getByRole('button', { name: 'CREAR CUENTA' }))
@@ -87,7 +112,7 @@ describe('RegistroPage', () => {
   })
 
   it('no renderiza el campo de correo', () => {
-    const { container } = render(<RegistroPage onRegistrar={vi.fn()} onNavegar={vi.fn()} />)
+    const { container } = render(<RegistroPage onRegistrar={vi.fn()} onContinuar={vi.fn()} onNavegar={vi.fn()} />)
 
     expect(container.querySelector('#registro-correo')).toBeNull()
     expect(container.querySelector('#registro-usuario')).toHaveProperty('disabled', false)

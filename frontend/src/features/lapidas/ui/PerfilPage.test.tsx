@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { ApiError } from '../../../shared/api/client'
 import type { Grave } from '../model/lapida'
 import { PerfilPage } from './PerfilPage'
 
@@ -72,6 +73,60 @@ describe('PerfilPage (S4)', () => {
 
     const stat = document.querySelector('.perfil__stat--insignia')!
     expect(stat.className).not.toContain('perfil__stat--obtenida')
+  })
+
+  it('no ofrece el código de recuperación en el perfil ajeno ni sin handler', () => {
+    const { container } = render(<PerfilPage {...base} />)
+    expect(container.querySelector('#perfil-password-codigo')).toBeNull()
+    expect(screen.queryByText('CÓDIGO DE RECUPERACIÓN')).toBeNull()
+
+    const ajeno = render(
+      <PerfilPage
+        {...base}
+        soloLectura
+        onEmitirCodigoRecuperacion={vi.fn()}
+      />,
+    )
+    expect(ajeno.container.querySelector('#perfil-password-codigo')).toBeNull()
+  })
+
+  it('genera un código nuevo desde el perfil propio con la contraseña actual', async () => {
+    const onEmitirCodigoRecuperacion = vi.fn().mockResolvedValue('ABCD-EFGH-IJKL-MNOP')
+    const { container } = render(
+      <PerfilPage {...base} onEmitirCodigoRecuperacion={onEmitirCodigoRecuperacion} />,
+    )
+
+    // La contraseña no está para molestar: sin ella, una sesión robada podría
+    // rotar el código y quedarse con la cuenta.
+    expect(container.querySelector('#perfil-password-codigo')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'GENERAR CÓDIGO NUEVO' }))
+
+    fireEvent.change(container.querySelector('#perfil-password-codigo')!, {
+      target: { value: 'clave-actual-1' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'CONFIRMAR Y GENERAR' }))
+
+    expect(await screen.findByText('ABCD-EFGH-IJKL-MNOP')).toBeTruthy()
+    expect(onEmitirCodigoRecuperacion).toHaveBeenCalledWith('clave-actual-1')
+    // El código reemplaza al anterior: hay que avisarlo, no solo mostrarlo.
+    expect(screen.getByText(/reemplaza al anterior/i)).toBeTruthy()
+  })
+
+  it('muestra el error del backend si la contraseña actual no es correcta', async () => {
+    const onEmitirCodigoRecuperacion = vi
+      .fn()
+      .mockRejectedValue(new ApiError(403, 'prohibido', 'La contraseña actual no es correcta'))
+    const { container } = render(
+      <PerfilPage {...base} onEmitirCodigoRecuperacion={onEmitirCodigoRecuperacion} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'GENERAR CÓDIGO NUEVO' }))
+    fireEvent.change(container.querySelector('#perfil-password-codigo')!, {
+      target: { value: 'mala' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'CONFIRMAR Y GENERAR' }))
+
+    expect(await screen.findByText('La contraseña actual no es correcta')).toBeTruthy()
   })
 
   it('lista una lápida propia recién publicada, aunque el POST no traiga `duenio`', () => {

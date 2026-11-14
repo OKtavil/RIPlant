@@ -17,10 +17,14 @@ import type { Asesino, CreateGraveInput, Grave } from '../features/lapidas/model
 import { LoginPage } from '../features/sesiones/ui/LoginPage'
 import { RecuperarPage } from '../features/sesiones/ui/RecuperarPage'
 import { RegistroPage } from '../features/sesiones/ui/RegistroPage'
-import { RestablecerPage } from '../features/sesiones/ui/RestablecerPage'
 import { sesionesApi } from '../features/sesiones/api/sesiones.api'
 import { usuariosApi } from '../features/usuarios/api/usuarios.api'
-import type { Credenciales, Session, VistaAuth } from '../features/sesiones/model/sesion'
+import type {
+  Credenciales,
+  RecuperarPassword,
+  Session,
+  VistaAuth,
+} from '../features/sesiones/model/sesion'
 import { rutaDeDetalle, rutaDeVista } from './ruta'
 import { useRuta } from './useRuta'
 
@@ -124,12 +128,33 @@ export default function App() {
     navegar(rutaDeVista('inicio'))
   }
 
-  /** El backend registra y deja la cookie puesta: entra logueado, igual que el login. */
+  /**
+   * El backend registra y deja la cookie puesta: entra logueado, igual que el
+   * login. La navegación NO va acá: `RegistroPage` muestra el código de
+   * recuperación y espera a que el usuario confirme que lo guardó, porque es la
+   * única vez que lo va a ver.
+   */
   async function registrar(credenciales: Credenciales) {
-    const actual = await sesionesApi.registrar(credenciales)
-    setSesion(actual)
+    const { sesion: creada, codigoRecuperacion } = await sesionesApi.registrar(credenciales)
+    setSesion(creada)
+    return codigoRecuperacion
+  }
+
+  /** Confirmado el código, recién ahí se cierra el registro y se entra. */
+  function continuarRegistro() {
     abrirAuth(null)
     navegar(rutaDeVista('inicio'))
+  }
+
+  /**
+   * Recuperación sin sesión. El backend cierra todas las sesiones del usuario
+   * al cambiar la contraseña, así que la copia local también se descarta: dejar
+   * `sesion` con una cookie que ya no vale mostraría un perfil que no responde.
+   */
+  async function recuperar(datos: RecuperarPassword) {
+    const { mensaje } = await sesionesApi.recuperar(datos)
+    setSesion(null)
+    return mensaje
   }
 
   async function cerrarSesion() {
@@ -311,10 +336,15 @@ export default function App() {
         <Nav activa={null} items={[]} onNavegar={() => abrirAuth(null)} />
         {vistaAuth === 'login' && <LoginPage onIngresar={ingresar} onNavegar={abrirAuth} />}
         {vistaAuth === 'registro' && (
-          <RegistroPage onRegistrar={registrar} onNavegar={abrirAuth} />
+          <RegistroPage
+            onRegistrar={registrar}
+            onContinuar={continuarRegistro}
+            onNavegar={abrirAuth}
+          />
         )}
-        {vistaAuth === 'recuperar' && <RecuperarPage onNavegar={abrirAuth} />}
-        {vistaAuth === 'restablecer' && <RestablecerPage onNavegar={abrirAuth} />}
+        {vistaAuth === 'recuperar' && (
+          <RecuperarPage onRecuperar={recuperar} onNavegar={abrirAuth} />
+        )}
       </div>
     )
   }
@@ -403,6 +433,16 @@ export default function App() {
                 if (!sesion) return
                 const actualizado = await usuariosApi.actualizarDescripcion(sesion.id, descripcion)
                 setSesion((s) => (s ? { ...s, descripcion: actualizado.descripcion } : s))
+              }}
+              onEmitirCodigoRecuperacion={async (passwordActual) => {
+                // El perfil propio exige la contraseña; la sección no existe
+                // sin sesión, así que `sesion` acá siempre está presente.
+                if (!sesion) return ''
+                const { codigoRecuperacion } = await usuariosApi.emitirCodigoRecuperacion(
+                  sesion.id,
+                  passwordActual,
+                )
+                return codigoRecuperacion
               }}
             />
           )}

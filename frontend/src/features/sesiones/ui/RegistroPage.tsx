@@ -8,13 +8,24 @@ import type { Credenciales, VistaAuth } from '../model/sesion'
 import { AlternarMostrar, AuthTarjeta } from './AuthTarjeta'
 
 type Props = {
-  onRegistrar: (credenciales: Credenciales) => Promise<void>
+  /**
+   * Crea la cuenta y devuelve el código de recuperación en claro. Es la única
+   * vez que ese código existe: en la base solo queda su hash.
+   */
+  onRegistrar: (credenciales: Credenciales) => Promise<string>
+  /** Cierra la pantalla de autenticación y entra al cementerio. */
+  onContinuar: () => void
   onNavegar: (vista: VistaAuth) => void
 }
 
 /**
  * Crear cuenta ya tiene endpoint (`POST /usuarios`, con auto-login). El correo
  * no se muestra: el backend no lo guarda ni lo pide en el registro.
+ *
+ * Después del alta **no se navega solo**: se muestra el código de recuperación
+ * una única vez y se espera a que el usuario confirme que lo guardó. Sin email
+ * ni SMS, ese código es su única forma de volver a entrar si olvida la
+ * contraseña, y perdérselo por un cambio automático de pantalla sería definitivo.
  */
 
 const MINIMO_PASSWORD = 8
@@ -22,13 +33,15 @@ const MINIMO_PASSWORD = 8
 const MAXIMO_USUARIO = 50
 const MAXIMO_PASSWORD = 72
 
-export function RegistroPage({ onRegistrar, onNavegar }: Props) {
+export function RegistroPage({ onRegistrar, onContinuar, onNavegar }: Props) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmar, setConfirmar] = useState('')
   const [verPassword, setVerPassword] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [errores, setErrores] = useState<Record<string, string>>({})
+  /** Código recién emitido. Cuando existe, se reemplaza el formulario. */
+  const [codigoRecuperacion, setCodigoRecuperacion] = useState('')
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
@@ -55,7 +68,8 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
     setErrores({})
     setEnviando(true)
     try {
-      await onRegistrar({ username: username.trim(), password })
+      const codigo = await onRegistrar({ username: username.trim(), password })
+      setCodigoRecuperacion(codigo)
     } catch (fallo) {
       if (fallo instanceof ApiError) {
         setErrores({ general: fallo.message })
@@ -64,6 +78,28 @@ export function RegistroPage({ onRegistrar, onNavegar }: Props) {
       }
       setEnviando(false)
     }
+  }
+
+  if (codigoRecuperacion) {
+    return (
+      <AuthTarjeta
+        titulo="Guardá este código"
+        subtitulo="Es tu llave para volver si olvidás la contraseña."
+      >
+        <p className="auth__contexto">
+          Este es tu código de recuperación. <strong>No se vuelve a mostrar</strong> y no lo
+          enviamos por correo: anotalo en un lugar seguro.
+        </p>
+        <p style={{ fontFamily: 'var(--fuente-pixel)', fontSize: 16, letterSpacing: 1, wordBreak: 'break-all', margin: '8px 0' }}>{codigoRecuperacion}</p>
+        <p className="auth__contexto">
+          Si lo perdés, podés generar uno nuevo desde tu perfil con tu contraseña actual; el
+          anterior dejará de servir.
+        </p>
+        <Boton type="button" bloque onClick={onContinuar}>
+          ENTRAR AL CEMENTERIO
+        </Boton>
+      </AuthTarjeta>
+    )
   }
 
   return (

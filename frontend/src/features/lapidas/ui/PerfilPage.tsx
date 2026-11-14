@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
+import { CampoTexto } from '../../../shared/ui/Campo'
 import { IconoInsignia, IconoPersona } from '../../../shared/ui/iconos'
 import { insigniaSuperviviente, type Session } from '../../sesiones/model/sesion'
 import type { Category } from '../../categorias/model/categoria'
@@ -19,6 +20,12 @@ type Props = {
   onBorrar: (lapida: Grave) => Promise<void>
   onIniciarSesion: () => void
   onActualizarDescripcion?: (descripcion: string) => Promise<void>
+  /**
+   * Emite un código de recuperación nuevo para el propio usuario, probando la
+   * contraseña actual. Devuelve el código en claro, que se muestra una sola vez.
+   * Sin esta prop la sección no existe (perfil ajeno o ruta sin backend).
+   */
+  onEmitirCodigoRecuperacion?: (passwordActual: string) => Promise<string>
   /**
    * Perfil ajeno: se ve todo, no se ofrece ninguna acción de escritura. Sin
    * esto, `puedeBorrar` compararía contra el usuario retratado y mostraría
@@ -44,6 +51,7 @@ export function PerfilPage({
   onBorrar,
   onIniciarSesion,
   onActualizarDescripcion,
+  onEmitirCodigoRecuperacion,
   soloLectura = false,
 }: Props) {
   const [editando, setEditando] = useState(false)
@@ -68,6 +76,13 @@ export function PerfilPage({
   const insignia = insigniaSuperviviente(sesion)
   const puedeEditarDescripcion =
     !!sesion && !!onActualizarDescripcion && !soloLectura
+  const puedeEmitirCodigo =
+    !!sesion && !!onEmitirCodigoRecuperacion && !soloLectura
+  const [pidiendoCodigo, setPidiendoCodigo] = useState(false)
+  const [passwordCodigo, setPasswordCodigo] = useState('')
+  const [generandoCodigo, setGenerandoCodigo] = useState(false)
+  const [codigoNuevo, setCodigoNuevo] = useState('')
+  const [errorCodigo, setErrorCodigo] = useState('')
 
   return (
     <>
@@ -169,6 +184,81 @@ export function PerfilPage({
           vuelva a mostrar señales de vida. La primera vez que la revivas se te otorga la
           insignia al dueño.
         </Aviso>
+      )}
+
+      {puedeEmitirCodigo && (
+        <section style={{ padding: '0 24px', marginBottom: 16 }}>
+          <h2 className="perfil__seccion">CÓDIGO DE RECUPERACIÓN</h2>
+          {codigoNuevo ? (
+            <>
+              <p style={{ marginBottom: 8 }}>
+                <strong>Guardalo ahora:</strong> no se vuelve a mostrar y reemplaza al anterior.
+              </p>
+              <p style={{ fontFamily: 'var(--fuente-pixel)', fontSize: 16, letterSpacing: 1, wordBreak: 'break-all', margin: '8px 0' }}>{codigoNuevo}</p>
+            </>
+          ) : pidiendoCodigo ? (
+            <form
+              onSubmit={async (evento) => {
+                evento.preventDefault()
+                setErrorCodigo('')
+                setGenerandoCodigo(true)
+                try {
+                  setCodigoNuevo(await onEmitirCodigoRecuperacion!(passwordCodigo))
+                } catch (fallo) {
+                  setErrorCodigo(
+                    fallo instanceof ApiError
+                      ? fallo.message
+                      : 'No se pudo generar el código de recuperación.',
+                  )
+                } finally {
+                  setGenerandoCodigo(false)
+                }
+              }}
+            >
+              <CampoTexto
+                id="perfil-password-codigo"
+                etiqueta="CONTRASEÑA ACTUAL"
+                type="password"
+                autoComplete="current-password"
+                required
+                maxLength={72}
+                value={passwordCodigo}
+                error={errorCodigo}
+                ayuda="La pedimos para que nadie con tu sesión abierta pueda rotar el código."
+                onChange={(e) => {
+                  setPasswordCodigo(e.target.value)
+                  setErrorCodigo('')
+                }}
+              />
+              <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                <Boton type="submit" tamano="chico" disabled={generandoCodigo}>
+                  {generandoCodigo ? 'GENERANDO…' : 'CONFIRMAR Y GENERAR'}
+                </Boton>
+                <Boton
+                  type="button"
+                  tamano="chico"
+                  onClick={() => {
+                    setPidiendoCodigo(false)
+                    setPasswordCodigo('')
+                    setErrorCodigo('')
+                  }}
+                >
+                  CANCELAR
+                </Boton>
+              </div>
+            </form>
+          ) : (
+            <>
+              <p style={{ marginBottom: 8 }}>
+                Si perdiste el código que te dimos al crear la cuenta, generá uno nuevo. El
+                anterior deja de servir.
+              </p>
+              <Boton tamano="chico" onClick={() => setPidiendoCodigo(true)}>
+                GENERAR CÓDIGO NUEVO
+              </Boton>
+            </>
+          )}
+        </section>
       )}
 
       <h2 className="perfil__seccion">SU CEMENTERIO</h2>

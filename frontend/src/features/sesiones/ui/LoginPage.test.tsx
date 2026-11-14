@@ -38,10 +38,15 @@ describe('LoginPage', () => {
     expect(hijos.indexOf(contexto as Element)).toBeLessThan(hijos.indexOf(container.querySelector('.auth__form')!))
   })
 
-  it('no muestra el link de recuperación de contraseña', () => {
-    render(<LoginPage onIngresar={vi.fn()} onNavegar={vi.fn()} />)
+  it('lleva a la recuperación de contraseña desde el pie', () => {
+    const onNavegar = vi.fn()
+    render(<LoginPage onIngresar={vi.fn()} onNavegar={onNavegar} />)
 
-    expect(screen.queryByText(/OLVIDASTE TU CONTRASEÑA/)).toBeNull()
+    // Desde S4 la recuperación existe: quien no se acuerda de su contraseña
+    // tiene que llegar sin adivinar la URL.
+    fireEvent.click(screen.getByRole('button', { name: '¿OLVIDASTE TU CONTRASEÑA?' }))
+
+    expect(onNavegar).toHaveBeenCalledWith('recuperar')
   })
 
   it('no muestra la ayuda del prototipo sobre el rótulo del correo', () => {

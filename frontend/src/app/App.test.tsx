@@ -39,6 +39,7 @@ vi.mock('../features/sesiones/api/sesiones.api', () => ({
     actual: vi.fn(),
     iniciar: vi.fn(),
     registrar: vi.fn(),
+    recuperar: vi.fn(),
     cerrar: vi.fn(),
   },
 }))

@@ -43,5 +43,16 @@ export type Credenciales = {
   password: string
 }
 
+/**
+ * Lo que pide `POST /usuarios/recuperar`. Se usa sin sesión: el código de
+ * recuperación es la prueba de identidad, por eso reemplaza a la contraseña
+ * vieja en vez de sumarse a ella.
+ */
+export type RecuperarPassword = {
+  username: string
+  codigo: string
+  password: string
+}
+
 /** Sub-vistas de autenticación que se navegan sin cambiar de ruta. */
-export type VistaAuth = 'login' | 'registro' | 'recuperar' | 'restablecer'
+export type VistaAuth = 'login' | 'registro' | 'recuperar'
