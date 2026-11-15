@@ -339,6 +339,7 @@
 }
 
 .lapida--alta .lapida__contenido {
+  flex-grow: 1;
   padding: 8px;
   background: linear-gradient(135deg, #f5e47d 0%, #a9cf61 100%);
   border: 1px solid #b0bd75;
@@ -646,6 +647,7 @@ button.lapida__coronas:disabled {
 
 .grilla--tres {
   grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
 }
 
 .grilla--cuatro {

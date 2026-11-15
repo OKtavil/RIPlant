@@ -39,12 +39,16 @@ describe('hoja de estilos', () => {
   })
 
   it('da un fondo degradado al texto y una franja clara a las coronas de inicio', () => {
-    expect(bloque(componentes, '.lapida--alta .lapida__contenido')).toMatch(
-      /background\s*:\s*linear-gradient/,
-    )
+    const contenidoInicio = bloque(componentes, '.lapida--alta .lapida__contenido')
+    expect(contenidoInicio).toMatch(/background\s*:\s*linear-gradient/)
+    expect(contenidoInicio).toMatch(/flex-grow\s*:\s*1/)
     expect(bloque(componentes, 'button.lapida__coronas')).toMatch(
       /background\s*:\s*linear-gradient\([^;]*var\(--azul-claro\)[^;]*var\(--blanco\)/,
     )
+  })
+
+  it('estira las tarjetas de Inicio al alto de la más alta de cada fila', () => {
+    expect(bloque(componentes, '.grilla--tres')).toMatch(/align-items\s*:\s*stretch/)
   })
 
   it('aplica el tratamiento del texto y las coronas también a las lápidas del perfil', () => {
