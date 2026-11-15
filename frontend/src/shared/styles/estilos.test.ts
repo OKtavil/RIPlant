@@ -37,4 +37,22 @@ describe('hoja de estilos', () => {
     expect(bloque(tokens, 'p')).toMatch(/(?:^|;)\s*margin\s*:\s*0/)
     expect(bloque(tokens, 'h1, h2, h3')).toMatch(/(?:^|;)\s*margin\s*:\s*0/)
   })
+
+  it('da un fondo degradado al texto y una franja clara a las coronas de inicio', () => {
+    expect(bloque(componentes, '.lapida--alta .lapida__contenido')).toMatch(
+      /background\s*:\s*linear-gradient/,
+    )
+    expect(bloque(componentes, 'button.lapida__coronas')).toMatch(
+      /background\s*:\s*linear-gradient\([^;]*var\(--azul-claro\)[^;]*var\(--blanco\)/,
+    )
+  })
+
+  it('aplica el tratamiento del texto y las coronas también a las lápidas del perfil', () => {
+    expect(bloque(componentes, '.lapida--baja .lapida__contenido')).toMatch(
+      /background\s*:\s*linear-gradient/,
+    )
+    expect(bloque(componentes, '.lapida--baja .lapida__coronas')).toMatch(
+      /background\s*:\s*linear-gradient\([^;]*var\(--azul-claro\)[^;]*var\(--blanco\)/,
+    )
+  })
 })

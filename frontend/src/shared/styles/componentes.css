@@ -292,7 +292,7 @@
 /* ── Tarjeta de lápida ────────────────────────────────────────────────── */
 
 .lapida {
-  background: var(--menta);
+  background: var(--crema);
   border: 3px solid var(--blanco);
   outline: 2px solid var(--madera);
   border-radius: 8px;
@@ -330,6 +330,26 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.lapida__contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lapida--alta .lapida__contenido {
+  padding: 8px;
+  background: linear-gradient(135deg, #f5e47d 0%, #a9cf61 100%);
+  border: 1px solid #b0bd75;
+  border-radius: 6px;
+}
+
+.lapida--baja .lapida__contenido {
+  padding: 6px;
+  background: linear-gradient(135deg, #f5e47d 0%, #a9cf61 100%);
+  border: 1px solid #b0bd75;
+  border-radius: 6px;
 }
 
 .lapida__nombre {
@@ -376,6 +396,36 @@
    propio icono (`stroke`), no el texto. */
 .lapida__coronas--puesta {
   color: var(--madera);
+  font-weight: 700;
+}
+
+button.lapida__coronas {
+  width: 100%;
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 5px 8px;
+  background: linear-gradient(180deg, var(--azul-claro) 0%, var(--blanco) 100%);
+  border: 2px solid var(--madera);
+  border-radius: 5px;
+  color: var(--texto-fuerte);
+  font-weight: 700;
+}
+
+button.lapida__coronas:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* El perfil usa la misma tarjeta en tamaño bajo: sin esta regla, la franja de
+   coronas quedaba con el degradado dorado viejo. */
+.lapida--baja .lapida__coronas {
+  justify-content: space-between;
+  margin-top: auto;
+  padding: 5px 8px;
+  background: linear-gradient(180deg, var(--azul-claro) 0%, var(--blanco) 100%);
+  border: 2px solid var(--madera);
+  border-radius: 5px;
+  color: var(--texto-fuerte);
   font-weight: 700;
 }
 

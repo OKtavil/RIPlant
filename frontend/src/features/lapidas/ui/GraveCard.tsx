@@ -22,7 +22,7 @@ type Props = {
 
 export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCorona, propia = false, onBorrar }: Props) {
   return (
-    <article className={`lapida${lapida.resucitada ? ' lapida--resucitada' : ''}`}>
+    <article className={`lapida lapida--${tamano}${lapida.resucitada ? ' lapida--resucitada' : ''}`}>
       {lapida.resucitada && (
         <span className="lapida__resucitada" aria-label="Lápida resucitada">
           RESUCITADA
@@ -41,17 +41,19 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
         )}
       </button>
 
-      <button className="lapida__nombre" onClick={() => onAbrir(lapida)}>
-        “{lapida.nombrePlanta}”
-      </button>
+      <div className="lapida__contenido">
+        <button className="lapida__nombre" onClick={() => onAbrir(lapida)}>
+          “{lapida.nombrePlanta}”
+        </button>
 
-      <p className="lapida__epitafio">{lapida.epitafio}</p>
+        <p className="lapida__epitafio">{lapida.epitafio}</p>
 
-      <p className="lapida__meta">
-        {categoria || 'Sin categoría'} · {lapida.causaMuerte}
-      </p>
+        <p className="lapida__meta">
+          {categoria || 'Sin categoría'} · {lapida.causaMuerte}
+        </p>
 
-      <p className="lapida__autor">por @{nombreDelDuenio(lapida)}</p>
+        <p className="lapida__autor">por @{nombreDelDuenio(lapida)}</p>
+      </div>
 
       {tamano === 'alta' ? (
         <button
@@ -69,7 +71,7 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
                 : `Dar una corona a ${lapida.nombrePlanta}`
           }
         >
-          <IconoCorona stroke={lapida.coronadaPorMi ? '#E8C547' : undefined} />
+          <IconoCorona stroke={lapida.coronadaPorMi ? '#2E1305' : '#6E3A12'} />
           <span>{lapida.coronasCount}</span>
         </button>
       ) : (
