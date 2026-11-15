@@ -131,6 +131,113 @@ describe('E002 — los errores se limpian al cambiar de pestaña', () => {
   })
 })
 
+})
+
+describe('estado de corona al cerrar sesión', () => {
+  it('quita el indicador de corona puesta al salir', async () => {
+    vi.mocked(sesionesApi.actual).mockResolvedValue(
+      sesion({ id: 'u2', username: 'visitante' }),
+    )
+    vi.mocked(lapidasApi.findAll).mockResolvedValue([
+      lapida({
+        usuarioId: 'u1',
+        duenio: { username: 'zombie', rol: 'zombie' },
+        coronasCount: 1,
+        coronadaPorMi: true,
+      }),
+    ])
+
+    render(<App />)
+
+    const botonCorona = await screen.findByRole('button', {
+      name: /quitar la corona de pepino/i,
+    })
+    expect(botonCorona.className).toContain('lapida__coronas--puesta')
+
+    fireEvent.click(screen.getByRole('button', { name: /salir/i }))
+
+    const botonSinSesion = await screen.findByRole('button', {
+      name: /dar una corona a pepino/i,
+    })
+    expect(botonSinSesion.className).not.toContain('lapida__coronas--puesta')
+  })
+})
+
+describe('estado de corona al cargar la página', () => {
+  it('vuelve a cargar las lápidas después de resolver la sesión', async () => {
+    vi.mocked(sesionesApi.actual).mockResolvedValue(
+      sesion({ id: 'u2', username: 'visitante' }),
+    )
+    vi.mocked(lapidasApi.findAll)
+      .mockResolvedValueOnce([
+        lapida({
+          usuarioId: 'u1',
+          duenio: { username: 'jardinera', rol: 'usuario' },
+          coronasCount: 1,
+          coronadaPorMi: false,
+        }),
+      ])
+      .mockResolvedValueOnce([
+        lapida({
+          usuarioId: 'u1',
+          duenio: { username: 'jardinera', rol: 'usuario' },
+          coronasCount: 1,
+          coronadaPorMi: true,
+        }),
+      ])
+
+    render(<App />)
+
+    const botonCorona = await screen.findByRole('button', {
+      name: /quitar la corona de pepino/i,
+    })
+    expect(botonCorona.className).toContain('lapida__coronas--puesta')
+    expect(lapidasApi.findAll).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('estado de corona al iniciar sesión', () => {
+  it('recarga las lápidas para mostrar las coronas de la sesión recién iniciada', async () => {
+    vi.mocked(lapidasApi.findAll)
+      .mockResolvedValueOnce([
+        lapida({
+          usuarioId: 'u2',
+          duenio: { username: 'jardinera', rol: 'usuario' },
+          coronasCount: 1,
+          coronadaPorMi: false,
+        }),
+      ])
+      .mockResolvedValueOnce([
+        lapida({
+          usuarioId: 'u2',
+          duenio: { username: 'jardinera', rol: 'usuario' },
+          coronasCount: 1,
+          coronadaPorMi: true,
+        }),
+      ])
+    vi.mocked(sesionesApi.iniciar).mockResolvedValue(
+      sesion({ id: 'u2', username: 'visitante' }),
+    )
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /iniciar sesión/i }))
+    fireEvent.change(screen.getByLabelText(/nombre de usuario/i), {
+      target: { value: 'visitante' },
+    })
+    fireEvent.change(screen.getByLabelText(/contraseña/i), {
+      target: { value: 'secreta123' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /^entrar$/i }))
+
+    const botonCorona = await screen.findByRole('button', {
+      name: /quitar la corona de pepino/i,
+    })
+    expect(botonCorona.className).toContain('lapida__coronas--puesta')
+    expect(lapidasApi.findAll).toHaveBeenCalledTimes(2)
+  })
+})
+
 describe('E004 — borrar una lápida pide confirmación', () => {
   beforeEach(() => {
     window.history.replaceState(null, '', '/lapidas/1')

@@ -76,6 +76,50 @@ describe('GraveCard', () => {
     expect(onCorona).toHaveBeenCalledWith(conCorona)
   })
 
+  it('permite poner y quitar corona en la variante baja del perfil', () => {
+    const onCorona = vi.fn()
+    const { rerender } = render(
+      <GraveCard
+        lapida={lapida({ coronadaPorMi: false })}
+        tamano="baja"
+        onAbrir={vi.fn()}
+        onCorona={onCorona}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /dar una corona/i }))
+    expect(onCorona).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }))
+
+    rerender(
+      <GraveCard
+        lapida={lapida({ coronadaPorMi: true })}
+        tamano="baja"
+        onAbrir={vi.fn()}
+        onCorona={onCorona}
+      />,
+    )
+    expect(screen.getByRole('button', { name: /quitar la corona/i }).className).toContain(
+      'lapida__coronas--puesta',
+    )
+  })
+
+  it('bloquea la auto-corona también en la variante baja', () => {
+    render(
+      <GraveCard
+        lapida={lapida({ coronadaPorMi: false })}
+        tamano="baja"
+        onAbrir={vi.fn()}
+        onCorona={vi.fn()}
+        propia
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /no podés coronar tu propia lápida/i })).toHaveProperty(
+      'disabled',
+      true,
+    )
+  })
+
   it('muestra la foto real cuando la lápida tiene fotoUrl', () => {
     const { container } = render(
       <GraveCard lapida={lapida({ fotoUrl: '/uploads/abc.png' })} onAbrir={vi.fn()} />,

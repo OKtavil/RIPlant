@@ -47,6 +47,15 @@ describe('hoja de estilos', () => {
     )
   })
 
+  it('marca con un borde dorado interior el botón cuando ya puso corona', () => {
+    expect(bloque(componentes, '.lapida__coronas--puesta')).toMatch(
+      /box-shadow\s*:\s*inset[^;]*var\(--amarillo\)/,
+    )
+    expect(bloque(componentes, '.detalle__corona--puesta')).toMatch(
+      /box-shadow\s*:\s*inset[^;]*var\(--amarillo\)/,
+    )
+  })
+
   it('estira las tarjetas de Inicio al alto de la más alta de cada fila', () => {
     expect(bloque(componentes, '.grilla--tres')).toMatch(/align-items\s*:\s*stretch/)
   })

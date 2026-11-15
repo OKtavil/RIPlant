@@ -5,8 +5,23 @@ import type { Session } from '../../sesiones/model/sesion'
 import { PerfilesPage } from './PerfilesPage'
 
 vi.mock('../../lapidas/ui/GraveCard', () => ({
-  GraveCard: ({ lapida }: { lapida: { id: number; nombrePlanta: string } }) => (
-    <article data-testid={`lapida-${lapida.id}`}>{lapida.nombrePlanta}</article>
+  GraveCard: ({
+    lapida,
+    onCorona,
+    propia,
+  }: {
+    lapida: { id: number; nombrePlanta: string }
+    onCorona?: (lapida: { id: number; nombrePlanta: string }) => void
+    propia?: boolean
+  }) => (
+    <article data-testid={`lapida-${lapida.id}`}>
+      {lapida.nombrePlanta}
+      {onCorona && (
+        <button disabled={propia} onClick={() => onCorona(lapida)}>
+          Dar corona
+        </button>
+      )}
+    </article>
   ),
   GraveCardNueva: ({ texto }: { texto: string }) => <button>{texto}</button>,
 }))
@@ -40,6 +55,7 @@ function baseProps(actual: Session) {
     onAbrir: vi.fn(),
     onPublicar: vi.fn(),
     onBorrar: vi.fn().mockResolvedValue(undefined),
+    onCorona: vi.fn().mockResolvedValue(undefined),
     onIrAMiPerfil: vi.fn(),
   }
 }
@@ -130,5 +146,35 @@ describe('PerfilesPage — perfil pedido por la URL', () => {
 
     const tarjeta = (await screen.findByText('@jardinero')).closest('a')!
     expect(tarjeta.getAttribute('href')).toBe('/perfiles/jardinero')
+  })
+
+  it('permite coronar una lápida desde el perfil ajeno usando la sesión real', async () => {
+    const onCorona = vi.fn().mockResolvedValue(undefined)
+    const tumba = {
+      id: 8,
+      nombrePlanta: 'Aloe',
+      epitafio: 'Se fue',
+      fechaFallecimiento: '2025-01-01',
+      fechaPublicacion: '2025-01-02',
+      autor: 'jardinero',
+      categoriaId: 1,
+      causaMuerte: '',
+      fotoUrl: '',
+      coronasCount: 0,
+      usuarioId: 'u1',
+    }
+
+    render(
+      <Perfiles
+        {...baseProps(sesion({ id: 'admin-1', username: 'admin', rol: 'admin' }))}
+        lapidas={[tumba]}
+        onCorona={onCorona}
+        inicial="jardinero"
+      />,
+    )
+
+    fireEvent.click(await screen.findByRole('button', { name: /dar corona/i }))
+
+    expect(onCorona).toHaveBeenCalledWith(tumba)
   })
 })

@@ -19,6 +19,7 @@ type Props = {
   onAbrir: (lapida: Grave) => void
   onPublicar: () => void
   onBorrar: (lapida: Grave) => Promise<void>
+  onCorona: (lapida: Grave) => Promise<void>
   /** Lleva a la vista propia, donde sí se puede editar la descripción. */
   onIrAMiPerfil: () => void
   /** Username de la URL (`/perfiles/:username`); `null` para la lista. */
@@ -35,6 +36,7 @@ export function PerfilesPage({
   onAbrir,
   onPublicar,
   onBorrar,
+  onCorona,
   onIrAMiPerfil,
   username,
   onNavegar,
@@ -176,12 +178,14 @@ export function PerfilesPage({
                   expiraEn: '',
                 }
           }
+          sesionParaAcciones={sesion}
           lapidas={esPropio ? lapidas : propias}
           categorias={categorias}
           asesinos={asesinos}
           onAbrir={onAbrir}
           onPublicar={onPublicar}
           onBorrar={onBorrar}
+          onCorona={onCorona}
           onIniciarSesion={() => {}}
           soloLectura={!esPropio}
         />

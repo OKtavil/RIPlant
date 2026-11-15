@@ -76,9 +76,8 @@ export function formatearFecha(fecha: string): string {
  * Nombre con el que se muestra al dueño de una lápida, sin la `@`.
  *
  * Usa `duenio.username`, que el backend resuelve contra `usuarios.username` y
- * es la identidad real. `autor` es texto libre que el usuario escribe al
- * publicar y puede decir cualquier cosa: en los datos reales hay lápidas cuyo
- * `autor` dice "Anónimo" o "Rosa Verde" mientras el dueño es `zombie` o `admin`.
+ * es la identidad canónica del autor. Algunas lápidas antiguas tienen un
+ * `autor` desactualizado, incluso cuando el dueño asignado es `zombie`.
  *
  * Cae a `autor` solo cuando el backend no pudo resolver al dueño, para no
  * mostrar un vacío en datos anteriores a la propiedad `duenio`.

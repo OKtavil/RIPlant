@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError } from '../shared/api/client'
 import { Aviso } from '../shared/ui/Aviso'
 import { Confirmacion } from '../shared/ui/Confirmacion'
@@ -41,6 +41,8 @@ export default function App() {
   const [cargando, setCargando] = useState(true)
   const [actualizando, setActualizando] = useState(false)
   const [aviso, setAviso] = useState('')
+  const solicitudLapidas = useRef(0)
+  const sesionAutenticada = useRef(false)
   // Lápida esperando confirmación de borrado (E004). `null` = no hay modal.
   const [lapidaAConfirmar, setLapidaAConfirmar] = useState<Grave | null>(null)
 
@@ -56,6 +58,7 @@ export default function App() {
 
   useEffect(() => {
     let vigente = true
+    const solicitudInicial = ++solicitudLapidas.current
 
     // Las lecturas del arranque son independientes: ninguna necesita la
     // respuesta de otra, y cada una cuesta un viaje de red completo. Se
@@ -71,7 +74,9 @@ export default function App() {
           categoriasApi.findAll(),
         ])
         if (!vigente) return
-        setLapidas(lapidasCargadas)
+        if (solicitudInicial === solicitudLapidas.current && !sesionAutenticada.current) {
+          setLapidas(lapidasCargadas)
+        }
         setCategorias(categoriasCargadas)
       } catch {
         if (vigente) setAviso('No se pudo conectar con el backend.')
@@ -83,7 +88,10 @@ export default function App() {
     void (async () => {
       try {
         const actual = await sesionesApi.actual()
-        if (vigente) setSesion(actual)
+        if (!vigente) return
+        setSesion(actual)
+        sesionAutenticada.current = true
+        void recargarLapidasConSesion()
       } catch {
         // Sin sesión: es un estado válido, no un error.
       }
@@ -115,6 +123,18 @@ export default function App() {
     [lapidas],
   )
 
+  async function recargarLapidasConSesion() {
+    const solicitud = ++solicitudLapidas.current
+    try {
+      const lapidasCargadas = await lapidasApi.findAll()
+      if (solicitud === solicitudLapidas.current) setLapidas(lapidasCargadas)
+    } catch {
+      if (solicitud === solicitudLapidas.current) {
+        setAviso('No se pudo actualizar el estado de las coronas.')
+      }
+    }
+  }
+
   /**
    * Abrir o cerrar una pantalla de autenticación limpia el aviso (E002): el
    * error de la sesión anterior no tiene por qué seguir en pantalla.
@@ -126,7 +146,9 @@ export default function App() {
 
   async function ingresar(credenciales: Credenciales) {
     const actual = await sesionesApi.iniciar(credenciales)
+    sesionAutenticada.current = true
     setSesion(actual)
+    void recargarLapidasConSesion()
     abrirAuth(null)
     navegar(rutaDeVista('inicio'))
   }
@@ -139,7 +161,9 @@ export default function App() {
    */
   async function registrar(credenciales: Credenciales) {
     const { sesion: creada, codigoRecuperacion } = await sesionesApi.registrar(credenciales)
+    sesionAutenticada.current = true
     setSesion(creada)
+    void recargarLapidasConSesion()
     return codigoRecuperacion
   }
 
@@ -156,13 +180,19 @@ export default function App() {
    */
   async function recuperar(datos: RecuperarPassword) {
     const { mensaje } = await sesionesApi.recuperar(datos)
+    sesionAutenticada.current = false
+    solicitudLapidas.current += 1
     setSesion(null)
+    setLapidas((items) => items.map((item) => ({ ...item, coronadaPorMi: false })))
     return mensaje
   }
 
   async function cerrarSesion() {
     await sesionesApi.cerrar()
+    sesionAutenticada.current = false
+    solicitudLapidas.current += 1
     setSesion(null)
+    setLapidas((items) => items.map((item) => ({ ...item, coronadaPorMi: false })))
     abrirAuth(null)
     navegar(rutaDeVista('inicio'))
   }
@@ -444,6 +474,7 @@ export default function App() {
               categorias={categorias}
               asesinos={asesinos}
               onAbrir={abrirDetalle}
+              onCorona={darCorona}
               onPublicar={() => irAVista('publicar')}
               onBorrar={pedirConfirmacionBorrado}
               onIniciarSesion={() => abrirAuth('login')}
@@ -473,6 +504,7 @@ export default function App() {
               onAbrir={abrirDetalle}
               onPublicar={() => irAVista('publicar')}
               onBorrar={pedirConfirmacionBorrado}
+              onCorona={darCorona}
               onIrAMiPerfil={() => irAVista('perfil')}
               username={usernamePerfil}
               onNavegar={navegarInterno}

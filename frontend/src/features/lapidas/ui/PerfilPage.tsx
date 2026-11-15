@@ -12,10 +12,13 @@ import { GraveCard, GraveCardNueva } from './GraveCard'
 
 type Props = {
   sesion: Session | null
+  /** Usuario realmente conectado; `sesion` puede representar otro perfil. */
+  sesionParaAcciones?: Session | null
   lapidas: Grave[]
   categorias: Category[]
   asesinos: Asesino[]
   onAbrir: (lapida: Grave) => void
+  onCorona?: (lapida: Grave) => Promise<void>
   onPublicar: () => void
   onBorrar: (lapida: Grave) => Promise<void>
   onIniciarSesion: () => void
@@ -43,10 +46,12 @@ function formatearFechaCorta(fecha: string): string {
 
 export function PerfilPage({
   sesion,
+  sesionParaAcciones = sesion,
   lapidas,
   categorias,
   asesinos,
   onAbrir,
+  onCorona,
   onPublicar,
   onBorrar,
   onIniciarSesion,
@@ -271,6 +276,8 @@ export function PerfilPage({
             tamano="baja"
             categoria={nombreCategoria(lapida.categoriaId)}
             onAbrir={onAbrir}
+            {...(onCorona ? { onCorona: (grave: Grave) => void onCorona(grave) } : {})}
+            propia={esDuenio(lapida, sesionParaAcciones)}
             {...(puedeBorrar(lapida, sesion) && !soloLectura ? { onBorrar } : {})}
           />
         ))}

@@ -87,6 +87,24 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
           <IconoCorona stroke={lapida.coronadaPorMi ? '#2E1305' : '#6E3A12'} />
           <span>{lapida.coronasCount}</span>
         </button>
+      ) : onCorona ? (
+        <button
+          className={`lapida__coronas${lapida.coronadaPorMi ? ' lapida__coronas--puesta' : ''}`}
+          onClick={() => onCorona(lapida)}
+          disabled={propia && !lapida.coronadaPorMi}
+          title={propia && !lapida.coronadaPorMi ? 'No podés coronarte a vos mismo' : undefined}
+          aria-pressed={lapida.coronadaPorMi ?? false}
+          aria-label={
+            propia && !lapida.coronadaPorMi
+              ? `No podés coronar tu propia lápida: ${lapida.nombrePlanta}`
+              : lapida.coronadaPorMi
+                ? `Quitar la corona de ${lapida.nombrePlanta}`
+                : `Dar una corona a ${lapida.nombrePlanta}`
+          }
+        >
+          <IconoCorona stroke={lapida.coronadaPorMi ? '#2E1305' : '#6E3A12'} />
+          <span>{lapida.coronasCount}</span>
+        </button>
       ) : (
         <p className="lapida__coronas">
           <IconoCorona />
