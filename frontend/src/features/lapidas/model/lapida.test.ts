@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { nombreDelDuenio, puedeBorrar, type Grave } from './lapida'
+import {
+  LIMITES_TARJETA,
+  nombreDelDuenio,
+  puedeBorrar,
+  recortarTexto,
+  type Grave,
+} from './lapida'
 
 function lapida(parcial: Partial<Grave>): Grave {
   return {
@@ -94,5 +100,46 @@ describe('puedeBorrar', () => {
     const l = lapida({ duenio: { username: 'yo', rol: 'usuario' }, usuarioId: 'u-42' })
 
     expect(puedeBorrar(l, { username: 'yo', rol: 'usuario' })).toBe(true)
+  })
+})
+
+describe('recortarTexto', () => {
+  it('deja intacto un texto que ya entra en el límite', () => {
+    expect(recortarTexto('Poca luz', 24)).toBe('Poca luz')
+  })
+
+  it('nunca devuelve más caracteres que el límite', () => {
+    const largo = 'Se fue en paz, seco, digno y sin que nadie lo note.'
+
+    expect(recortarTexto(largo, 24).length).toBeLessThanOrEqual(24)
+  })
+
+  it('corta en un espacio y cierra con puntos suspensivos', () => {
+    // La tarjeta se lee como texto recortado, no como una palabra partida.
+    expect(recortarTexto('Se fue en paz, seco, digno.', 24)).toBe('Se fue en paz, seco,…')
+  })
+
+  it('corta duro cuando el primer tramo no tiene espacios útiles', () => {
+    expect(recortarTexto('Monstera', 5)).toBe('Mons…')
+  })
+
+  it('conserva un prefijo largo cuando el espacio cae cerca del límite', () => {
+    expect(recortarTexto('Monstera deliciosa variegada dorada', LIMITES_TARJETA.nombre)).toBe(
+      'Monstera deliciosa…',
+    )
+  })
+})
+
+describe('LIMITES_TARJETA', () => {
+  it('acota las tres partes que pueden estirar la tarjeta', () => {
+    expect(LIMITES_TARJETA.nombre).toBeGreaterThan(0)
+    expect(LIMITES_TARJETA.causa).toBeGreaterThan(0)
+    expect(LIMITES_TARJETA.epitafio).toBeGreaterThan(LIMITES_TARJETA.nombre)
+  })
+
+  it('fija los topes de causa y epitafio', () => {
+    // Categoría y causa ya no comparten renglón: cada una tiene su fila.
+    expect(LIMITES_TARJETA.causa).toBe(96)
+    expect(LIMITES_TARJETA.epitafio).toBe(160)
   })
 })

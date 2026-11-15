@@ -87,6 +87,36 @@ export function nombreDelDuenio(lapida: Grave): string {
   return lapida.duenio?.username || lapida.autor
 }
 
+/**
+ * Límite de texto que muestra una tarjeta de lápida.
+ *
+ * La lápida vive en una grilla de tercios: sin tope, un epitafio largo estira
+ * la fila entera. Los valores se cuentan en caracteres ya mostrados, con los
+ * puntos suspensivos incluidos.
+ */
+export const LIMITES_TARJETA = {
+  nombre: 28,
+  causa: 96,
+  epitafio: 160,
+} as const
+
+/**
+ * Recorta a `max` caracteres para que la tarjeta no crezca de más.
+ *
+ * Corta en el último espacio cuando queda cerca del límite (así no parte una
+ * palabra al medio) y cierra con `…`. Si el texto no tiene un espacio útil,
+ * corta duro: antes un recorte feo que una tarjeta desmedida.
+ */
+export function recortarTexto(texto: string, max: number): string {
+  if (texto.length <= max) return texto
+
+  const cortado = texto.slice(0, max - 1)
+  const ultimoEspacio = cortado.lastIndexOf(' ')
+  const base = ultimoEspacio >= max * 0.6 ? cortado.slice(0, ultimoEspacio) : cortado
+
+  return `${base.trimEnd()}…`
+}
+
 /** Lo mínimo de una sesión para decidir permisos. */
 type SesionParaPermisos = { username: string; rol: string; id?: string } | null
 

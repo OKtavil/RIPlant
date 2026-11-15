@@ -1,5 +1,11 @@
 import { IconoCorona, IconoHoja, IconoMas } from '../../../shared/ui/iconos'
-import { colorDeFoto, nombreDelDuenio, type Grave } from '../model/lapida'
+import {
+  colorDeFoto,
+  LIMITES_TARJETA,
+  nombreDelDuenio,
+  recortarTexto,
+  type Grave,
+} from '../model/lapida'
 
 /**
  * Tarjeta de lápida del prototipo.
@@ -48,13 +54,15 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
         </span>
 
         <button className="lapida__nombre" onClick={() => onAbrir(lapida)}>
-          “{lapida.nombrePlanta}”
+          “{recortarTexto(lapida.nombrePlanta, LIMITES_TARJETA.nombre)}”
         </button>
 
-        <p className="lapida__epitafio">{lapida.epitafio}</p>
+        <p className="lapida__epitafio">{recortarTexto(lapida.epitafio, LIMITES_TARJETA.epitafio)}</p>
 
-        <p className="lapida__meta">
-          {categoria || 'Sin categoría'} · {lapida.causaMuerte}
+        <p className="lapida__meta lapida__categoria">{categoria || 'Sin categoría'}</p>
+
+        <p className="lapida__meta lapida__causa">
+          {recortarTexto(lapida.causaMuerte, LIMITES_TARJETA.causa)}
         </p>
 
         <p className="lapida__autor">por @{nombreDelDuenio(lapida)}</p>

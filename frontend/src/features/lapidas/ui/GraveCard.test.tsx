@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import type { Grave } from '../model/lapida'
+import { LIMITES_TARJETA, type Grave } from '../model/lapida'
 import { GraveCard } from './GraveCard'
 
 function lapida(parcial: Partial<Grave> = {}): Grave {
@@ -93,6 +93,75 @@ describe('GraveCard', () => {
 
     expect(container.querySelector('.lapida__foto-img')).toBeNull()
     expect(container.querySelector('.lapida__foto svg')).toBeTruthy()
+  })
+
+  describe('límites de texto de la tarjeta', () => {
+    const largo = {
+      nombrePlanta: 'Monstera deliciosa variegada dorada',
+      causaMuerte:
+        'Riego excesivo por aspersión y hongos en la raíz seca, sumado a un sustrato viejo que ya no drenaba y a una maceta sin agujeros.',
+      epitafio:
+        'Se fue en silencio una madrugada de enero, después de tres semanas sin agua, sin sol y sin que nadie se diera cuenta. La tierra quedó seca, las hojas amarillas y el recuerdo de su sombra en la ventana.',
+    }
+
+    it('separa la categoría y la causa en dos filas', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida()} categoria="Cactus" onAbrir={vi.fn()} />,
+      )
+
+      const categoria = container.querySelector('.lapida__categoria')!
+      const causa = container.querySelector('.lapida__causa')!
+
+      expect(categoria.textContent).toBe('Cactus')
+      expect(causa.textContent).toBe('Poca luz')
+      // Nada de "Cactus · Poca luz" en una sola línea.
+      expect(categoria.textContent).not.toContain('·')
+      expect(Array.from(categoria.parentElement!.children).indexOf(categoria)).toBeLessThan(
+        Array.from(categoria.parentElement!.children).indexOf(causa),
+      )
+    })
+
+    it('recorta el nombre y la causa en un borde de palabra', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida(largo)} categoria="Cactus" onAbrir={vi.fn()} />,
+      )
+
+      expect(container.querySelector('.lapida__nombre')!.textContent).toBe(
+        '“Monstera deliciosa…”',
+      )
+
+      const causa = container.querySelector('.lapida__causa')!.textContent!
+      expect(causa.length).toBeLessThanOrEqual(LIMITES_TARJETA.causa)
+      expect(causa.endsWith('…')).toBe(true)
+      expect(causa).not.toBe(largo.causaMuerte)
+    })
+
+    it('recorta el epitafio sin pasar del límite', () => {
+      const { container } = render(<GraveCard lapida={lapida(largo)} onAbrir={vi.fn()} />)
+
+      const epitafio = container.querySelector('.lapida__epitafio')!.textContent!
+      expect(epitafio.length).toBeLessThanOrEqual(LIMITES_TARJETA.epitafio)
+      expect(epitafio.endsWith('…')).toBe(true)
+      expect(epitafio).not.toBe(largo.epitafio)
+    })
+
+    it('aplica los mismos límites a la variante baja, que es la del perfil', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida(largo)} tamano="baja" onAbrir={vi.fn()} />,
+      )
+
+      expect(container.querySelector('.lapida__nombre')!.textContent).toBe(
+        '“Monstera deliciosa…”',
+      )
+      expect(container.querySelector('.lapida__causa')!.textContent!.endsWith('…')).toBe(true)
+      expect(container.querySelector('.lapida__epitafio')!.textContent!.endsWith('…')).toBe(true)
+    })
+
+    it('no toca los textos que ya entran en el límite', () => {
+      render(<GraveCard lapida={lapida({ epitafio: 'Se fue en paz' })} onAbrir={vi.fn()} />)
+
+      expect(screen.getByText('Se fue en paz')).toBeTruthy()
+    })
   })
 
   describe('estado resucitada (S5)', () => {
