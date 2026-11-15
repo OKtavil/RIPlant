@@ -120,7 +120,12 @@ al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
 - La **página de cada lápida** tiene el panel de madera como contenedor: arriba la
   foto, después una card con los detalles del texto (nombre, autor, epitafio y datos de
   categoría, causa y fecha) y al final las acciones. La card no incluye ni la foto ni los
-  botones. La columna derecha queda solo para los comentarios.
+  botones. La columna derecha queda solo para los comentarios. En pantallas amplias, el
+  detalle se ajusta al alto visible: la card y la lista de comentarios tienen scroll
+  independiente si su contenido excede el espacio, mientras las acciones y el formulario
+  permanecen al final. En pantallas estrechas, la página puede crecer y desplazarse.
+- Revivir una lápida pide confirmación en el mismo modal visual que borrar una lápida;
+  cancelar no ejecuta la acción.
 - Las pruebas cubren el camino feliz y los errores HTTP principales.
 - La **barra de navegación** lleva el logo (sin fondo propio, se ve el café del nav) y,
   a la derecha, el menú con las acciones de sesión: `INICIAR SESIÓN` sin sesión,
