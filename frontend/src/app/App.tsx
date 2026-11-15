@@ -427,7 +427,7 @@ export default function App() {
               categorias={categorias}
               asesinos={asesinos}
               errorAsesinos={errorAsesinos}
-              onAbrir={abrirDetalle}
+              onNavegar={navegarInterno}
             />
           )}
           {vista === 'publicar' && (

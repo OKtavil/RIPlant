@@ -55,8 +55,10 @@ export function ListaAsesinos({ asesinos, variante, resaltar, onNavegar }: Props
   return (
     <>
       {asesinos.map((asesino, indice) => (
-        <div
+        <Enlace
           key={asesino.username}
+          href={rutaDePerfil(asesino.username)}
+          onNavegar={onNavegar}
           className="ranking__fila"
           data-propio={resaltar === asesino.username ? 'true' : undefined}
         >
@@ -74,7 +76,7 @@ export function ListaAsesinos({ asesinos, variante, resaltar, onNavegar }: Props
             <IconoCalavera />
             {asesino.muertes}
           </span>
-        </div>
+        </Enlace>
       ))}
     </>
   )

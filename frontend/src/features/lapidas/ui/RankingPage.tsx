@@ -1,3 +1,5 @@
+import { rutaDeDetalle } from '../../../app/ruta'
+import { Enlace } from '../../../shared/ui/Enlace'
 import { IconoCorona } from '../../../shared/ui/iconos'
 import type { Category } from '../../categorias/model/categoria'
 import { nombreDelDuenio, type Asesino, type Grave } from '../model/lapida'
@@ -8,10 +10,17 @@ type Props = {
   categorias: Category[]
   asesinos: Asesino[]
   errorAsesinos: string
-  onAbrir: (lapida: Grave) => void
+  /** Navegación interna: las filas son links con URL real. */
+  onNavegar: (destino: string) => void
 }
 
-export function RankingPage({ lapidas, categorias, asesinos, errorAsesinos, onAbrir }: Props) {
+export function RankingPage({
+  lapidas,
+  categorias,
+  asesinos,
+  errorAsesinos,
+  onNavegar,
+}: Props) {
   const salonDelHonor = [...lapidas].sort((a, b) => b.coronasCount - a.coronasCount)
 
   const nombreCategoria = (id: number) => categorias.find((c) => c.id === id)?.nombre
@@ -25,7 +34,12 @@ export function RankingPage({ lapidas, categorias, asesinos, errorAsesinos, onAb
         <p className="ranking__nota">Ordenado por coronas recibidas</p>
 
         {salonDelHonor.map((lapida, indice) => (
-          <button key={lapida.id} className="ranking__fila" onClick={() => onAbrir(lapida)}>
+          <Enlace
+            key={lapida.id}
+            href={rutaDeDetalle(lapida.id)}
+            onNavegar={onNavegar}
+            className="ranking__fila"
+          >
             <span>
               <span className="ranking__puesto">
                 {indice + 1}. “{lapida.nombrePlanta}”
@@ -41,7 +55,7 @@ export function RankingPage({ lapidas, categorias, asesinos, errorAsesinos, onAb
               <IconoCorona />
               {lapida.coronasCount}
             </span>
-          </button>
+          </Enlace>
         ))}
       </section>
 
@@ -54,7 +68,7 @@ export function RankingPage({ lapidas, categorias, asesinos, errorAsesinos, onAb
         {errorAsesinos ? (
           <AvisoAsesinos>{errorAsesinos}</AvisoAsesinos>
         ) : (
-          <ListaAsesinos asesinos={asesinos} variante="fila" />
+          <ListaAsesinos asesinos={asesinos} variante="fila" onNavegar={onNavegar} />
         )}
       </section>
     </div>
