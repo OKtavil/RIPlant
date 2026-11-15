@@ -315,12 +315,26 @@ export class LapidasService {
     }
   }
 
-  async findAll(): Promise<ReadonlyArray<Lapida>> {
+  async findAll(usuarioId?: string): Promise<ReadonlyArray<Lapida>> {
     const lapidas = await this.lapidaModel
       .find()
       .sort({ fechaPublicacion: -1 })
       .lean();
-    return this.enriquecerConDuenio(lapidas);
+    const enriquecidas = await this.enriquecerConDuenio(lapidas);
+    if (!usuarioId || enriquecidas.length === 0) return enriquecidas;
+
+    const coronas = await this.coronaModel
+      .find({
+        usuarioId,
+        lapidaId: { $in: enriquecidas.map((lapida) => lapida.id) },
+      })
+      .select('lapidaId')
+      .lean();
+    const coronadas = new Set(coronas.map((corona) => corona.lapidaId));
+    return enriquecidas.map((lapida) => ({
+      ...lapida,
+      coronadaPorMi: coronadas.has(lapida.id),
+    }));
   }
 
   async findOne(id: number): Promise<Lapida> {
@@ -404,7 +418,7 @@ export class LapidasService {
 
     await this.premiarSuperviviente(previa.usuarioId, id, yaResucitada);
 
-    return lapida;
+    return this.enriquecerUna(lapida as Lapida);
   }
 
   async revivir(id: number, sesion: { usuario: { id: string; rol: string } }) {
@@ -419,7 +433,9 @@ export class LapidasService {
     const previa = lapida;
     const yaResucitada = Boolean(previa.resucitada);
     if (yaResucitada) {
-      return this.marcarCoronadaPorMi(previa as Lapida, sesion.usuario.id);
+      return this.enriquecerUna(
+        await this.marcarCoronadaPorMi(previa as Lapida, sesion.usuario.id),
+      );
     }
     const actualizada = await this.lapidaModel
       .findOneAndUpdate(
@@ -432,7 +448,9 @@ export class LapidasService {
     // resultado es `null`: para el cliente es inexistente, no un rescate.
     if (!actualizada) throw new NotFoundException('Lápida no encontrada');
     await this.premiarSuperviviente(previa.usuarioId, id, false);
-    return this.marcarCoronadaPorMi(actualizada as Lapida, sesion.usuario.id);
+    return this.enriquecerUna(
+      await this.marcarCoronadaPorMi(actualizada as Lapida, sesion.usuario.id),
+    );
   }
 
   /**
@@ -517,7 +535,8 @@ export class LapidasService {
       await this.almacenamiento.borrar(fotoAnterior);
     }
 
-    return actualizada as Lapida;
+    if (!actualizada) throw new NotFoundException('Lápida no encontrada');
+    return this.enriquecerUna(actualizada as Lapida);
   }
 
   async remove(id: number): Promise<Lapida> {
@@ -579,7 +598,9 @@ export class LapidasService {
         // Ya tenía corona: no se inserta ni se incrementa. Se devuelve el
         // estado actual, que es lo que el front necesita para pintar.
         return {
-          lapida: await this.conEstadoDeCorona(id, sesion.usuario.id),
+          lapida: await this.enriquecerUna(
+            await this.conEstadoDeCorona(id, sesion.usuario.id),
+          ),
           creada: false,
         };
       }
@@ -590,9 +611,8 @@ export class LapidasService {
       .findOneAndUpdate({ id }, { $inc: { coronasCount: 1 } }, { new: true })
       .lean();
     return {
-      lapida: await this.marcarCoronadaPorMi(
-        coronada as Lapida,
-        sesion.usuario.id,
+      lapida: await this.enriquecerUna(
+        await this.marcarCoronadaPorMi(coronada as Lapida, sesion.usuario.id),
       ),
       creada: true,
     };
@@ -626,13 +646,22 @@ export class LapidasService {
 
     if (deletedCount === 0) {
       // No tenía corona: el contador no se toca.
-      return this.marcarCoronadaPorMi(lapida as Lapida);
+      return this.enriquecerUna(
+        await this.marcarCoronadaPorMi(lapida as Lapida, sesion.usuario.id),
+      );
     }
 
     const sinCorona = await this.lapidaModel
       .findOneAndUpdate({ id }, { $inc: { coronasCount: -1 } }, { new: true })
       .lean();
-    return this.marcarCoronadaPorMi(sinCorona as Lapida);
+    return this.enriquecerUna(
+      await this.marcarCoronadaPorMi(sinCorona as Lapida, sesion.usuario.id),
+    );
+  }
+
+  private async enriquecerUna(lapida: Lapida): Promise<Lapida> {
+    const [enriquecida] = await this.enriquecerConDuenio([lapida]);
+    return enriquecida;
   }
 
   /** Agrega `coronadaPorMi` para que el front sepa si pintar la corona. */

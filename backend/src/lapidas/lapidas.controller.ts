@@ -25,8 +25,8 @@ export class LapidasController {
   constructor(private readonly lapidasService: LapidasService) {}
 
   @Get()
-  findAll() {
-    return this.lapidasService.findAll();
+  findAll(@Req() req: RequestConSesion) {
+    return this.lapidasService.findAll(req.sesion?.usuario.id);
   }
 
   @Get('asesinos')

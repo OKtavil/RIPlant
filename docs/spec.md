@@ -15,7 +15,7 @@ inválido*.
 
 | Método | Ruta | Acceso | Resultado |
 |---|---|---|---|
-| GET | `/lapidas` | público | Lista de lápidas, cada una con `duenio: { username, rol }` |
+| GET | `/lapidas` | público | Lista de lápidas, cada una con `duenio: { username, rol }`; con sesión, agrega `coronadaPorMi` según las coronas de ese usuario |
 | GET | `/lapidas/:id` | público | Detalle con `duenio`, o `404` |
 | GET | `/lapidas/asesinos` | público | `[{ username, muertes }]` de mayor a menor, top 10; excluye al usuario `zombie` |
 | POST | `/lapidas` | sesión (cualquier rol) | Crea una lápida (`201`) o `400` por payload inválido. `usuarioId` y `autor` salen de la sesión; el cuerpo no los decide |
@@ -96,6 +96,12 @@ al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
   exista antes de aceptar escrituras. Las respuestas traen `coronadaPorMi`, que es lo que
   el frontend necesita para saber qué pintar. Nadie puede quitar la corona de otro: el
   borrado filtra por `usuarioId`.
+- El estado de corona se refleja como un borde dorado interior tanto en Inicio como en
+  las tarjetas del perfil. Desde ambas vistas se puede poner o quitar una corona; nunca
+  se puede coronar una lápida propia. `GET /lapidas` calcula `coronadaPorMi` para la
+  sesión actual, y el frontend vuelve a cargar esa lista al iniciar sesión y al abrir la
+  aplicación con una sesión vigente. Cerrar sesión limpia el indicador personal sin
+  alterar los totales.
 - Un comentario exige sesión, un `texto` de hasta 500 caracteres, y lo borra solo un
   `admin`: sin sesión, `401`; con rol `usuario`, `403`.
 - La foto se guarda con un nombre generado por el servidor y validada por magic bytes;

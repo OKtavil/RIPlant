@@ -45,6 +45,9 @@ describe('LapidasService', () => {
     create: jest.fn(),
     deleteOne: jest.fn(),
     exists: jest.fn(),
+    find: jest.fn(() => ({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) }),
+    })),
     init: jest.fn(),
   };
   const comentarioModel = {
@@ -58,10 +61,30 @@ describe('LapidasService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    model.find.mockImplementation(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([grave]),
+      }),
+      lean: jest.fn().mockResolvedValue([grave]),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) }),
+    }) as any);
+    model.findOne.mockImplementation(() => ({
+      sort: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue(grave),
+      }),
+      lean: jest.fn().mockResolvedValue(grave),
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue(null) }),
+    }) as any);
+    model.findOneAndUpdate.mockReturnValue({
+      lean: jest.fn().mockResolvedValue({ ...grave, coronasCount: 1 }),
+    } as any);
     coronaModel.create.mockResolvedValue({ lapidaId: 1, usuarioId: 'u1' });
     coronaModel.deleteOne.mockResolvedValue({ deletedCount: 1 });
     // Por defecto la corona existe: es el estado que sigue a un `giveCorona`.
     coronaModel.exists.mockResolvedValue({ _id: 'c1' });
+    coronaModel.find.mockReturnValue({
+      select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue([]) }),
+    } as any);
     coronaModel.init.mockResolvedValue(undefined);
     comentarioModel.deleteMany.mockResolvedValue({ deletedCount: 1 });
     almacenamiento.guardar.mockResolvedValue({
@@ -136,6 +159,42 @@ describe('LapidasService', () => {
     await expect(service.findOne(1)).resolves.toBeDefined();
   });
 
+  it('includes the current user crown state and resolves the grave owner on the list', async () => {
+    const usuarioId = 'aaaaaaaaaaaaaaaaaaaaaaaa';
+    const coronaId = 'bbbbbbbbbbbbbbbbbbbbbbbb';
+    model.find = jest
+      .fn()
+      .mockReturnValueOnce({
+        sort: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue([{ ...grave, usuarioId, coronasCount: 1 }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        select: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue([
+            { _id: usuarioId, username: 'zombie', rol: 'zombie' },
+          ]),
+        }),
+      }) as any;
+    coronaModel.find.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([{ lapidaId: 1 }]),
+      }),
+    } as any);
+
+    await expect(service.findAll(coronaId)).resolves.toMatchObject([
+      {
+        duenio: { username: 'zombie', rol: 'zombie' },
+        coronasCount: 1,
+        coronadaPorMi: true,
+      },
+    ]);
+    expect(coronaModel.find).toHaveBeenCalledWith({
+      usuarioId: coronaId,
+      lapidaId: { $in: [1] },
+    });
+  });
+
   it('creates, updates, crowns and removes graves', async () => {
     await expect(service.create({
       nombrePlanta: 'Cactus',
@@ -176,6 +235,35 @@ describe('LapidasService', () => {
     expect(coronaModel.create).toHaveBeenCalledTimes(2);
     // Lo que importa: el segundo intento no incrementó el contador.
     expect(model.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  it('keeps the resolved owner when a user crowns a grave', async () => {
+    const ownerId = 'aaaaaaaaaaaaaaaaaaaaaaaa';
+    const withOwner = { ...grave, usuarioId: ownerId, coronasCount: 1 };
+    model.findOne = jest.fn(() => ({
+      lean: jest.fn().mockResolvedValue({ ...grave, usuarioId: ownerId }),
+    })) as any;
+    model.findOneAndUpdate = jest.fn().mockReturnValue({
+      lean: jest.fn().mockResolvedValue(withOwner),
+    }) as any;
+    model.find = jest.fn(() => ({
+      select: jest.fn().mockReturnValue({
+        lean: jest.fn().mockResolvedValue([
+          { _id: ownerId, username: 'zombie', rol: 'zombie' },
+        ]),
+      }),
+    })) as any;
+
+    await expect(
+      service.giveCorona(1, { usuario: { id: 'u2', username: 'Vecino' } } as any),
+    ).resolves.toMatchObject({
+      lapida: {
+        autor: 'Jardinero',
+        duenio: { username: 'zombie', rol: 'zombie' },
+        coronasCount: 1,
+        coronadaPorMi: true,
+      },
+    });
   });
 
   it('rechaza coronar la propia lápida (no hay auto-corona)', async () => {
