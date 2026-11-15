@@ -99,7 +99,9 @@ al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
   junto con la descripción. La lista muestra avatar o placeholder, nombre y descripción;
   las tarjetas compactas recortan nombre a 22, epitafio a 96 y causa a 56 caracteres y
   mantienen alturas uniformes. En Inicio y en el perfil no aparece una tarjeta duplicada
-  para publicar; PUBLICAR continúa disponible en la navegación.
+  para publicar. La acción PUBLICAR de la navegación solo aparece cuando hay una sesión
+  iniciada; las personas sin sesión pueden acceder a la publicación después de iniciar
+  sesión.
 - Editar o borrar una lápida sin sesión devuelve `401`; con la sesión de otra persona y
   sin rol `admin`, `403`. Igual para subir la foto.
 - Una corona exige sesión y solo se puede dar una vez por usuario y lápida. **No es un
@@ -137,6 +139,9 @@ al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
 - Los errores de validación y de API en formularios tienen una animación de entrada; un
   reenvío vuelve a señalar el error aunque el mensaje no cambie. La animación se desactiva
   cuando el sistema solicita movimiento reducido.
+- La tarjeta del formulario de publicación queda centrada verticalmente en el espacio
+  disponible si cabe en el viewport; si el formulario supera el alto disponible, puede
+  crecer y desplazarse para mantener su contenido accesible.
 - La **tarjeta** de la grilla muestra la foto, el nombre y, debajo del nombre, la
   categoría; después presenta el epitafio, la causa, el autor y las coronas. Aplica en el
   cementerio (Inicio), en el perfil y en las filas del ranking.
