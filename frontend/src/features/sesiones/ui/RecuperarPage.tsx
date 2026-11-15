@@ -4,6 +4,7 @@ import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton, EnlaceBoton } from '../../../shared/ui/Boton'
 import { CampoTexto } from '../../../shared/ui/Campo'
+import { useFormErrorPulse } from '../../../shared/ui/useFormErrorPulse'
 import type { RecuperarPassword, VistaAuth } from '../model/sesion'
 import { AlternarMostrar, AuthTarjeta } from './AuthTarjeta'
 
@@ -38,6 +39,7 @@ export function RecuperarPage({ onRecuperar, onNavegar }: Props) {
   const [errores, setErrores] = useState<Record<string, string>>({})
   /** Mensaje de éxito: cuando existe, el formulario ya no se muestra. */
   const [exito, setExito] = useState('')
+  const { errorPulse, onSubmitCapture } = useFormErrorPulse()
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
@@ -100,7 +102,13 @@ export function RecuperarPage({ onRecuperar, onNavegar }: Props) {
       subtitulo="Usá el código que te dimos al crear la cuenta."
       pie={<EnlaceBoton onClick={() => onNavegar('login')}>VOLVER A INICIAR SESIÓN</EnlaceBoton>}
     >
-      <form className="auth__form" onSubmit={manejarEnvio} noValidate>
+      <form
+        className="auth__form"
+        data-error-pulse={errorPulse}
+        onSubmitCapture={onSubmitCapture}
+        onSubmit={manejarEnvio}
+        noValidate
+      >
         <CampoTexto
           id="recuperar-usuario"
           etiqueta="Nombre de usuario"

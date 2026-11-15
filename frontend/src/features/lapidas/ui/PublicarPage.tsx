@@ -4,6 +4,7 @@ import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { CampoArea, CampoSelect, CampoTexto } from '../../../shared/ui/Campo'
+import { useFormErrorPulse } from '../../../shared/ui/useFormErrorPulse'
 import type { Category } from '../../categorias/model/categoria'
 import type { CreateGraveInput } from '../model/lapida'
 
@@ -74,6 +75,7 @@ export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props)
   // Se captura al montar: el formulario no vive más de un día, y así el render
   // no llama a `new Date()` (función impura) en cada re-render.
   const [hoy] = useState(() => fechaLocalISO(new Date()))
+  const { errorPulse, onSubmitCapture } = useFormErrorPulse()
   /**
    * Último object URL vivo. Se crea en el manejador del `input`, no en un
    * efecto: crear el blob durante el render lo duplicaría en StrictMode y uno
@@ -166,7 +168,13 @@ export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props)
 
   return (
     <div className="publicar">
-      <form className="publicar__tarjeta" onSubmit={manejarEnvio} noValidate>
+      <form
+        className="publicar__tarjeta"
+        data-error-pulse={errorPulse}
+        onSubmitCapture={onSubmitCapture}
+        onSubmit={manejarEnvio}
+        noValidate
+      >
         <h1 className="publicar__titulo">NUEVA LÁPIDA</h1>
 
         <CampoTexto

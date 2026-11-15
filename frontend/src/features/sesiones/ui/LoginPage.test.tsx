@@ -68,4 +68,17 @@ describe('LoginPage', () => {
     expect(await screen.findByText('Necesitás iniciar sesión.')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'ENTRAR' })).toBeTruthy()
   })
+
+  it('reinicia la señal visual al reenviar el mismo error de validación', () => {
+    const { container } = render(<LoginPage onIngresar={vi.fn()} onNavegar={vi.fn()} />)
+    const formulario = container.querySelector('form')!
+
+    fireEvent.submit(formulario)
+    expect(formulario.getAttribute('data-error-pulse')).toBe('b')
+    expect(screen.getByText('El nombre de usuario es obligatorio.')).toBeTruthy()
+
+    fireEvent.submit(formulario)
+    expect(formulario.getAttribute('data-error-pulse')).toBe('a')
+    expect(screen.getByText('El nombre de usuario es obligatorio.')).toBeTruthy()
+  })
 })

@@ -244,6 +244,7 @@
 .campo--error select,
 .campo--error textarea {
   border-color: var(--rojo);
+  animation: campo-error-entrada 420ms ease-out both;
 }
 
 .campo__error {
@@ -251,6 +252,109 @@
   font-weight: 700;
   color: var(--rojo);
   margin-top: 4px;
+  animation: error-entrada 420ms ease-out both;
+}
+
+@keyframes error-entrada {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes campo-error-entrada {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes error-reintento {
+  0% {
+    opacity: 0.65;
+    transform: translateY(3px);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes campo-error-reintento {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(3px);
+  }
+  50% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(1px);
+  }
+}
+
+form[data-error-pulse='a'] .aviso--error,
+form[data-error-pulse='a'] .campo__error {
+  animation-name: error-reintento;
+}
+
+form[data-error-pulse='b'] .aviso--error,
+form[data-error-pulse='b'] .campo__error {
+  animation-name: error-entrada;
+}
+
+form[data-error-pulse='a'] .campo--error input,
+form[data-error-pulse='a'] .campo--error select,
+form[data-error-pulse='a'] .campo--error textarea {
+  animation-name: campo-error-reintento;
+}
+
+form[data-error-pulse='b'] .campo--error input,
+form[data-error-pulse='b'] .campo--error select,
+form[data-error-pulse='b'] .campo--error textarea {
+  animation-name: campo-error-entrada;
+}
+
+.detalle__comentario-form[data-error-pulse='a'] + .campo__error {
+  animation-name: error-reintento;
+}
+
+.detalle__comentario-form[data-error-pulse='b'] + .campo__error {
+  animation-name: error-entrada;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso--error,
+  .campo--error input,
+  .campo--error select,
+  .campo--error textarea,
+  .campo__error {
+    animation: none;
+  }
 }
 
 .campo__accion {
@@ -286,6 +390,7 @@
 .aviso--error {
   background: #f6d9d3;
   border-left-color: var(--rojo);
+  animation: error-entrada 420ms ease-out both;
 }
 
 .aviso--info {

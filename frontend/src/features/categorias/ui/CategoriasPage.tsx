@@ -4,6 +4,7 @@ import { ApiError } from '../../../shared/api/client'
 import { Aviso, AvisoNoDisponible } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { CampoTexto } from '../../../shared/ui/Campo'
+import { useFormErrorPulse } from '../../../shared/ui/useFormErrorPulse'
 import { CATEGORIA_MAX, CATEGORIA_MIN, contarLapidas, type Category } from '../model/categoria'
 import type { Session } from '../../sesiones/model/sesion'
 
@@ -32,6 +33,7 @@ export function CategoriasPage({
   const [errorNombre, setErrorNombre] = useState('')
   const [errorGeneral, setErrorGeneral] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const { errorPulse, onSubmitCapture } = useFormErrorPulse()
 
   const nombreValido = nombre.trim().length >= CATEGORIA_MIN && nombre.trim().length <= CATEGORIA_MAX
 
@@ -119,7 +121,12 @@ export function CategoriasPage({
       </section>
 
       <section className="feed">
-        <form className="tarjeta" onSubmit={manejarEnvio}>
+        <form
+          className="tarjeta"
+          data-error-pulse={errorPulse}
+          onSubmitCapture={onSubmitCapture}
+          onSubmit={manejarEnvio}
+        >
           <h2 className="publicar__titulo">{editando ? 'EDITAR CATEGORÍA' : 'NUEVA CATEGORÍA'}</h2>
 
           <CampoTexto

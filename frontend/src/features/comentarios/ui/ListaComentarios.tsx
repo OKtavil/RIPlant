@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { ApiError } from '../../../shared/api/client'
+import { useFormErrorPulse } from '../../../shared/ui/useFormErrorPulse'
 import type { Session } from '../../sesiones/model/sesion'
 import { comentariosApi } from '../api/comentarios.api'
 import { esTextoValido, LARGO_MAXIMO_TEXTO, type Comentario } from '../model/comentario'
@@ -31,6 +32,7 @@ export function ListaComentarios({ lapidaId, sesion }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const { errorPulse, onSubmitCapture } = useFormErrorPulse()
 
   // Al cambiar de lápida se recarga todo. `cancelado` evita que una respuesta
   // lenta de la lápida anterior pise la lista de la nueva.
@@ -118,7 +120,13 @@ export function ListaComentarios({ lapidaId, sesion }: Props) {
       </div>
 
       {sesion ? (
-        <form className="detalle__comentario-form" onSubmit={(e) => void enviar(e)} noValidate>
+        <form
+          className="detalle__comentario-form"
+          data-error-pulse={errorPulse}
+          onSubmitCapture={onSubmitCapture}
+          onSubmit={(e) => void enviar(e)}
+          noValidate
+        >
           <input
             type="text"
             value={texto}

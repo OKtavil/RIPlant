@@ -4,6 +4,7 @@ import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton, EnlaceBoton } from '../../../shared/ui/Boton'
 import { CampoTexto } from '../../../shared/ui/Campo'
+import { useFormErrorPulse } from '../../../shared/ui/useFormErrorPulse'
 import type { Credenciales, VistaAuth } from '../model/sesion'
 import { AlternarMostrar, AuthTarjeta } from './AuthTarjeta'
 
@@ -42,6 +43,7 @@ export function RegistroPage({ onRegistrar, onContinuar, onNavegar }: Props) {
   const [errores, setErrores] = useState<Record<string, string>>({})
   /** Código recién emitido. Cuando existe, se reemplaza el formulario. */
   const [codigoRecuperacion, setCodigoRecuperacion] = useState('')
+  const { errorPulse, onSubmitCapture } = useFormErrorPulse()
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
@@ -113,7 +115,13 @@ export function RegistroPage({ onRegistrar, onContinuar, onNavegar }: Props) {
         </>
       }
     >
-      <form className="auth__form" onSubmit={manejarEnvio} noValidate>
+      <form
+        className="auth__form"
+        data-error-pulse={errorPulse}
+        onSubmitCapture={onSubmitCapture}
+        onSubmit={manejarEnvio}
+        noValidate
+      >
         <CampoTexto
           id="registro-usuario"
           etiqueta="NOMBRE DE USUARIO"
