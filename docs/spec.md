@@ -120,13 +120,14 @@ al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
 - El frontend muestra estados útiles: aviso de error si la API no está disponible (sin
   datos de demostración; los mocks se reservan para las pruebas), confirmación después
   de publicar y confirmación antes de eliminar categorías.
-- La **tarjeta** de la grilla muestra el epitafio además de la foto, el nombre, la
-  categoría con la causa, el autor y las coronas. Aplica en el cementerio (Inicio), en
-  el perfil y en las filas del ranking.
-- La **página de cada lápida** tiene el panel de madera como contenedor: arriba la
-  foto, después una card con los detalles del texto (nombre, autor, epitafio y datos de
-  categoría, causa y fecha) y al final las acciones. La card no incluye ni la foto ni los
-  botones. La columna derecha queda solo para los comentarios. En pantallas amplias, el
+- La **tarjeta** de la grilla muestra la foto, el nombre y, debajo del nombre, la
+  categoría; después presenta el epitafio, la causa, el autor y las coronas. Aplica en el
+  cementerio (Inicio), en el perfil y en las filas del ranking.
+- La **página de cada lápida** tiene el panel de madera como contenedor: una card de
+  información con la imagen completa al principio, seguida por el nombre, el autor y un
+  enlace al perfil del dueño, el epitafio y los datos de categoría, causa y fecha. La
+  imagen se ajusta al ancho de la card sin recortarse; las acciones permanecen fuera de
+  ella. La columna derecha queda solo para los comentarios. En pantallas amplias, el
   detalle se ajusta al alto visible: la card y la lista de comentarios tienen scroll
   independiente si su contenido excede el espacio, mientras las acciones y el formulario
   permanecen al final. En pantallas estrechas, la página puede crecer y desplazarse.

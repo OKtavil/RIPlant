@@ -106,6 +106,13 @@ describe('hoja de estilos', () => {
     )
   })
 
+  it('adapta la imagen del detalle al ancho de su card sin recortarla', () => {
+    expect(bloque(componentes, '.detalle__foto')).toMatch(/width\s*:\s*100%/)
+    expect(bloque(componentes, '.detalle__foto-img')).toMatch(/width\s*:\s*100%/)
+    expect(bloque(componentes, '.detalle__foto-img')).toMatch(/height\s*:\s*auto/)
+    expect(bloque(componentes, '.detalle__foto-img')).toMatch(/object-fit\s*:\s*contain/)
+  })
+
   it('pinta el rótulo RESUCITADA como texto propio, sin caja', () => {
     const rotulo = bloque(componentes, '.lapida__resucitada')
     expect(rotulo).toMatch(/color\s*:\s*var\(--madera\)/)

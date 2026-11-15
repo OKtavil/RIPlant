@@ -148,11 +148,12 @@ describe('GraveCard', () => {
         'Se fue en silencio una madrugada de enero, después de tres semanas sin agua, sin sol y sin que nadie se diera cuenta. La tierra quedó seca, las hojas amarillas y el recuerdo de su sombra en la ventana.',
     }
 
-    it('separa la categoría y la causa en dos filas', () => {
+    it('muestra la categoría debajo del nombre, separada de la causa', () => {
       const { container } = render(
         <GraveCard lapida={lapida()} categoria="Cactus" onAbrir={vi.fn()} />,
       )
 
+      const nombre = container.querySelector('.lapida__nombre')!
       const categoria = container.querySelector('.lapida__categoria')!
       const causa = container.querySelector('.lapida__causa')!
 
@@ -160,9 +161,9 @@ describe('GraveCard', () => {
       expect(causa.textContent).toBe('Poca luz')
       // Nada de "Cactus · Poca luz" en una sola línea.
       expect(categoria.textContent).not.toContain('·')
-      expect(Array.from(categoria.parentElement!.children).indexOf(categoria)).toBeLessThan(
-        Array.from(categoria.parentElement!.children).indexOf(causa),
-      )
+      const filas = Array.from(categoria.parentElement!.children)
+      expect(filas.indexOf(categoria)).toBe(filas.indexOf(nombre) + 1)
+      expect(filas.indexOf(categoria)).toBeLessThan(filas.indexOf(causa))
     })
 
     it('recorta el nombre y la causa en un borde de palabra', () => {

@@ -57,9 +57,9 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
           “{recortarTexto(lapida.nombrePlanta, LIMITES_TARJETA.nombre)}”
         </button>
 
-        <p className="lapida__epitafio">{recortarTexto(lapida.epitafio, LIMITES_TARJETA.epitafio)}</p>
-
         <p className="lapida__meta lapida__categoria">{categoria || 'Sin categoría'}</p>
+
+        <p className="lapida__epitafio">{recortarTexto(lapida.epitafio, LIMITES_TARJETA.epitafio)}</p>
 
         <p className="lapida__meta lapida__causa">
           {recortarTexto(lapida.causaMuerte, LIMITES_TARJETA.causa)}

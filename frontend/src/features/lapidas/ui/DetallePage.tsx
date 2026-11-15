@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Boton } from '../../../shared/ui/Boton'
 import { Confirmacion } from '../../../shared/ui/Confirmacion'
+import { Enlace } from '../../../shared/ui/Enlace'
 import { IconoCorona, IconoHoja } from '../../../shared/ui/iconos'
 import type { Category } from '../../categorias/model/categoria'
 import { ListaComentarios } from '../../comentarios/ui/ListaComentarios'
 import type { Session } from '../../sesiones/model/sesion'
 import { colorDeFoto, formatearFecha, nombreDelDuenio, puedeBorrar, type Grave } from '../model/lapida'
+import { rutaDePerfil } from '../../../app/ruta'
 
 type Props = {
   lapida: Grave
@@ -15,17 +17,27 @@ type Props = {
   onBorrar: (lapida: Grave) => Promise<void>
   onRevivir: (lapida: Grave) => Promise<void>
   onVolver: () => void
+  onNavegar: (destino: string) => void
 }
 
 /**
  * Página propia de una lápida.
  *
- * El panel de madera (`detalle__info`) contiene la foto, una card con los datos
- * del texto (título, autor, epitafio y datos) y las acciones. La columna derecha
+ * El panel de madera (`detalle__info`) contiene una card con la foto y los datos
+ * (título, autor, epitafio y datos), seguida por las acciones. La columna derecha
  * es solo para los comentarios, así la ficha se lee de corrido y la conversación
  * no la interrumpe.
  */
-export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, onRevivir, onVolver }: Props) {
+export function DetallePage({
+  lapida,
+  categorias,
+  sesion,
+  onCorona,
+  onBorrar,
+  onRevivir,
+  onVolver,
+  onNavegar,
+}: Props) {
   const [confirmarRevivir, setConfirmarRevivir] = useState(false)
   const categoria = categorias.find((c) => c.id === lapida.categoriaId)?.nombre || 'Sin categoría'
   const mostrarBorrar = puedeBorrar(lapida, sesion)
@@ -42,18 +54,18 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
     <>
       <div className="pantalla__contenido pantalla__contenido--detalle">
         <section className="detalle__info">
-          <div
-            className="detalle__foto"
-            style={lapida.fotoUrl ? undefined : { background: colorDeFoto(lapida.id) }}
-          >
-            {lapida.fotoUrl ? (
-              <img className="detalle__foto-img" src={lapida.fotoUrl} alt="" />
-            ) : (
-              <IconoHoja size={96} />
-            )}
-          </div>
-
           <div className={`detalle__card${lapida.resucitada ? ' detalle__card--resucitada' : ''}`}>
+            <div
+              className="detalle__foto"
+              style={lapida.fotoUrl ? undefined : { background: colorDeFoto(lapida.id) }}
+            >
+              {lapida.fotoUrl ? (
+                <img className="detalle__foto-img" src={lapida.fotoUrl} alt="" />
+              ) : (
+                <IconoHoja size={96} />
+              )}
+            </div>
+
             {/* Igual que en la tarjeta: el rótulo ocupa su alto siempre y solo se
                 revela al revivir. */}
             <p
@@ -65,7 +77,12 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
             </p>
 
             <h1 className="detalle__titulo">“{lapida.nombrePlanta.toUpperCase()}”</h1>
-            <p className="detalle__autor">por @{nombreDelDuenio(lapida)}</p>
+            <p className="detalle__autor">
+              por{' '}
+              <Enlace href={rutaDePerfil(nombreDelDuenio(lapida))} onNavegar={onNavegar}>
+                @{nombreDelDuenio(lapida)}
+              </Enlace>
+            </p>
 
             <p className="detalle__epitafio">“{lapida.epitafio}”</p>
 

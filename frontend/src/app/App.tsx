@@ -433,6 +433,7 @@ export default function App() {
           onBorrar={pedirConfirmacionBorrado}
           onRevivir={revivirLapida}
           onVolver={() => irAVista('inicio')}
+          onNavegar={navegarInterno}
         />
       ) : (
         <>

@@ -57,15 +57,33 @@ function montar(opciones: {
       onBorrar={vi.fn().mockResolvedValue(undefined)}
       onRevivir={opciones.onRevivir ?? vi.fn().mockResolvedValue(undefined)}
       onVolver={vi.fn()}
+      onNavegar={vi.fn()}
     />,
   )
 }
 
 describe('DetallePage', () => {
-  it('muestra el username del dueño resuelto, no el texto libre de `autor`', () => {
-    const { container } = montar()
+  it('enlaza el username del dueño al perfil, no el texto libre de `autor`', () => {
+    const onNavegar = vi.fn()
+    const { container } = render(
+      <DetallePage
+        lapida={lapida()}
+        categorias={[{ id: 1, nombre: 'Cactus' }]}
+        sesion={null}
+        onCorona={vi.fn().mockResolvedValue(undefined)}
+        onBorrar={vi.fn().mockResolvedValue(undefined)}
+        onRevivir={vi.fn().mockResolvedValue(undefined)}
+        onVolver={vi.fn()}
+        onNavegar={onNavegar}
+      />,
+    )
 
-    expect(container.querySelector('.detalle__autor')!.textContent).toBe('por @zombie')
+    const autor = container.querySelector('.detalle__autor')!
+    const enlace = autor.querySelector('a')!
+    expect(autor.textContent).toBe('por @zombie')
+    expect(enlace.getAttribute('href')).toBe('/perfiles/zombie')
+    fireEvent.click(enlace)
+    expect(onNavegar).toHaveBeenCalledWith('/perfiles/zombie')
   })
 
   it('no muestra el botón de borrar sin sesión', () => {
@@ -200,18 +218,19 @@ describe('DetallePage', () => {
     const card = container.querySelector('.detalle__card')!
     const panel = container.querySelector('.detalle__info')!
 
-    // La foto y las acciones viven en el panel, pero no dentro de la card.
-    expect(card.querySelector('.detalle__foto')).toBeNull()
+    // La foto pasa a ser el primer elemento de la card; las acciones siguen
+    // separadas del texto.
+    expect(card.querySelector('.detalle__foto')).toBeTruthy()
     expect(card.querySelector('.detalle__acciones')).toBeNull()
-    expect(panel.querySelector('.detalle__foto')).toBeTruthy()
+    expect(card.firstElementChild?.className).toContain('detalle__foto')
     expect(panel.querySelector('.detalle__acciones')).toBeTruthy()
   })
 
-  it('ordena los detalles: foto, card de texto, acciones', () => {
+  it('ordena la card de información antes de las acciones', () => {
     const { container } = montar({ sesion: sesionDuenia })
 
     const panel = container.querySelector('.detalle__info')!
-    const orden = ['.detalle__foto', '.detalle__card', '.detalle__acciones'].map((sel) =>
+    const orden = ['.detalle__card', '.detalle__acciones'].map((sel) =>
       panel.querySelector(sel),
     )
 
@@ -244,6 +263,18 @@ describe('DetallePage', () => {
     expect(posiciones).toEqual([...posiciones].sort((a, b) => a - b))
   })
 
+  it('ubica la imagen al inicio de la card antes del contenido textual', () => {
+    const { container } = montar({ lapida: lapida({ fotoUrl: '/uploads/planta.png' }) })
+    const card = container.querySelector('.detalle__card')!
+    const foto = card.querySelector('.detalle__foto')!
+    const titulo = card.querySelector('.detalle__titulo')!
+
+    expect(Array.from(card.children).indexOf(foto)).toBe(0)
+    expect(Array.from(card.children).indexOf(foto)).toBeLessThan(
+      Array.from(card.children).indexOf(titulo),
+    )
+  })
+
   describe('estado resucitada (S5)', () => {
     it('reserva el hueco del rótulo aunque la lápida no haya revivido', () => {
       const { container } = montar({ lapida: lapida({ resucitada: false }) })
@@ -261,9 +292,11 @@ describe('DetallePage', () => {
       const { container } = montar({ lapida: lapida({ resucitada: false }) })
 
       const card = container.querySelector('.detalle__card')!
-      const rotulo = card.firstElementChild!
+      const foto = card.firstElementChild!
+      const rotulo = card.querySelector('.detalle__resucitada')!
 
-      expect(rotulo.className).toBe('detalle__resucitada')
+      expect(foto.className).toBe('detalle__foto')
+      expect(rotulo.previousElementSibling).toBe(foto)
       expect(rotulo.nextElementSibling?.className).toBe('detalle__titulo')
     })
 
