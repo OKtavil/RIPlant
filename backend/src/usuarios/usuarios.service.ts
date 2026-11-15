@@ -217,22 +217,14 @@ export class UsuariosService implements OnModuleInit {
   }
 
   /**
-   * Cambia la contraseña con el código de recuperación. Devuelve el id del
-   * usuario para que quien llama cierre sus sesiones.
-   *
-   * **Orden de costos a propósito.** Primero se busca por `username` + hash del
-   * código (SHA-256, barato). Solo si hay coincidencia se gasta bcrypt en la
-   * contraseña nueva. `POST /usuarios/recuperar` es público: hashear siempre
-   * convertiría un flood de códigos inválidos en un ataque de CPU.
-   *
-   * El código es de un solo uso: el `$unset` lo borra en la misma escritura que
-   * cambia la contraseña. Si dos pedidos llegan a la vez, el segundo ya no
-   * encuentra el hash y recibe el mismo error genérico.
+   * Primer paso de la recuperación: verifica `username` + código y devuelve el
+   * id del usuario. **Barato a propósito**: solo SHA-256 y una lectura. El
+   * bcrypt de la contraseña nueva se gasta recién en el segundo paso, así un
+   * flood de códigos inválidos contra el endpoint público no compra CPU.
    */
-  async recuperar(datos: {
+  async identificarPorCodigo(datos: {
     username: string;
     codigo: string;
-    password: string;
   }): Promise<string> {
     const username = datos.username.trim();
     const codigoRecuperacionHash = hashearCodigoRecuperacion(datos.codigo);
@@ -244,9 +236,27 @@ export class UsuariosService implements OnModuleInit {
 
     if (!candidato) throw new BadRequestException(CODIGO_INVALIDO);
 
+    return String(candidato._id);
+  }
+
+  /**
+   * Segundo paso: cambia la contraseña y consume el código en la misma
+   * escritura. El filtro repite el hash del código, así que si se consumió o se
+   * rotó entre los dos pasos no cambia nada (compare-and-swap).
+   *
+   * Quien llama debe cerrar las sesiones **antes** de este paso: si el cierre
+   * falla, la contraseña y el código quedan intactos y el reintento sirve.
+   */
+  async cambiarPasswordConCodigo(datos: {
+    usuarioId: string;
+    codigo: string;
+    password: string;
+  }): Promise<void> {
+    const codigoRecuperacionHash = hashearCodigoRecuperacion(datos.codigo);
+
     const actualizado = await this.usuarioModel
       .findOneAndUpdate(
-        { _id: candidato._id, codigoRecuperacionHash },
+        { _id: datos.usuarioId, codigoRecuperacionHash },
         {
           $set: { passwordHash: await hashPassword(datos.password) },
           $unset: { codigoRecuperacionHash: '' },
@@ -258,8 +268,6 @@ export class UsuariosService implements OnModuleInit {
     // Carrera con otra recuperación o con una rotación desde el perfil: el
     // código dejó de valer entre la lectura y la escritura.
     if (!actualizado) throw new BadRequestException(CODIGO_INVALIDO);
-
-    return String(candidato._id);
   }
 
   /**

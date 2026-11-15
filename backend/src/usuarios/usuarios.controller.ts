@@ -55,11 +55,21 @@ export class UsuariosController {
   @Post('recuperar')
   @HttpCode(200)
   async recuperar(@Body() dto: RecuperarPasswordDTO) {
-    const usuarioId = await this.usuarios.recuperar(dto);
-    // Cambiar la contraseña invalida todo lo abierto: un token robado no debe
-    // sobrevivir al cambio. Se orquesta acá, como `registrar` orquesta alta +
-    // login, para no invertir la dependencia UsuariosService ⇄ SesionesService.
+    const usuarioId = await this.usuarios.identificarPorCodigo(dto);
+
+    // Cerrar ANTES de commitear la contraseña, por orden de daño posible:
+    // si el cierre falla no se tocó nada y el usuario reintenta con el mismo
+    // código; al revés, un fallo del cierre dejaría la contraseña cambiada y
+    // los tokens viejos vivos, que es justo lo que esto viene a evitar.
+    // Se orquesta acá, como `registrar` orquesta alta + login, para no invertir
+    // la dependencia UsuariosService ⇄ SesionesService.
     await this.sesiones.cerrarTodasDeUsuario(usuarioId);
+    await this.usuarios.cambiarPasswordConCodigo({
+      usuarioId,
+      codigo: dto.codigo,
+      password: dto.password,
+    });
+
     return { mensaje: 'Tu contraseña se actualizó. Iniciá sesión con la nueva.' };
   }
 

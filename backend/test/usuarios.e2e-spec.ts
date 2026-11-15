@@ -7,6 +7,7 @@ import { applyValidationPipe } from '../src/shared/validation-pipe';
 import { UsuariosService } from '../src/usuarios/usuarios.service';
 import { UsuarioDocumentModel } from '../src/usuarios/usuario.schema';
 import { SesionDocumentModel } from '../src/sesiones/sesion.schema';
+import { SesionesService } from '../src/sesiones/sesiones.service';
 import { abrirSesion, extraerCookieSesion } from './helpers/auth';
 import { borrarBaseAislada, prepararBaseAislada } from './helpers/base-datos';
 
@@ -358,6 +359,55 @@ describe('Usuarios (e2e)', () => {
         ),
       );
       expect(entradas.sort()).toEqual([201, 401]);
+    });
+
+    it('si falla el cierre de sesiones, no cambia nada y el código sigue valiendo', async () => {
+      const { username, codigo, cookie } = await registrar(
+        `recupera-fallo-${sufijo}`,
+      );
+      const sesiones = app.get(SesionesService);
+      const cierre = jest
+        .spyOn(sesiones, 'cerrarTodasDeUsuario')
+        .mockRejectedValueOnce(new Error('Mongo transitorio'));
+
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({ username, codigo, password: 'clave-nueva-1' })
+        .expect(500);
+
+      cierre.mockRestore();
+
+      // El cierre va ANTES del commit: si falla, el código y la contraseña
+      // quedan intactos y el usuario puede reintentar con el mismo código.
+      const intacto = await usuariosModel()
+        .findOne({ username })
+        .select('+codigoRecuperacionHash')
+        .lean();
+      expect(intacto?.codigoRecuperacionHash).toMatch(/^[0-9a-f]{64}$/);
+
+      await request(app.getHttpServer())
+        .get('/sesiones/actual')
+        .set('Cookie', cookie)
+        .expect(200);
+      await request(app.getHttpServer())
+        .post('/sesiones')
+        .send({ username, password: 'clave-vieja-1' })
+        .expect(201);
+
+      // Reintento real: el mismo código ahora sí cambia la contraseña.
+      await request(app.getHttpServer())
+        .post('/usuarios/recuperar')
+        .send({ username, codigo, password: 'clave-nueva-1' })
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .post('/sesiones')
+        .send({ username, password: 'clave-vieja-1' })
+        .expect(401);
+      await request(app.getHttpServer())
+        .post('/sesiones')
+        .send({ username, password: 'clave-nueva-1' })
+        .expect(201);
     });
 
     it('no distingue usuario inexistente de código incorrecto', async () => {

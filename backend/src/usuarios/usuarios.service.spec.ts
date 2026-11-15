@@ -179,31 +179,25 @@ describe('UsuariosService', () => {
       expect(guardado.codigoRecuperacionHash).toMatch(/^[0-9a-f]{64}$/);
     });
 
-    it('recuperar rechaza con el mensaje genérico cuando el código no coincide', async () => {
+    it('identificarPorCodigo rechaza con el mensaje genérico y no gasta bcrypt', async () => {
       model.findOne.mockReturnValue(consultaLean(null));
 
       await expect(
-        service.recuperar({
-          username: 'dave',
-          codigo: CODIGO,
-          password: 'clave-nueva-1',
-        }),
+        service.identificarPorCodigo({ username: 'dave', codigo: CODIGO }),
       ).rejects.toThrow('El usuario y el código no coinciden.');
 
-      // Lo importante: no se gastó bcrypt ni se tocó la contraseña.
       expect(model.findOneAndUpdate).not.toHaveBeenCalled();
     });
 
-    it('recuperar normaliza el código antes de buscarlo', async () => {
+    it('identificarPorCodigo normaliza el código antes de buscarlo', async () => {
       model.findOne.mockReturnValue(consultaLean({ _id: ID }));
-      model.findOneAndUpdate.mockReturnValue(consultaLean({ _id: ID }));
 
-      await service.recuperar({
+      const id = await service.identificarPorCodigo({
         username: '  dave  ',
         codigo: 'abcd-efgh ijkl-mnop',
-        password: 'clave-nueva-1',
       });
 
+      expect(id).toBe(ID);
       expect(model.findOne).toHaveBeenCalledWith({
         username: 'dave',
         codigoRecuperacionHash: hashearCodigoRecuperacion('ABCDEFGHIJKLMNOP'),
@@ -214,17 +208,15 @@ describe('UsuariosService', () => {
       );
     });
 
-    it('recuperar cambia la contraseña y borra el código de un solo uso', async () => {
-      model.findOne.mockReturnValue(consultaLean({ _id: ID }));
+    it('cambiarPasswordConCodigo cambia la contraseña y borra el código de un solo uso', async () => {
       model.findOneAndUpdate.mockReturnValue(consultaLean({ _id: ID }));
 
-      const id = await service.recuperar({
-        username: 'dave',
+      await service.cambiarPasswordConCodigo({
+        usuarioId: ID,
         codigo: CODIGO,
         password: 'clave-nueva-1',
       });
 
-      expect(id).toBe(ID);
       const [filtro, update, opciones] = model.findOneAndUpdate.mock.calls[0];
       expect(filtro).toEqual({
         _id: ID,
@@ -236,6 +228,20 @@ describe('UsuariosService', () => {
         await verifyPassword('clave-nueva-1', update.$set.passwordHash),
       ).toBe(true);
       expect(opciones).toEqual({ new: true });
+    });
+
+    it('cambiarPasswordConCodigo no toca nada si el código se consumió antes', async () => {
+      // Carrera: otro pedido (o una rotación) ya borró el hash, el filtro
+      // condicional no matchea y la contraseña queda intacta.
+      model.findOneAndUpdate.mockReturnValue(consultaLean(null));
+
+      await expect(
+        service.cambiarPasswordConCodigo({
+          usuarioId: ID,
+          codigo: CODIGO,
+          password: 'clave-nueva-1',
+        }),
+      ).rejects.toThrow('El usuario y el código no coinciden.');
     });
 
     it('el dueño solo emite un código nuevo con su contraseña actual', async () => {
