@@ -109,6 +109,29 @@ describe('hoja de estilos', () => {
     expect(listaComentarios).toMatch(/overflow-y\s*:\s*auto/)
   })
 
+  it('presenta el editor de perfil como una tarjeta de formulario consistente', () => {
+    expect(bloque(componentes, '.perfil__editor-contenedor')).toMatch(
+      /justify-content\s*:\s*flex-start/,
+    )
+    expect(bloque(componentes, '.perfil__editor')).toMatch(/width\s*:\s*640px/)
+    expect(bloque(componentes, '.perfil__editor-acciones')).toMatch(/display\s*:\s*flex/)
+  })
+
+  it('anima la entrada de errores generales y de campos en todos los formularios', () => {
+    expect(bloque(componentes, '.aviso--error')).toMatch(
+      /animation\s*:\s*error-entrada\s+420ms/,
+    )
+    expect(componentes).toMatch(
+      /\.campo--error input,\s*\.campo--error select,\s*\.campo--error textarea\s*\{[^}]*animation\s*:\s*campo-error-entrada\s+420ms/s,
+    )
+    expect(bloque(componentes, '.campo__error')).toMatch(
+      /animation\s*:\s*error-entrada\s+420ms/,
+    )
+    expect(componentes).toMatch(/form\[data-error-pulse='a'\].*error-reintento/s)
+    expect(componentes).toMatch(/form\[data-error-pulse='b'\].*error-entrada/s)
+    expect(componentes).toMatch(/prefers-reduced-motion:\s*reduce/)
+  })
+
   it('reserva el alto del rótulo RESUCITADA y lo revela solo al revivir', () => {
     // El span existe siempre: si se quitara del DOM, la lápida cambiaría de
     // tamaño al resucitar. `visibility: hidden` conserva el espacio.
