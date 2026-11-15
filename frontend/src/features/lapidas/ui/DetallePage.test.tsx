@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Session } from '../../sesiones/model/sesion'
 import type { Grave } from '../model/lapida'
@@ -43,7 +43,11 @@ const sesionDuenia: Session = {
   expiraEn: '2026-10-20T00:00:00.000Z',
 }
 
-function montar(opciones: { lapida?: Grave; sesion?: Session | null } = {}) {
+function montar(opciones: {
+  lapida?: Grave
+  sesion?: Session | null
+  onRevivir?: (lapida: Grave) => Promise<void>
+} = {}) {
   return render(
     <DetallePage
       lapida={opciones.lapida ?? lapida()}
@@ -51,7 +55,7 @@ function montar(opciones: { lapida?: Grave; sesion?: Session | null } = {}) {
       sesion={opciones.sesion ?? null}
       onCorona={vi.fn().mockResolvedValue(undefined)}
       onBorrar={vi.fn().mockResolvedValue(undefined)}
-      onRevivir={vi.fn().mockResolvedValue(undefined)}
+      onRevivir={opciones.onRevivir ?? vi.fn().mockResolvedValue(undefined)}
       onVolver={vi.fn()}
     />,
   )
@@ -86,6 +90,32 @@ describe('DetallePage', () => {
     montar({ sesion: { ...sesionDuenia, username: 'admin', rol: 'admin' } })
 
     expect(screen.getByRole('button', { name: /borrar la lápida/i })).toBeTruthy()
+  })
+
+  it('confirma revivir con el mismo modal de borrar antes de ejecutar la acción', async () => {
+    const onRevivir = vi.fn().mockResolvedValue(undefined)
+    const confirmNativo = vi.fn()
+    vi.stubGlobal('confirm', confirmNativo)
+    montar({ sesion: sesionDuenia, onRevivir })
+
+    fireEvent.click(screen.getByRole('button', { name: /^REVIVIR$/ }))
+    await screen.findByText('Todavía no hay comentarios. Sé el primero en dejar una flor.')
+
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByRole('heading', { name: 'REVIVIR LÁPIDA' })).toBeTruthy()
+    expect(onRevivir).not.toHaveBeenCalled()
+    expect(confirmNativo).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'CANCELAR' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(onRevivir).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: /^REVIVIR$/ }))
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: /^REVIVIR$/ }),
+    )
+    expect(onRevivir).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }))
   })
 
   it('ofrece quitar la corona cuando ya le di corona', () => {

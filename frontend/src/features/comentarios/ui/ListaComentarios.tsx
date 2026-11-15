@@ -89,31 +89,33 @@ export function ListaComentarios({ lapidaId, sesion }: Props) {
     <div className="detalle__comentarios">
       <h2 className="detalle__comentarios-titulo">COMENTARIOS</h2>
 
-      {error && <Aviso tono="error">{error}</Aviso>}
+      <div className="detalle__comentarios-lista">
+        {error && <Aviso tono="error">{error}</Aviso>}
 
-      {comentarios === null && !error ? (
-        <Aviso>Cargando los comentarios…</Aviso>
-      ) : comentarios?.length === 0 ? (
-        <p className="detalle__comentario">
-          Todavía no hay comentarios. Sé el primero en dejar una flor.
-        </p>
-      ) : (
-        comentarios?.map((c) => (
-          <p key={c.id} className="detalle__comentario">
-            <strong>@{c.autor}:</strong> {c.texto}
-            {esAdmin && (
-              <button
-                type="button"
-                className="detalle__comentario-borrar"
-                onClick={() => void borrar(c.id, c.autor)}
-                aria-label={`Borrar el comentario de @${c.autor}`}
-              >
-                BORRAR
-              </button>
-            )}
+        {comentarios === null && !error ? (
+          <Aviso>Cargando los comentarios…</Aviso>
+        ) : comentarios?.length === 0 ? (
+          <p className="detalle__comentario">
+            Todavía no hay comentarios. Sé el primero en dejar una flor.
           </p>
-        ))
-      )}
+        ) : (
+          comentarios?.map((c) => (
+            <p key={c.id} className="detalle__comentario">
+              <strong>@{c.autor}:</strong> {c.texto}
+              {esAdmin && (
+                <button
+                  type="button"
+                  className="detalle__comentario-borrar"
+                  onClick={() => void borrar(c.id, c.autor)}
+                  aria-label={`Borrar el comentario de @${c.autor}`}
+                >
+                  BORRAR
+                </button>
+              )}
+            </p>
+          ))
+        )}
+      </div>
 
       {sesion ? (
         <form className="detalle__comentario-form" onSubmit={(e) => void enviar(e)} noValidate>

@@ -367,7 +367,7 @@ export default function App() {
   }
 
   return (
-    <div className="pantalla">
+    <div className={`pantalla${seleccionada ? ' pantalla--detalle' : ''}`}>
       <Nav
         activa={vistaActiva}
         items={navItems}

@@ -21,6 +21,19 @@
   gap: var(--gap-pantalla);
 }
 
+.pantalla--detalle {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pantalla__contenido--detalle {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* ── Barra de navegación ──────────────────────────────────────────────── */
 
 .nav {
@@ -704,6 +717,7 @@ button.lapida__coronas:disabled {
 .detalle__info {
   flex: 1.6;
   min-width: 0;
+  min-height: 0;
   background: var(--madera);
   border: 3px solid var(--borde-panel);
   border-radius: var(--radio-tarjeta);
@@ -711,12 +725,14 @@ button.lapida__coronas:disabled {
   display: flex;
   flex-direction: column;
   gap: var(--gap-bloque);
+  overflow: hidden;
 }
 
 .detalle__foto {
   background: var(--menta);
   border-radius: 8px;
   height: 320px;
+  flex: 0 0 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -731,6 +747,8 @@ button.lapida__coronas:disabled {
 }
 
 .detalle__card {
+  flex: 1;
+  min-height: 0;
   background: var(--crema);
   border: 2px solid var(--madera);
   border-radius: 8px;
@@ -738,6 +756,7 @@ button.lapida__coronas:disabled {
   display: flex;
   flex-direction: column;
   gap: var(--gap-bloque);
+  overflow-y: auto;
 }
 
 .detalle__epitafio {
@@ -789,6 +808,8 @@ button.lapida__coronas:disabled {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .detalle__acciones .boton {
@@ -808,6 +829,7 @@ button.lapida__coronas:disabled {
 .detalle__comentarios {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   background: var(--crema);
   border: 2px solid var(--madera);
   border-radius: 8px;
@@ -815,6 +837,13 @@ button.lapida__coronas:disabled {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow: hidden;
+}
+
+.detalle__comentarios-lista {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .detalle__comentarios-titulo {
@@ -854,6 +883,7 @@ button.lapida__coronas:disabled {
    fondo va acá; el input solo se estira a lo ancho. */
 .detalle__comentario-form {
   margin-top: auto;
+  flex-shrink: 0;
   display: flex;
   gap: 8px;
 }
@@ -1112,6 +1142,39 @@ button.lapida__coronas:disabled {
 
   .detalle__foto {
     height: 220px;
+    flex-basis: 220px;
+  }
+
+  .pantalla--detalle {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .pantalla__contenido--detalle,
+  .detalle__info,
+  .detalle__comentarios {
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .pantalla__contenido--detalle {
+    flex: none;
+  }
+
+  .detalle__card {
+    flex: none;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .detalle__comentarios-lista {
+    flex: none;
+    min-height: auto;
+    max-height: 50vh;
+    max-height: 50dvh;
+    overflow-y: auto;
   }
 }
 

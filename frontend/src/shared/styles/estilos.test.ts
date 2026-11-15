@@ -70,6 +70,24 @@ describe('hoja de estilos', () => {
     expect(sidebar).toMatch(/overflow-y\s*:\s*auto/)
   })
 
+  it('mantiene el detalle en el viewport y desplaza de forma independiente su contenido largo', () => {
+    const pantallaDetalle = bloque(componentes, '.pantalla--detalle')
+    expect(pantallaDetalle).toMatch(/height\s*:\s*100dvh/)
+    expect(pantallaDetalle).toMatch(/overflow\s*:\s*hidden/)
+
+    const contenido = bloque(componentes, '.pantalla__contenido--detalle')
+    expect(contenido).toMatch(/min-height\s*:\s*0/)
+    expect(contenido).toMatch(/overflow\s*:\s*hidden/)
+
+    const card = bloque(componentes, '.detalle__card')
+    expect(card).toMatch(/flex\s*:\s*1/)
+    expect(card).toMatch(/overflow-y\s*:\s*auto/)
+
+    const listaComentarios = bloque(componentes, '.detalle__comentarios-lista')
+    expect(listaComentarios).toMatch(/flex\s*:\s*1/)
+    expect(listaComentarios).toMatch(/overflow-y\s*:\s*auto/)
+  })
+
   it('reserva el alto del rótulo RESUCITADA y lo revela solo al revivir', () => {
     // El span existe siempre: si se quitara del DOM, la lápida cambiaría de
     // tamaño al resucitar. `visibility: hidden` conserva el espacio.
