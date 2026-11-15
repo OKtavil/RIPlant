@@ -1274,7 +1274,7 @@ button.lapida__coronas:disabled {
 .publicar__tarjeta {
   width: 640px;
   max-width: 100%;
-  align-self: flex-start;
+  margin-block: auto;
   background: var(--crema);
   border: 3px solid var(--madera);
   border-radius: var(--radio-tarjeta);

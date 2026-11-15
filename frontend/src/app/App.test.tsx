@@ -131,6 +131,20 @@ describe('E002 — los errores se limpian al cambiar de pestaña', () => {
   })
 })
 
+describe('navegación de publicación', () => {
+  it('oculta PUBLICAR en el nav cuando no hay sesión', async () => {
+    render(<App />)
+
+    expect(await screen.findByRole('button', { name: /iniciar sesión/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^publicar$/i })).toBeNull()
+  })
+
+  it('muestra PUBLICAR en el nav con sesión iniciada', async () => {
+    vi.mocked(sesionesApi.actual).mockResolvedValue(sesion())
+    render(<App />)
+
+    expect(await screen.findByRole('button', { name: /^publicar$/i })).toBeTruthy()
+  })
 })
 
 describe('estado de corona al cerrar sesión', () => {

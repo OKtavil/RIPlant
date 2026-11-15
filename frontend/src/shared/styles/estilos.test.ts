@@ -109,6 +109,11 @@ describe('hoja de estilos', () => {
     expect(listaComentarios).toMatch(/overflow-y\s*:\s*auto/)
   })
 
+  it('centra verticalmente el formulario de publicación cuando cabe en pantalla', () => {
+    expect(bloque(componentes, '.publicar')).toMatch(/justify-content\s*:\s*center/)
+    expect(bloque(componentes, '.publicar__tarjeta')).toMatch(/margin-block\s*:\s*auto/)
+  })
+
   it('presenta el editor de perfil como una tarjeta de formulario consistente', () => {
     expect(bloque(componentes, '.perfil__editor-contenedor')).toMatch(
       /justify-content\s*:\s*flex-start/,

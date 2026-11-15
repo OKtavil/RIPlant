@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError } from '../shared/api/client'
 import { Aviso } from '../shared/ui/Aviso'
 import { Confirmacion } from '../shared/ui/Confirmacion'
@@ -341,7 +341,7 @@ export default function App() {
     setCategorias((items) => items.filter((item) => item.id !== id))
   }
 
-  const navItems = useMemo(() => MENU, [])
+  const navItems = sesion ? MENU : MENU.filter((item) => item !== 'publicar')
   const vistaActiva: Vista | null = vistaAuth ? null : vista
 
   /** Navegar por el menú escribe la URL de esa vista. */
