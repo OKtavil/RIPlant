@@ -55,4 +55,14 @@ describe('hoja de estilos', () => {
       /background\s*:\s*linear-gradient\([^;]*var\(--azul-claro\)[^;]*var\(--blanco\)/,
     )
   })
+
+  it('ata el sidebar al alto de la pantalla y no al de la página', () => {
+    // El sidebar vive junto al feed: sin `sticky` crecía hasta el fondo de la
+    // página y se iba con el scroll. Tiene que quedar a la vista, con alto de
+    // viewport y scroll propio.
+    const sidebar = bloque(componentes, '.sidebar')
+    expect(sidebar).toMatch(/position\s*:\s*sticky/)
+    expect(sidebar).toMatch(/height\s*:\s*calc\(\s*100vh/)
+    expect(sidebar).toMatch(/overflow-y\s*:\s*auto/)
+  })
 })

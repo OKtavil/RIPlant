@@ -48,7 +48,10 @@ export default function App() {
   // contra la lista ya cargada; si el id no está (link viejo, lápida borrada),
   // cae al inicio en vez de dejar la pantalla vacía.
   const detalleId = ruta.tipo === 'detalle' ? ruta.id : null
-  const vista: Vista = ruta.tipo === 'vista' ? ruta.vista : 'inicio'
+  const vista: Vista =
+    ruta.tipo === 'vista' ? ruta.vista : ruta.tipo === 'perfilUsuario' ? 'perfiles' : 'inicio'
+  /** Perfil pedido por la URL (`/perfiles/:username`), o `null` para la lista. */
+  const usernamePerfil = ruta.tipo === 'perfilUsuario' ? ruta.username : null
   const seleccionada = detalleId ? lapidas.find((l) => l.id === detalleId) ?? null : null
 
   useEffect(() => {
@@ -330,6 +333,20 @@ export default function App() {
     [navegar],
   )
 
+  /**
+   * Navegación de los links con URL real (sidebar, tarjetas de perfiles).
+   *
+   * Va por el mismo `navegar` del router y limpia el aviso de la pantalla
+   * anterior, igual que el menú.
+   */
+  const navegarInterno = useCallback(
+    (destino: string) => {
+      setAviso('')
+      navegar(destino)
+    },
+    [navegar],
+  )
+
   if (vistaAuth) {
     return (
       <div className="pantalla">
@@ -401,6 +418,7 @@ export default function App() {
               onPublicar={() => irAVista('publicar')}
               onActualizar={() => void refrescarLapidas()}
               actualizando={actualizando}
+              onNavegar={navegarInterno}
             />
           )}
           {vista === 'ranking' && (
@@ -456,6 +474,8 @@ export default function App() {
               onPublicar={() => irAVista('publicar')}
               onBorrar={pedirConfirmacionBorrado}
               onIrAMiPerfil={() => irAVista('perfil')}
+              username={usernamePerfil}
+              onNavegar={navegarInterno}
             />
           )}
           {vista === 'categorias' && (

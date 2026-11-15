@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { useState, type ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Session } from '../../sesiones/model/sesion'
 import { PerfilesPage } from './PerfilesPage'
@@ -43,6 +44,26 @@ function baseProps(actual: Session) {
   }
 }
 
+type BaseProps = Omit<ComponentProps<typeof PerfilesPage>, 'username' | 'onNavegar'>
+
+/**
+ * La pantalla es dueña de la URL en la app real; acá el arnés hace de router
+ * para que el clic en una tarjeta cambie el `username` como lo haría App.
+ */
+function Perfiles({ inicial = null, ...props }: BaseProps & { inicial?: string | null }) {
+  const [username, setUsername] = useState<string | null>(inicial)
+
+  return (
+    <PerfilesPage
+      {...props}
+      username={username}
+      onNavegar={(destino) =>
+        setUsername(destino === '/perfiles' ? null : destino.replace('/perfiles/', ''))
+      }
+    />
+  )
+}
+
 beforeEach(() => {
   vi.mocked(usuariosApi.listar).mockResolvedValue([
     { id: 'u1', username: 'jardinero', rol: 'usuario', insignias: [], descripcion: '' },
@@ -54,7 +75,7 @@ beforeEach(() => {
 
 describe('PerfilesPage — emisión de código de recuperación', () => {
   it('el admin emite un código para otro usuario y lo muestra una sola vez', async () => {
-    render(<PerfilesPage {...baseProps(sesion())} />)
+    render(<Perfiles {...baseProps(sesion())} />)
 
     fireEvent.click(await screen.findByText('@jardinero'))
     fireEvent.click(screen.getByRole('button', { name: 'EMITIR CÓDIGO DE RECUPERACIÓN' }))
@@ -67,9 +88,7 @@ describe('PerfilesPage — emisión de código de recuperación', () => {
 
   it('un usuario común no ve el botón en el perfil ajeno', async () => {
     render(
-      <PerfilesPage
-        {...baseProps(sesion({ id: 'otro-1', username: 'otro', rol: 'usuario' }))}
-      />,
+      <Perfiles {...baseProps(sesion({ id: 'otro-1', username: 'otro', rol: 'usuario' }))} />,
     )
 
     fireEvent.click(await screen.findByText('@jardinero'))
@@ -82,10 +101,34 @@ describe('PerfilesPage — emisión de código de recuperación', () => {
     vi.mocked(usuariosApi.listar).mockResolvedValue([
       { id: 'admin-1', username: 'admin', rol: 'admin', insignias: [], descripcion: '' },
     ])
-    render(<PerfilesPage {...baseProps(sesion())} />)
+    render(<Perfiles {...baseProps(sesion())} />)
 
     fireEvent.click(await screen.findByText('@admin'))
 
     expect(screen.queryByRole('button', { name: 'EMITIR CÓDIGO DE RECUPERACIÓN' })).toBeNull()
+  })
+})
+
+describe('PerfilesPage — perfil pedido por la URL', () => {
+  it('abre directo el perfil del username de la ruta', async () => {
+    render(<Perfiles {...baseProps(sesion())} inicial="jardinero" />)
+
+    // Antes de que llegue la lista se ve la carga, no "ya no está disponible".
+    expect(screen.getByText('Cargando el perfil…')).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'jardinero' })).toBeTruthy()
+  })
+
+  it('avisa cuando el username ya no existe, en vez de mostrar la lista', async () => {
+    render(<Perfiles {...baseProps(sesion())} inicial="fantasma" />)
+
+    expect(await screen.findByText('Ese perfil ya no está disponible.')).toBeTruthy()
+    expect(screen.queryByText('PERFILES')).toBeNull()
+  })
+
+  it('las tarjetas de la lista son links con la URL del perfil', async () => {
+    render(<Perfiles {...baseProps(sesion())} />)
+
+    const tarjeta = (await screen.findByText('@jardinero')).closest('a')!
+    expect(tarjeta.getAttribute('href')).toBe('/perfiles/jardinero')
   })
 })

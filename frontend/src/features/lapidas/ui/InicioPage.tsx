@@ -1,5 +1,7 @@
+import { rutaDeDetalle } from '../../../app/ruta'
 import { IconoCorona } from '../../../shared/ui/iconos'
 import { Boton } from '../../../shared/ui/Boton'
+import { Enlace } from '../../../shared/ui/Enlace'
 import type { Category } from '../../categorias/model/categoria'
 import type { Session } from '../../sesiones/model/sesion'
 import type { Asesino, Grave } from '../model/lapida'
@@ -19,6 +21,8 @@ type Props = {
   /** Vuelve a pedir las lápidas, para ver lo que publicó otra sesión (E003). */
   onActualizar: () => void
   actualizando: boolean
+  /** Navegación interna: los links del sidebar siguen teniendo URL real. */
+  onNavegar: (destino: string) => void
 }
 
 function nombreCategoria(categorias: Category[], id: number): string | undefined {
@@ -36,6 +40,7 @@ export function InicioPage({
   onPublicar,
   onActualizar,
   actualizando,
+  onNavegar,
 }: Props) {
   const salonDelHonor = [...lapidas].sort((a, b) => b.coronasCount - a.coronasCount).slice(0, 3)
 
@@ -52,6 +57,7 @@ export function InicioPage({
         </div>
 
         <div className="grilla grilla--tres">
+          <GraveCardNueva texto="Publica tu lápida" onClick={onPublicar} />
           {lapidas.map((lapida) => (
             <GraveCard
               key={lapida.id}
@@ -62,7 +68,6 @@ export function InicioPage({
               propia={esDuenio(lapida, sesion)}
             />
           ))}
-          <GraveCardNueva texto="Publica tu lápida" onClick={onPublicar} />
         </div>
       </section>
 
@@ -70,7 +75,12 @@ export function InicioPage({
         <div className="sidebar__cabecera">SALÓN DEL HONOR</div>
         <div className="sidebar__lista">
           {salonDelHonor.map((lapida, indice) => (
-            <button key={lapida.id} className="sidebar__fila" onClick={() => onAbrir(lapida)}>
+            <Enlace
+              key={lapida.id}
+              href={rutaDeDetalle(lapida.id)}
+              onNavegar={onNavegar}
+              className="sidebar__fila"
+            >
               <span>
                 {indice + 1}. “{lapida.nombrePlanta}”
               </span>
@@ -81,7 +91,7 @@ export function InicioPage({
                 <IconoCorona size={10} />
                 {lapida.coronasCount}
               </span>
-            </button>
+            </Enlace>
           ))}
         </div>
 
@@ -90,7 +100,7 @@ export function InicioPage({
           {errorAsesinos ? (
             <AvisoAsesinos>{errorAsesinos}</AvisoAsesinos>
           ) : (
-            <ListaAsesinos asesinos={asesinos} variante="sidebar" />
+            <ListaAsesinos asesinos={asesinos} variante="sidebar" onNavegar={onNavegar} />
           )}
         </div>
 

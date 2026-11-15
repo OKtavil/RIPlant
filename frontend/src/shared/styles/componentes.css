@@ -536,6 +536,14 @@ button.lapida__coronas:disabled {
 .sidebar {
   flex: 1;
   min-width: 0;
+  /* El sidebar acompaña el scroll en vez de estirarse hasta el fondo de la
+     página: alto de viewport, pegado arriba y scroll propio. Su tope es la
+     pantalla, no la última lápida del feed. */
+  position: sticky;
+  top: var(--padding-pantalla);
+  align-self: flex-start;
+  height: calc(100vh - var(--padding-pantalla) * 2);
+  overflow-y: auto;
   background: var(--madera);
   border: 3px solid var(--borde-panel);
   border-radius: var(--radio-panel);
@@ -578,6 +586,8 @@ button.lapida__coronas:disabled {
   justify-content: space-between;
   gap: 10px;
   color: var(--texto);
+  /* Es un link: la fila conserva el aspecto de la lista y no se subraya. */
+  text-decoration: none;
   /* Igual que `.ranking__fila`: es un `<button>` y el navegador centra su
      texto. El prototipo alinea la fila a la izquierda. */
   text-align: left;
@@ -1049,6 +1059,13 @@ button.lapida__coronas:disabled {
   .fila,
   .perfil__stats {
     flex-direction: column;
+  }
+
+  /* Apilado, el sidebar ya no compite con la pantalla: vuelve al flujo normal. */
+  .sidebar {
+    position: static;
+    height: auto;
+    overflow: visible;
   }
 
   .grilla--tres,

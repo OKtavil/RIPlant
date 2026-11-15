@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parsearRuta, rutaDeVista } from './ruta'
+import { parsearRuta, rutaDeDetalle, rutaDePerfil, rutaDeVista } from './ruta'
 
 describe('parsearRuta', () => {
   it('la raíz es el inicio', () => {
@@ -19,6 +19,18 @@ describe('parsearRuta', () => {
 
   it('lee el id de una lápida del detalle', () => {
     expect(parsearRuta('/lapidas/42')).toEqual({ tipo: 'detalle', id: 42 })
+  })
+
+  it('lee el username del perfil de otro usuario', () => {
+    expect(parsearRuta('/perfiles/zombie')).toEqual({
+      tipo: 'perfilUsuario',
+      username: 'zombie',
+    })
+  })
+
+  it('la lista de perfiles no es el perfil de nadie', () => {
+    expect(parsearRuta('/perfiles')).toEqual({ tipo: 'vista', vista: 'perfiles' })
+    expect(parsearRuta('/perfiles/')).toEqual({ tipo: 'vista', vista: 'perfiles' })
   })
 
   it('ignora la barra final', () => {
@@ -62,5 +74,22 @@ describe('rutaDeVista', () => {
       const ruta = rutaDeVista(vista)
       expect(parsearRuta(ruta)).toEqual({ tipo: 'vista', vista })
     }
+  })
+})
+
+describe('rutaDeDetalle', () => {
+  it('la ida y vuelta se conserva', () => {
+    expect(rutaDeDetalle(42)).toBe('/lapidas/42')
+    expect(parsearRuta(rutaDeDetalle(42))).toEqual({ tipo: 'detalle', id: 42 })
+  })
+})
+
+describe('rutaDePerfil', () => {
+  it('la ida y vuelta se conserva', () => {
+    expect(rutaDePerfil('zombie')).toBe('/perfiles/zombie')
+    expect(parsearRuta(rutaDePerfil('zombie'))).toEqual({
+      tipo: 'perfilUsuario',
+      username: 'zombie',
+    })
   })
 })

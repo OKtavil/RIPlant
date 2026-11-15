@@ -1,4 +1,6 @@
+import { rutaDePerfil } from '../../../app/ruta'
 import { Aviso, AvisoNoDisponible } from '../../../shared/ui/Aviso'
+import { Enlace } from '../../../shared/ui/Enlace'
 import { IconoCalavera } from '../../../shared/ui/iconos'
 import type { Asesino } from '../model/lapida'
 
@@ -8,6 +10,8 @@ type Props = {
   variante: 'sidebar' | 'fila'
   /** Nombre a resaltar, para marcar la fila propia en el perfil. */
   resaltar?: string
+  /** Navegación interna de los links de la barra; sin esto, carga la página. */
+  onNavegar?: (destino: string) => void
 }
 
 /**
@@ -18,7 +22,7 @@ type Props = {
  * `usuarios.username`. No se recalcula en cliente: `autor` es texto libre y
  * agrupar por él daría cuentas distintas a las reales.
  */
-export function ListaAsesinos({ asesinos, variante, resaltar }: Props) {
+export function ListaAsesinos({ asesinos, variante, resaltar, onNavegar }: Props) {
   if (asesinos.length === 0) {
     return (
       <AvisoNoDisponible>Todavía no hay plantas asesinadas que rankear.</AvisoNoDisponible>
@@ -29,7 +33,12 @@ export function ListaAsesinos({ asesinos, variante, resaltar }: Props) {
     return (
       <>
         {asesinos.map((asesino, indice) => (
-          <div key={asesino.username} className="sidebar__fila">
+          <Enlace
+            key={asesino.username}
+            href={rutaDePerfil(asesino.username)}
+            onNavegar={onNavegar}
+            className="sidebar__fila"
+          >
             <span>
               {indice + 1}. @{asesino.username}
             </span>
@@ -37,7 +46,7 @@ export function ListaAsesinos({ asesinos, variante, resaltar }: Props) {
               <IconoCalavera size={10} />
               {asesino.muertes}
             </span>
-          </div>
+          </Enlace>
         ))}
       </>
     )

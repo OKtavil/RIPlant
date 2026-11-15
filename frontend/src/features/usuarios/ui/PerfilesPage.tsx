@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { rutaDePerfil, rutaDeVista } from '../../../app/ruta'
 import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
+import { Enlace } from '../../../shared/ui/Enlace'
 import { usuariosApi, type UsuarioPublico } from '../api/usuarios.api'
 import type { Category } from '../../categorias/model/categoria'
 import type { Asesino, Grave } from '../../lapidas/model/lapida'
@@ -19,6 +21,10 @@ type Props = {
   onBorrar: (lapida: Grave) => Promise<void>
   /** Lleva a la vista propia, donde sí se puede editar la descripción. */
   onIrAMiPerfil: () => void
+  /** Username de la URL (`/perfiles/:username`); `null` para la lista. */
+  username: string | null
+  /** Navegación interna: las tarjetas de la lista son links con URL real. */
+  onNavegar: (destino: string) => void
 }
 
 export function PerfilesPage({
@@ -30,29 +36,57 @@ export function PerfilesPage({
   onPublicar,
   onBorrar,
   onIrAMiPerfil,
+  username,
+  onNavegar,
 }: Props) {
   const [usuarios, setUsuarios] = useState<UsuarioPublico[]>([])
-  const [seleccionado, setSeleccionado] = useState<string | null>(null)
-  /** Código recién emitido para el perfil ajeno. Vive solo en esta pantalla. */
-  const [codigoEmitido, setCodigoEmitido] = useState('')
-  const [errorEmision, setErrorEmision] = useState('')
+  // Antes de la primera respuesta la lista está vacía, y eso no significa que
+  // el perfil de la URL ya no exista.
+  const [cargando, setCargando] = useState(true)
+  /**
+   * Código recién emitido para el perfil ajeno, atado al username que lo pidió.
+   * Así, al cambiar de perfil, el de la pantalla anterior deja de mostrarse sin
+   * necesidad de limpiarlo desde un efecto.
+   */
+  const [emision, setEmision] = useState({ username: '', codigo: '', error: '' })
   const [emitiendo, setEmitiendo] = useState(false)
 
   function volverALista() {
-    setSeleccionado(null)
-    setCodigoEmitido('')
-    setErrorEmision('')
+    onNavegar(rutaDeVista('perfiles'))
   }
 
   useEffect(() => {
-    void usuariosApi.listar().then(setUsuarios).catch(() => setUsuarios([]))
+    let vigente = true
+    void usuariosApi
+      .listar()
+      .then((lista) => {
+        if (vigente) setUsuarios(lista)
+      })
+      .catch(() => {
+        if (vigente) setUsuarios([])
+      })
+      .finally(() => {
+        if (vigente) setCargando(false)
+      })
+    return () => {
+      vigente = false
+    }
   }, [])
 
-  if (seleccionado) {
-    const usuario = usuarios.find((u) => u.id === seleccionado)
+  // El código de recuperación se emite para un perfil concreto: solo se muestra
+  // en el perfil que lo pidió.
+  const codigoEmitido = emision.username === username ? emision.codigo : ''
+  const errorEmision = emision.username === username ? emision.error : ''
 
-    // La lista pudo recargarse sin ese id: se muestra el estado vacío en vez de
-    // tocar el estado durante el render.
+  const usuario = username ? usuarios.find((u) => u.username === username) : undefined
+
+  if (username && cargando) {
+    return <Aviso>Cargando el perfil…</Aviso>
+  }
+
+  if (username) {
+    // La lista pudo recargarse sin ese username: se muestra el estado vacío en
+    // vez de tocar el estado durante el render.
     if (!usuario) {
       return (
         <div className="pantalla__contenido">
@@ -87,19 +121,22 @@ export function PerfilesPage({
               tamano="chico"
               disabled={emitiendo}
               onClick={async () => {
-                setErrorEmision('')
+                setEmision({ username: usuario.username, codigo: '', error: '' })
                 setEmitiendo(true)
                 try {
                   const { codigoRecuperacion } = await usuariosApi.emitirCodigoRecuperacion(
                     usuario.id,
                   )
-                  setCodigoEmitido(codigoRecuperacion)
+                  setEmision({ username: usuario.username, codigo: codigoRecuperacion, error: '' })
                 } catch (fallo) {
-                  setErrorEmision(
-                    fallo instanceof ApiError
-                      ? fallo.message
-                      : 'No se pudo emitir el código de recuperación.',
-                  )
+                  setEmision({
+                    username: usuario.username,
+                    codigo: '',
+                    error:
+                      fallo instanceof ApiError
+                        ? fallo.message
+                        : 'No se pudo emitir el código de recuperación.',
+                  })
                 } finally {
                   setEmitiendo(false)
                 }
@@ -160,20 +197,19 @@ export function PerfilesPage({
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
           {usuarios.map((usuario) => (
-            <button
+            <Enlace
               key={usuario.id}
-              onClick={() => {
-                setCodigoEmitido('')
-                setErrorEmision('')
-                setSeleccionado(usuario.id)
-              }}
+              href={rutaDePerfil(usuario.username)}
+              onNavegar={onNavegar}
               style={{
+                display: 'block',
                 textAlign: 'left',
                 background: '#f5f1e8',
                 border: '2px solid #8b7355',
                 padding: 16,
                 borderRadius: 8,
-                cursor: 'pointer',
+                color: 'inherit',
+                textDecoration: 'none',
               }}
             >
               <div style={{ fontWeight: 700, fontSize: 18 }}>@{usuario.username}</div>
@@ -185,7 +221,7 @@ export function PerfilesPage({
                   Sin descripción
                 </div>
               )}
-            </button>
+            </Enlace>
           ))}
         </div>
       </section>

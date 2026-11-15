@@ -11,7 +11,10 @@
 import type { Vista } from '../shared/ui/Nav'
 
 /** Qué pantalla corresponde a la URL actual. */
-export type Ruta = { tipo: 'vista'; vista: Vista } | { tipo: 'detalle'; id: number }
+export type Ruta =
+  | { tipo: 'vista'; vista: Vista }
+  | { tipo: 'detalle'; id: number }
+  | { tipo: 'perfilUsuario'; username: string }
 
 const VISTAS: ReadonlyArray<Vista> = [
   'inicio',
@@ -58,7 +61,21 @@ export function parsearRuta(pathname: string): Ruta {
   }
 
   const vista = VISTAS.find((v) => RUTAS[v] === limpio)
-  return vista ? { tipo: 'vista', vista } : INICIO
+  if (vista) return { tipo: 'vista', vista }
+
+  // `/perfiles/<username>`: el perfil de otro usuario. Va después de la lista
+  // exacta (`/perfiles`) para que la lista no se confunda con un perfil.
+  const perfil = /^\/perfiles\/([^/]+)$/.exec(limpio)
+  if (perfil) {
+    try {
+      const username = decodeURIComponent(perfil[1]!)
+      if (username !== '') return { tipo: 'perfilUsuario', username }
+    } catch {
+      // `%` suelto: no es un username válido.
+    }
+  }
+
+  return INICIO
 }
 
 /** La URL de una vista, para navegar. */
@@ -69,6 +86,11 @@ export function rutaDeVista(vista: Vista): string {
 /** La URL del detalle de una lápida. */
 export function rutaDeDetalle(id: number): string {
   return `/lapidas/${id}`
+}
+
+/** La URL del perfil de un usuario. */
+export function rutaDePerfil(username: string): string {
+  return `/perfiles/${encodeURIComponent(username)}`
 }
 
 /**

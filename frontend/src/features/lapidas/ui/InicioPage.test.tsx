@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { Category } from '../../categorias/model/categoria'
 import type { Asesino, Grave } from '../model/lapida'
@@ -24,21 +24,25 @@ function lapida(parcial: Partial<Grave> = {}): Grave {
 const categorias: Category[] = [{ id: 1, nombre: 'Cactus' }]
 const asesinos: Asesino[] = [{ username: 'zombie', muertes: 3 }]
 
-function renderInicio(lapidas: Grave[] = [lapida()]) {
-  return render(
-    <InicioPage
-      lapidas={lapidas}
-      categorias={categorias}
-      asesinos={asesinos}
-      sesion={null}
-      errorAsesinos=""
-      onAbrir={vi.fn()}
-      onCorona={vi.fn()}
-      onPublicar={vi.fn()}
-      onActualizar={vi.fn()}
-      actualizando={false}
-    />,
-  )
+function renderInicio(lapidas: Grave[] = [lapida()], onNavegar = vi.fn()) {
+  return {
+    ...render(
+      <InicioPage
+        lapidas={lapidas}
+        categorias={categorias}
+        asesinos={asesinos}
+        sesion={null}
+        errorAsesinos=""
+        onAbrir={vi.fn()}
+        onCorona={vi.fn()}
+        onPublicar={vi.fn()}
+        onActualizar={vi.fn()}
+        actualizando={false}
+        onNavegar={onNavegar}
+      />,
+    ),
+    onNavegar,
+  }
 }
 
 describe('InicioPage — Salón del Honor (R001)', () => {
@@ -67,5 +71,48 @@ describe('InicioPage — Salón del Honor (R001)', () => {
     const valor = container.querySelector('.sidebar__valor')!
     expect(valor.querySelector('svg')).toBeTruthy()
     expect(valor.textContent).toBe('287')
+  })
+})
+
+describe('InicioPage — orden del feed', () => {
+  it('abre la grilla con la celda de publicar, antes de las lápidas existentes', () => {
+    const { container } = renderInicio([lapida({ nombrePlanta: 'Pepino' })])
+    const grilla = container.querySelector('.grilla')
+
+    expect(grilla?.firstElementChild?.className).toContain('lapida--nueva')
+  })
+})
+
+describe('InicioPage — enlaces del sidebar', () => {
+  it('el Salón del Honor linkea a la lápida, no a un botón', () => {
+    const { container } = renderInicio([lapida({ id: 7 })])
+
+    const fila = container.querySelector('.sidebar__lista .sidebar__fila')!
+    expect(fila.tagName).toBe('A')
+    expect(fila.getAttribute('href')).toBe('/lapidas/7')
+  })
+
+  it('los asesinos seriales linkean al perfil, no a un botón', () => {
+    const { container } = renderInicio()
+
+    const fila = container.querySelector('.sidebar__lista--crece .sidebar__fila')!
+    expect(fila.tagName).toBe('A')
+    expect(fila.getAttribute('href')).toBe('/perfiles/zombie')
+  })
+
+  it('el link de una lápida navega por el router interno', () => {
+    const { container, onNavegar } = renderInicio([lapida({ id: 7 })])
+
+    fireEvent.click(container.querySelector('.sidebar__lista .sidebar__fila')!)
+
+    expect(onNavegar).toHaveBeenCalledWith('/lapidas/7')
+  })
+
+  it('el link de un asesino navega al perfil por el router interno', () => {
+    const { container, onNavegar } = renderInicio()
+
+    fireEvent.click(container.querySelector('.sidebar__lista--crece .sidebar__fila')!)
+
+    expect(onNavegar).toHaveBeenCalledWith('/perfiles/zombie')
   })
 })
