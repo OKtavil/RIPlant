@@ -61,7 +61,9 @@ datos ahora sí sobreviven al reinicio del backend porque viven en el volumen Do
 | Publicar | `+ Publicar` → completa campos → `Publicar lápida` | Regresas al cementerio y aparece la nueva tarjeta |
 | Rankings | Abre `Rankings` | Las plantas aparecen ordenadas por coronas |
 | Categorías | Abre `Categorías` → agrega, edita y elimina | La lista refleja cada operación y pide confirmación al eliminar |
-| Perfil | Abre `Mi perfil` | Se muestran estadísticas y las lápidas publicadas por `Tú` |
+| Perfil | Abre `Mi perfil`, edita la descripción, elige una imagen y consulta `Perfiles` | Los cambios opcionales se guardan; al elegir otra imagen se ven juntas la actual y la vista previa. La lista pública muestra avatar, nombre y descripción; las lápidas compactas tienen textos limitados y altura uniforme |
+| Cambiar contraseña | En `Mi perfil` escribe una nueva contraseña y la actual | Se acepta solo si la contraseña actual coincide; sin nueva contraseña, los demás datos del perfil se pueden guardar sin cambiarla |
+| Errores de formulario | Envía un formulario inválido o repite el envío con el mismo error | Los errores por campo y generales se distinguen con una breve animación, salvo que el sistema solicite movimiento reducido |
 
 Si el backend no está levantado, la interfaz **no entra en modo demostración**: informa
 el error y no presenta cambios como si estuvieran guardados. Los datos simulados se

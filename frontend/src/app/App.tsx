@@ -479,10 +479,18 @@ export default function App() {
               onPublicar={() => irAVista('publicar')}
               onBorrar={pedirConfirmacionBorrado}
               onIniciarSesion={() => abrirAuth('login')}
-              onActualizarDescripcion={async (descripcion) => {
+              onActualizarPerfil={async (datos) => {
                 if (!sesion) return
-                const actualizado = await usuariosApi.actualizarDescripcion(sesion.id, descripcion)
-                setSesion((s) => (s ? { ...s, descripcion: actualizado.descripcion } : s))
+                const actualizado = await usuariosApi.actualizarPerfil(sesion.id, datos)
+                setSesion((s) =>
+                  s
+                    ? {
+                        ...s,
+                        descripcion: actualizado.descripcion,
+                        avatarUrl: actualizado.avatarUrl,
+                      }
+                    : s,
+                )
               }}
               onEmitirCodigoRecuperacion={async (passwordActual) => {
                 // El perfil propio exige la contraseña; la sección no existe

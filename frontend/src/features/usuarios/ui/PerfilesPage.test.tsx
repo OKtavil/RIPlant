@@ -148,6 +148,55 @@ describe('PerfilesPage — perfil pedido por la URL', () => {
     expect(tarjeta.getAttribute('href')).toBe('/perfiles/jardinero')
   })
 
+  it('muestra la imagen recibida desde el API en la tarjeta del perfil', async () => {
+    vi.mocked(usuariosApi.listar).mockResolvedValue([
+      {
+        id: 'u1',
+        username: 'jardinero',
+        rol: 'usuario',
+        insignias: [],
+        descripcion: 'Mi jardín',
+        avatarUrl: '/uploads/avatar.png',
+      },
+    ])
+    render(<Perfiles {...baseProps(sesion())} />)
+
+    expect(await screen.findByRole('img', { name: 'Imagen de jardinero' })).toHaveProperty(
+      'src',
+      'http://localhost:3000/uploads/avatar.png',
+    )
+    expect(screen.getByText('Mi jardín')).toBeTruthy()
+  })
+
+  it('prefiere los cambios recientes de la sesión a una respuesta de perfiles anterior', async () => {
+    vi.mocked(usuariosApi.listar).mockResolvedValue([
+      {
+        id: 'admin-1',
+        username: 'admin',
+        rol: 'admin',
+        insignias: [],
+        descripcion: 'Descripción vieja',
+        avatarUrl: '/uploads/anterior.png',
+      },
+    ])
+    render(
+      <Perfiles
+        {...baseProps(
+          sesion({
+            descripcion: 'Descripción nueva',
+            avatarUrl: '/uploads/actual.png',
+          }),
+        )}
+      />,
+    )
+
+    expect(await screen.findByText('Descripción nueva')).toBeTruthy()
+    expect(screen.getByRole('img', { name: 'Imagen de admin' })).toHaveProperty(
+      'src',
+      'http://localhost:3000/uploads/actual.png',
+    )
+  })
+
   it('permite coronar una lápida desde el perfil ajeno usando la sesión real', async () => {
     const onCorona = vi.fn().mockResolvedValue(undefined)
     const tumba = {

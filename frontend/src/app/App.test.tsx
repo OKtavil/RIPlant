@@ -46,7 +46,7 @@ vi.mock('../features/sesiones/api/sesiones.api', () => ({
 
 vi.mock('../features/usuarios/api/usuarios.api', () => ({
   usuariosApi: {
-    actualizarDescripcion: vi.fn(),
+    actualizarPerfil: vi.fn(),
   },
 }))
 

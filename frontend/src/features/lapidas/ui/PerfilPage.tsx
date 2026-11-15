@@ -1,14 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
-import { CampoTexto } from '../../../shared/ui/Campo'
+import { CampoArea, CampoTexto } from '../../../shared/ui/Campo'
+import { useFormErrorPulse } from '../../../shared/ui/useFormErrorPulse'
 import { IconoInsignia, IconoPersona } from '../../../shared/ui/iconos'
 import { insigniaSuperviviente, type Session } from '../../sesiones/model/sesion'
+import type { ActualizarPerfil } from '../../usuarios/api/usuarios.api'
 import type { Category } from '../../categorias/model/categoria'
 import type { Asesino, Grave } from '../model/lapida'
 import { esDuenio, puedeBorrar } from '../model/lapida'
-import { GraveCard, GraveCardNueva } from './GraveCard'
+import { GraveCard } from './GraveCard'
+
+const TAMANIO_MAXIMO_FOTO = 5 * 1024 * 1024
 
 type Props = {
   sesion: Session | null
@@ -22,7 +26,7 @@ type Props = {
   onPublicar: () => void
   onBorrar: (lapida: Grave) => Promise<void>
   onIniciarSesion: () => void
-  onActualizarDescripcion?: (descripcion: string) => Promise<void>
+  onActualizarPerfil?: (datos: ActualizarPerfil) => Promise<void>
   /**
    * Emite un código de recuperación nuevo para el propio usuario, probando la
    * contraseña actual. Devuelve el código en claro, que se muestra una sola vez.
@@ -52,17 +56,21 @@ export function PerfilPage({
   asesinos,
   onAbrir,
   onCorona,
-  onPublicar,
   onBorrar,
   onIniciarSesion,
-  onActualizarDescripcion,
+  onActualizarPerfil,
   onEmitirCodigoRecuperacion,
   soloLectura = false,
 }: Props) {
   const [editando, setEditando] = useState(false)
-  const [errorDescripcion, setErrorDescripcion] = useState('')
+  const [guardandoPerfil, setGuardandoPerfil] = useState(false)
+  const [errorPerfil, setErrorPerfil] = useState('')
+  const [erroresPerfil, setErroresPerfil] = useState<Record<string, string>>({})
   const descripcionSesion = sesion?.descripcion ?? ''
   const [descripcion, setDescripcion] = useState(descripcionSesion)
+  const [passwordActual, setPasswordActual] = useState('')
+  const [passwordNueva, setPasswordNueva] = useState('')
+  const [foto, setFoto] = useState<{ archivo: File; vistaPrevia: string }>()
   // El borrador sigue a la sesión: si la descripción cambia por fuera (guardado
   // en otra pestaña, refresco de `/sesiones/actual`), reabrir el editor no debe
   // mostrar el valor viejo. Ajustar el estado durante el render es el patrón que
@@ -72,6 +80,11 @@ export function PerfilPage({
     setDescripcionPrevia(descripcionSesion)
     setDescripcion(descripcionSesion)
   }
+  useEffect(() => {
+    return () => {
+      if (foto) URL.revokeObjectURL(foto.vistaPrevia)
+    }
+  }, [foto])
   // La identidad sale de `usuarioId` (presente incluso en la lápida recién
   // publicada) y, si falta, de `duenio.username`. Ver `esDuenio`.
   const propias = lapidas.filter((lapida) => esDuenio(lapida, sesion))
@@ -79,8 +92,7 @@ export function PerfilPage({
   const misMuertes = asesinos.find((a) => a.username === sesion?.username)?.muertes ?? 0
   const nombreCategoria = (id: number) => categorias.find((c) => c.id === id)?.nombre
   const insignia = insigniaSuperviviente(sesion)
-  const puedeEditarDescripcion =
-    !!sesion && !!onActualizarDescripcion && !soloLectura
+  const puedeEditarPerfil = !!sesion && !!onActualizarPerfil && !soloLectura
   const puedeEmitirCodigo =
     !!sesion && !!onEmitirCodigoRecuperacion && !soloLectura
   const [pidiendoCodigo, setPidiendoCodigo] = useState(false)
@@ -88,12 +100,18 @@ export function PerfilPage({
   const [generandoCodigo, setGenerandoCodigo] = useState(false)
   const [codigoNuevo, setCodigoNuevo] = useState('')
   const [errorCodigo, setErrorCodigo] = useState('')
+  const pulsoEditor = useFormErrorPulse()
+  const pulsoCodigo = useFormErrorPulse()
 
   return (
     <>
       <section className="perfil__cabecera">
         <div className="perfil__avatar">
-          <IconoPersona />
+          {sesion?.avatarUrl ? (
+            <img src={sesion.avatarUrl} alt={`Imagen de ${sesion.username}`} />
+          ) : (
+            <IconoPersona />
+          )}
         </div>
         <div className="perfil__identidad">
           <h1 className="perfil__nombre">{sesion ? sesion.username : 'Invitado'}</h1>
@@ -101,9 +119,9 @@ export function PerfilPage({
             {sesion ? (sesion.descripcion || 'Sin descripción') : 'Iniciá sesión para ver tu jardín'}
           </p>
         </div>
-        {puedeEditarDescripcion && (
+        {puedeEditarPerfil && (
           <Boton tamano="chico" onClick={() => setEditando(true)}>
-            EDITAR DESCRIPCIÓN
+            EDITAR PERFIL
           </Boton>
         )}
         {!sesion && (
@@ -113,47 +131,161 @@ export function PerfilPage({
         )}
       </section>
 
-      {editando && puedeEditarDescripcion && (
-        <section style={{ padding: '0 24px', marginBottom: 16 }}>
-          <textarea
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            maxLength={280}
-            rows={3}
-            style={{ width: '100%', maxWidth: 600, padding: 8 }}
-          />
-          <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-            <Boton
-              tamano="chico"
-              onClick={async () => {
-                setErrorDescripcion('')
-                try {
-                  await onActualizarDescripcion(descripcion)
-                  setEditando(false)
-                } catch (fallo) {
-                  // El backend ya valida largo y permisos: su mensaje es más
-                  // útil que uno genérico.
-                  setErrorDescripcion(
-                    fallo instanceof ApiError ? fallo.message : 'No se pudo guardar la descripción.',
-                  )
-                }
-              }}
-            >
-              GUARDAR
-            </Boton>
-            <Boton
-              tamano="chico"
-              onClick={() => {
-                setDescripcion(descripcionSesion)
-                setErrorDescripcion('')
+      {editando && puedeEditarPerfil && (
+        <div className="perfil__editor-contenedor">
+          <form
+            className="publicar__tarjeta perfil__editor"
+            data-error-pulse={pulsoEditor.errorPulse}
+            onSubmitCapture={pulsoEditor.onSubmitCapture}
+            noValidate
+            onSubmit={async (evento) => {
+              evento.preventDefault()
+              setErrorPerfil('')
+              const nuevosErrores: Record<string, string> = {}
+              if (foto && foto.archivo.size > TAMANIO_MAXIMO_FOTO) {
+                nuevosErrores.foto = 'La imagen no puede superar los 5 MB.'
+              }
+              if (passwordNueva.length > 0 && passwordNueva.length < 8) {
+                nuevosErrores.passwordNueva = 'La contraseña necesita al menos 8 caracteres.'
+              }
+              if (passwordNueva && !passwordActual) {
+                nuevosErrores.passwordActual = 'Ingresá tu contraseña actual para cambiarla.'
+              }
+              if (Object.keys(nuevosErrores).length > 0) {
+                setErroresPerfil(nuevosErrores)
+                return
+              }
+
+              setErroresPerfil({})
+              setGuardandoPerfil(true)
+              try {
+                await onActualizarPerfil({
+                  descripcion,
+                  ...(foto ? { foto: foto.archivo } : {}),
+                  ...(passwordNueva ? { passwordActual, passwordNueva } : {}),
+                })
+                setPasswordActual('')
+                setPasswordNueva('')
+                setFoto(undefined)
                 setEditando(false)
+              } catch (fallo) {
+                setErrorPerfil(
+                  fallo instanceof ApiError ? fallo.message : 'No se pudo guardar el perfil.',
+                )
+              } finally {
+                setGuardandoPerfil(false)
+              }
+            }}
+          >
+            <h2 className="publicar__titulo">EDITAR PERFIL</h2>
+            <p className="perfil__editor-ayuda">
+              Actualizá solo los datos que quieras cambiar. Los campos son opcionales.
+            </p>
+
+            <CampoTexto
+              id="perfil-foto"
+              etiqueta="Imagen de perfil (opcional)"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              ayuda="JPEG, PNG o WebP, hasta 5 MB."
+              error={erroresPerfil.foto}
+              onChange={(evento) => {
+                const archivo = evento.target.files?.[0]
+                setFoto(
+                  archivo
+                    ? { archivo, vistaPrevia: URL.createObjectURL(archivo) }
+                    : undefined,
+                )
+                setErroresPerfil((actuales) => ({ ...actuales, foto: '' }))
               }}
-            >
-              CANCELAR
-            </Boton>
-          </div>
-          {errorDescripcion && <Aviso tono="error">{errorDescripcion}</Aviso>}
-        </section>
+            />
+            <div className="perfil__editor-imagenes">
+              <figure className="vista-previa perfil__editor-vista-previa">
+                <figcaption className="vista-previa__titulo">IMAGEN ACTUAL</figcaption>
+                <div className="perfil__editor-avatar">
+                  {sesion?.avatarUrl ? (
+                    <img src={sesion.avatarUrl} alt="Imagen actual del perfil" />
+                  ) : (
+                    <IconoPersona />
+                  )}
+                </div>
+              </figure>
+              {foto && (
+                <figure className="vista-previa perfil__editor-vista-previa">
+                  <figcaption className="vista-previa__titulo">VISTA PREVIA</figcaption>
+                  <div className="perfil__editor-avatar">
+                    <img src={foto.vistaPrevia} alt="Vista previa de la nueva imagen de perfil" />
+                  </div>
+                </figure>
+              )}
+            </div>
+
+            <CampoArea
+              id="perfil-descripcion"
+              etiqueta="Descripción (opcional)"
+              maxLength={280}
+              rows={3}
+              value={descripcion}
+              ayuda={`${descripcion.length}/280 caracteres`}
+              onChange={(evento) => setDescripcion(evento.target.value)}
+            />
+
+            <CampoTexto
+              id="perfil-password-nueva"
+              etiqueta="Nueva contraseña (opcional)"
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              maxLength={72}
+              value={passwordNueva}
+              error={erroresPerfil.passwordNueva}
+              ayuda="Dejá este campo vacío si no querés cambiarla."
+              onChange={(evento) => {
+                setPasswordNueva(evento.target.value)
+                setErroresPerfil((actuales) => ({ ...actuales, passwordNueva: '' }))
+              }}
+            />
+            {passwordNueva && (
+              <CampoTexto
+                id="perfil-password-actual"
+                etiqueta="Contraseña actual"
+                type="password"
+                autoComplete="current-password"
+                required
+                maxLength={72}
+                value={passwordActual}
+                error={erroresPerfil.passwordActual}
+                onChange={(evento) => {
+                  setPasswordActual(evento.target.value)
+                  setErroresPerfil((actuales) => ({ ...actuales, passwordActual: '' }))
+                }}
+              />
+            )}
+
+            {errorPerfil && <Aviso tono="error">{errorPerfil}</Aviso>}
+            <div className="perfil__editor-acciones">
+              <Boton type="submit" disabled={guardandoPerfil}>
+                {guardandoPerfil ? 'GUARDANDO…' : 'GUARDAR PERFIL'}
+              </Boton>
+              <Boton
+                type="button"
+                variante="peligro"
+                disabled={guardandoPerfil}
+                onClick={() => {
+                  setDescripcion(descripcionSesion)
+                  setPasswordActual('')
+                  setPasswordNueva('')
+                  setFoto(undefined)
+                  setErrorPerfil('')
+                  setErroresPerfil({})
+                  setEditando(false)
+                }}
+              >
+                CANCELAR
+              </Boton>
+            </div>
+          </form>
+        </div>
       )}
 
       <section className="perfil__stats">
@@ -203,6 +335,8 @@ export function PerfilPage({
             </>
           ) : pidiendoCodigo ? (
             <form
+              data-error-pulse={pulsoCodigo.errorPulse}
+              onSubmitCapture={pulsoCodigo.onSubmitCapture}
               onSubmit={async (evento) => {
                 evento.preventDefault()
                 setErrorCodigo('')
@@ -281,9 +415,6 @@ export function PerfilPage({
             {...(puedeBorrar(lapida, sesion) && !soloLectura ? { onBorrar } : {})}
           />
         ))}
-        {sesion && onPublicar && !soloLectura && (
-          <GraveCardNueva tamano="baja" texto="Nueva lápida" onClick={onPublicar} />
-        )}
       </div>
     </>
   )

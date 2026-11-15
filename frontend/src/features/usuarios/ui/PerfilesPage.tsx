@@ -4,6 +4,7 @@ import { ApiError } from '../../../shared/api/client'
 import { Aviso } from '../../../shared/ui/Aviso'
 import { Boton } from '../../../shared/ui/Boton'
 import { Enlace } from '../../../shared/ui/Enlace'
+import { IconoPersona } from '../../../shared/ui/iconos'
 import { usuariosApi, type UsuarioPublico } from '../api/usuarios.api'
 import type { Category } from '../../categorias/model/categoria'
 import type { Asesino, Grave } from '../../lapidas/model/lapida'
@@ -80,7 +81,21 @@ export function PerfilesPage({
   const codigoEmitido = emision.username === username ? emision.codigo : ''
   const errorEmision = emision.username === username ? emision.error : ''
 
-  const usuario = username ? usuarios.find((u) => u.username === username) : undefined
+  // La sesión se actualiza inmediatamente al editar el perfil propio. Usarla
+  // como fuente más reciente evita que una respuesta de listado anterior
+  // vuelva a mostrar la descripción o el avatar viejos.
+  const usuariosActualizados = usuarios.map((usuario) =>
+    usuario.id === sesion?.id
+      ? {
+          ...usuario,
+          descripcion: sesion.descripcion ?? usuario.descripcion,
+          avatarUrl: sesion.avatarUrl ?? usuario.avatarUrl,
+        }
+      : usuario,
+  )
+  const usuario = username
+    ? usuariosActualizados.find((u) => u.username === username)
+    : undefined
 
   if (username && cargando) {
     return <Aviso>Cargando el perfil…</Aviso>
@@ -175,6 +190,7 @@ export function PerfilesPage({
                   rol: usuario.rol === 'admin' ? 'admin' : 'usuario',
                   insignias: usuario.insignias ?? [],
                   descripcion: usuario.descripcion ?? '',
+                  avatarUrl: usuario.avatarUrl ?? '',
                   expiraEn: '',
                 }
           }
@@ -200,7 +216,7 @@ export function PerfilesPage({
           <h1 className="panel-oscuro__titulo">PERFILES</h1>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-          {usuarios.map((usuario) => (
+          {usuariosActualizados.map((usuario) => (
             <Enlace
               key={usuario.id}
               href={rutaDePerfil(usuario.username)}
@@ -216,7 +232,16 @@ export function PerfilesPage({
                 textDecoration: 'none',
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: 18 }}>@{usuario.username}</div>
+              <div className="perfiles__tarjeta-cabecera">
+                <div className="perfiles__avatar">
+                  {usuario.avatarUrl ? (
+                    <img src={usuario.avatarUrl} alt={`Imagen de ${usuario.username}`} />
+                  ) : (
+                    <IconoPersona />
+                  )}
+                </div>
+                <div style={{ fontWeight: 700, fontSize: 18 }}>@{usuario.username}</div>
+              </div>
               {usuario.descripcion && (
                 <div style={{ marginTop: 8, color: '#4a3f35' }}>{usuario.descripcion}</div>
               )}

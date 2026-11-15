@@ -34,9 +34,20 @@ docker compose exec mongo mongosh riplanta --eval 'db.dropDatabase()'
 
 La primera ejecución recreará las semillas al iniciar Nest.
 
-## Qué no se ejecutó en este entorno
+## Verificación de edición y presentación del perfil
 
-La sesión del agente no pudo iniciar comandos porque el sandbox carece de `bubblewrap`
-o LXC. Por tanto, no se debe interpretar este cambio como una ejecución exitosa de los
-comandos: hay que correrlos localmente después de `pnpm install`. La estructura de
-pruebas sí está preparada para esa ejecución.
+El cambio de perfil se valida en estas capas:
+
+| Comando | Resultado esperado |
+|---|---|
+| `pnpm --dir backend test --runInBand src/usuarios/usuarios.service.spec.ts` | Reglas de autorización, actualización opcional, almacenamiento de avatar y cambio de contraseña |
+| `pnpm --dir backend test:e2e --runInBand usuarios.e2e-spec.ts` | Multipart autenticado, validación de contraseña actual y lectura pública del perfil |
+| `pnpm --dir frontend test` | Formularios, tarjetas de perfil, límites de texto y estilos |
+| `pnpm --dir backend build` / `pnpm --dir frontend build` | Compilación TypeScript y backend/frontend |
+| `pnpm --dir backend lint` / `pnpm --dir frontend lint` | Reglas Oxlint del backend y frontend |
+
+Para validar manualmente, inicia MongoDB, backend y frontend. Edita el perfil con cada
+campo por separado y luego en conjunto; al cambiar la imagen, compara la original con la
+vista previa; confirma que un cambio de contraseña requiere la actual. Abre `Perfiles`
+para comprobar el avatar y descripción guardados. Envía un formulario con datos inválidos
+y reintenta sin cambiar el error para verificar que la señal visual vuelve a ejecutarse.
