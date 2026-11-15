@@ -75,11 +75,12 @@ describe('InicioPage — Salón del Honor (R001)', () => {
 })
 
 describe('InicioPage — orden del feed', () => {
-  it('abre la grilla con la celda de publicar, antes de las lápidas existentes', () => {
+  it('no muestra la tarjeta para publicar en la grilla', () => {
     const { container } = renderInicio([lapida({ nombrePlanta: 'Pepino' })])
     const grilla = container.querySelector('.grilla')
 
-    expect(grilla?.firstElementChild?.className).toContain('lapida--nueva')
+    expect(grilla?.querySelector('.lapida--nueva')).toBeNull()
+    expect(grilla?.querySelector('.lapida')).toBeTruthy()
   })
 })
 

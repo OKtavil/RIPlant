@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   LIMITES_TARJETA,
+  LIMITES_TARJETA_BAJA,
   nombreDelDuenio,
   puedeBorrar,
   recortarTexto,
@@ -135,6 +136,14 @@ describe('LIMITES_TARJETA', () => {
     expect(LIMITES_TARJETA.nombre).toBeGreaterThan(0)
     expect(LIMITES_TARJETA.causa).toBeGreaterThan(0)
     expect(LIMITES_TARJETA.epitafio).toBeGreaterThan(LIMITES_TARJETA.nombre)
+  })
+
+  describe('LIMITES_TARJETA_BAJA', () => {
+    it('mantiene más cortos los textos que aparecen en las tarjetas del perfil', () => {
+      expect(LIMITES_TARJETA_BAJA.nombre).toBeLessThan(LIMITES_TARJETA.nombre)
+      expect(LIMITES_TARJETA_BAJA.causa).toBeLessThan(LIMITES_TARJETA.causa)
+      expect(LIMITES_TARJETA_BAJA.epitafio).toBeLessThan(LIMITES_TARJETA.epitafio)
+    })
   })
 
   it('fija los topes de causa y epitafio', () => {

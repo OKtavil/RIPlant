@@ -99,6 +99,13 @@ export const LIMITES_TARJETA = {
   epitafio: 160,
 } as const
 
+/** Topes más cortos para las tarjetas compactas del cementerio del perfil. */
+export const LIMITES_TARJETA_BAJA = {
+  nombre: 22,
+  causa: 56,
+  epitafio: 96,
+} as const
+
 /**
  * Recorta a `max` caracteres para que la tarjeta no crezca de más.
  *

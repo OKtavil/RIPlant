@@ -6,7 +6,7 @@ import type { Category } from '../../categorias/model/categoria'
 import type { Session } from '../../sesiones/model/sesion'
 import type { Asesino, Grave } from '../model/lapida'
 import { esDuenio } from '../model/lapida'
-import { GraveCard, GraveCardNueva } from './GraveCard'
+import { GraveCard } from './GraveCard'
 import { AvisoAsesinos, ListaAsesinos } from './ListaAsesinos'
 
 type Props = {
@@ -37,7 +37,6 @@ export function InicioPage({
   errorAsesinos,
   onAbrir,
   onCorona,
-  onPublicar,
   onActualizar,
   actualizando,
   onNavegar,
@@ -49,15 +48,12 @@ export function InicioPage({
       <section className="feed">
         <div className="panel-oscuro">
           <h1 className="panel-oscuro__titulo">CEMENTERIO DE PLANTAS</h1>
-          {/* El slot derecho del panel ya existía (`space-between`): el botón
-              entra ahí sin tocar el layout de la grilla. */}
           <Boton tamano="chico" onClick={onActualizar} disabled={actualizando}>
             {actualizando ? 'ACTUALIZANDO…' : 'ACTUALIZAR'}
           </Boton>
         </div>
 
         <div className="grilla grilla--tres">
-          <GraveCardNueva texto="Publica tu lápida" onClick={onPublicar} />
           {lapidas.map((lapida) => (
             <GraveCard
               key={lapida.id}

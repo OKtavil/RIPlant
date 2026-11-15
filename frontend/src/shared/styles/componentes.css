@@ -465,6 +465,7 @@ form[data-error-pulse='b'] .campo--error textarea {
 }
 
 .lapida--baja .lapida__contenido {
+  flex: 1;
   padding: 6px;
   background: linear-gradient(135deg, #f5e47d 0%, #a9cf61 100%);
   border: 1px solid #b0bd75;
@@ -771,6 +772,8 @@ button.lapida__coronas:disabled {
 
 .grilla--cuatro {
   grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
+  align-items: stretch;
 }
 
 /* Bloque del feed de Inicio */

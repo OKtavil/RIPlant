@@ -2,6 +2,7 @@ import { IconoCorona, IconoHoja, IconoMas } from '../../../shared/ui/iconos'
 import {
   colorDeFoto,
   LIMITES_TARJETA,
+  LIMITES_TARJETA_BAJA,
   nombreDelDuenio,
   recortarTexto,
   type Grave,
@@ -27,6 +28,8 @@ type Props = {
 }
 
 export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCorona, propia = false, onBorrar }: Props) {
+  const limites = tamano === 'baja' ? LIMITES_TARJETA_BAJA : LIMITES_TARJETA
+
   return (
     <article className={`lapida lapida--${tamano}${lapida.resucitada ? ' lapida--resucitada' : ''}`}>
       <button
@@ -54,15 +57,15 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
         </span>
 
         <button className="lapida__nombre" onClick={() => onAbrir(lapida)}>
-          “{recortarTexto(lapida.nombrePlanta, LIMITES_TARJETA.nombre)}”
+          “{recortarTexto(lapida.nombrePlanta, limites.nombre)}”
         </button>
 
         <p className="lapida__meta lapida__categoria">{categoria || 'Sin categoría'}</p>
 
-        <p className="lapida__epitafio">{recortarTexto(lapida.epitafio, LIMITES_TARJETA.epitafio)}</p>
+        <p className="lapida__epitafio">{recortarTexto(lapida.epitafio, limites.epitafio)}</p>
 
         <p className="lapida__meta lapida__causa">
-          {recortarTexto(lapida.causaMuerte, LIMITES_TARJETA.causa)}
+          {recortarTexto(lapida.causaMuerte, limites.causa)}
         </p>
 
         <p className="lapida__autor">por @{nombreDelDuenio(lapida)}</p>

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { LIMITES_TARJETA, type Grave } from '../model/lapida'
+import { LIMITES_TARJETA, LIMITES_TARJETA_BAJA, type Grave } from '../model/lapida'
 import { GraveCard } from './GraveCard'
 
 function lapida(parcial: Partial<Grave> = {}): Grave {
@@ -190,16 +190,20 @@ describe('GraveCard', () => {
       expect(epitafio).not.toBe(largo.epitafio)
     })
 
-    it('aplica los mismos límites a la variante baja, que es la del perfil', () => {
+    it('aplica límites compactos a la variante baja, que es la del perfil', () => {
       const { container } = render(
         <GraveCard lapida={lapida(largo)} tamano="baja" onAbrir={vi.fn()} />,
       )
 
-      expect(container.querySelector('.lapida__nombre')!.textContent).toBe(
-        '“Monstera deliciosa…”',
-      )
-      expect(container.querySelector('.lapida__causa')!.textContent!.endsWith('…')).toBe(true)
-      expect(container.querySelector('.lapida__epitafio')!.textContent!.endsWith('…')).toBe(true)
+      const nombre = container.querySelector('.lapida__nombre')!.textContent!
+      const causa = container.querySelector('.lapida__causa')!.textContent!
+      const epitafio = container.querySelector('.lapida__epitafio')!.textContent!
+
+      expect(nombre.length - 2).toBeLessThanOrEqual(LIMITES_TARJETA_BAJA.nombre)
+      expect(causa.length).toBeLessThanOrEqual(LIMITES_TARJETA_BAJA.causa)
+      expect(epitafio.length).toBeLessThanOrEqual(LIMITES_TARJETA_BAJA.epitafio)
+      expect(causa.endsWith('…')).toBe(true)
+      expect(epitafio.endsWith('…')).toBe(true)
     })
 
     it('no toca los textos que ya entran en el límite', () => {

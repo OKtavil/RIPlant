@@ -61,11 +61,23 @@ describe('hoja de estilos', () => {
   })
 
   it('aplica el tratamiento del texto y las coronas también a las lápidas del perfil', () => {
-    expect(bloque(componentes, '.lapida--baja .lapida__contenido')).toMatch(
-      /background\s*:\s*linear-gradient/,
-    )
+    const contenidoPerfil = bloque(componentes, '.lapida--baja .lapida__contenido')
+    expect(contenidoPerfil).toMatch(/background\s*:\s*linear-gradient/)
+    expect(contenidoPerfil).toMatch(/flex\s*:\s*1/)
     expect(bloque(componentes, '.lapida--baja .lapida__coronas')).toMatch(
       /background\s*:\s*linear-gradient\([^;]*var\(--azul-claro\)[^;]*var\(--blanco\)/,
+    )
+  })
+
+  it('alinea y iguala el alto de todas las tarjetas compactas del perfil', () => {
+    const grilla = bloque(componentes, '.grilla--cuatro')
+    expect(grilla).toMatch(/grid-auto-rows\s*:\s*1fr/)
+    expect(grilla).toMatch(/align-items\s*:\s*stretch/)
+  })
+
+  it('mantiene la decoración de fondo de las tarjetas compactas del perfil', () => {
+    expect(bloque(componentes, '.lapida--baja .lapida__contenido')).toMatch(
+      /background\s*:\s*linear-gradient/,
     )
   })
 
