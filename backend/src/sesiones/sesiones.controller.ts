@@ -77,7 +77,14 @@ export class SesionesController {
   }
 
   private aRespuesta(
-    usuario: { id: string; username: string; rol: string; insignias?: unknown[]; descripcion?: string },
+    usuario: {
+      id: string;
+      username: string;
+      rol: string;
+      insignias?: unknown[];
+      descripcion?: string;
+      avatarUrl?: string;
+    },
     expiraEn: Date,
   ) {
     return {
@@ -88,6 +95,7 @@ export class SesionesController {
       // que la forma de la respuesta no dependa de si el usuario tiene alguna.
       insignias: usuario.insignias ?? [],
       descripcion: usuario.descripcion ?? '',
+      avatarUrl: usuario.avatarUrl ?? '',
       expiraEn: expiraEn.toISOString(),
     };
   }

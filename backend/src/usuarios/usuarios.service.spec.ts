@@ -1,5 +1,6 @@
 import type { Model } from 'mongoose';
 import { hashearCodigoRecuperacion } from './codigo-recuperacion';
+import type { AlmacenamientoService } from '../almacenamiento/almacenamiento.interface';
 import { hashPassword, verifyPassword } from './password';
 import { UsuariosService } from './usuarios.service';
 import type { UsuarioDocument } from './usuario.schema';
@@ -25,6 +26,8 @@ describe('UsuariosService', () => {
     findById: jest.Mock;
     findByIdAndUpdate: jest.Mock;
   };
+  let almacenamiento: AlmacenamientoService;
+  let borrarFoto: jest.Mock;
   const ID = '507f1f77bcf86cd799439011';
   const dave = {
     _id: ID,
@@ -44,8 +47,19 @@ describe('UsuariosService', () => {
       findById: jest.fn().mockReturnValue(consultaLean(null)),
       findByIdAndUpdate: jest.fn().mockReturnValue(consultaLean(null)),
     };
+    borrarFoto = jest.fn().mockResolvedValue(undefined);
+    almacenamiento = {
+      guardar: jest.fn().mockResolvedValue({
+        nombreArchivo: 'avatar.png',
+        rutaPublica: '/uploads/avatar.png',
+        tipo: 'image/png',
+        bytes: 10,
+      }),
+      borrar: borrarFoto,
+    } as unknown as AlmacenamientoService;
     service = new UsuariosService(
       model as unknown as Model<UsuarioDocument>,
+      almacenamiento,
     );
     delete process.env.ADMIN_USERNAME;
     delete process.env.ADMIN_PASSWORD;
@@ -156,6 +170,77 @@ describe('UsuariosService', () => {
         usuario: { id: 'admin-1', rol: 'admin' },
       }),
     ).resolves.toMatchObject({ username: 'dave' });
+  });
+
+  describe('actualizarPerfil', () => {
+    const sesion = { usuario: { id: ID, rol: 'usuario' } };
+
+    it('actualiza descripción e imagen sin tocar la contraseña', async () => {
+      const actual = { ...dave, avatarUrl: '/uploads/anterior.png' };
+      model.findById.mockReturnValue(consultaLean(actual));
+      model.findByIdAndUpdate.mockReturnValue(
+        consultaLean({
+          ...actual,
+          descripcion: 'Mi jardín',
+          avatarUrl: '/uploads/avatar.png',
+        }),
+      );
+
+      await expect(
+        service.actualizarPerfil(ID, { descripcion: ' Mi jardín ' }, Buffer.from('imagen'), sesion),
+      ).resolves.toMatchObject({
+        descripcion: 'Mi jardín',
+        avatarUrl: '/uploads/avatar.png',
+      });
+
+      expect(model.findByIdAndUpdate).toHaveBeenCalledWith(
+        ID,
+        { $set: { descripcion: 'Mi jardín', avatarUrl: '/uploads/avatar.png' } },
+        { new: true, runValidators: true },
+      );
+      expect(borrarFoto).toHaveBeenCalledWith('/uploads/anterior.png');
+    });
+
+    it('exige y verifica la contraseña actual antes de reemplazarla', async () => {
+      const actual = { ...dave, passwordHash: await hashPassword('clave-actual') };
+      model.findById.mockReturnValue(consultaLean(actual));
+      model.findByIdAndUpdate.mockReturnValue(
+        consultaLean({ ...dave, descripcion: '', avatarUrl: '' }),
+      );
+
+      await expect(
+        service.actualizarPerfil(ID, { passwordNueva: 'clave-nueva-1' }, undefined, sesion),
+      ).rejects.toThrow('Ingresá tu contraseña actual para cambiarla');
+      await expect(
+        service.actualizarPerfil(
+          ID,
+          { passwordActual: 'incorrecta', passwordNueva: 'clave-nueva-1' },
+          undefined,
+          sesion,
+        ),
+      ).rejects.toThrow('La contraseña actual no es correcta');
+
+      await service.actualizarPerfil(
+        ID,
+        { passwordActual: 'clave-actual', passwordNueva: 'clave-nueva-1' },
+        undefined,
+        sesion,
+      );
+      const [, actualizacion] = model.findByIdAndUpdate.mock.calls[0];
+      expect(await verifyPassword('clave-nueva-1', actualizacion.$set.passwordHash)).toBe(true);
+    });
+
+    it('rechaza editar el perfil de otra persona', async () => {
+      await expect(
+        service.actualizarPerfil(
+          ID,
+          { descripcion: 'No' },
+          undefined,
+          { usuario: { id: 'otro', rol: 'usuario' } },
+        ),
+      ).rejects.toThrow('Solo el dueño o un admin pueden editar el perfil');
+      expect(model.findById).not.toHaveBeenCalled();
+    });
   });
 
   describe('código de recuperación', () => {

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -9,12 +10,17 @@ import {
   Put,
   Req,
   Res,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
+import { TAMANIO_MAXIMO_FOTO } from '../almacenamiento/almacenamiento-disco.service';
 import { escribirCookieSesion } from '../sesiones/cookie';
 import { SesionesService } from '../sesiones/sesiones.service';
 import type { RequestConSesion } from '../sesiones/sesion.interface';
 import { ActualizarDescripcionDTO } from './actualizar-descripcion.dto';
+import { ActualizarPerfilDTO } from './actualizar-perfil.dto';
 import { CrearUsuarioDTO } from './crear-usuario.dto';
 import { EmitirCodigoRecuperacionDTO } from './emitir-codigo-recuperacion.dto';
 import { RecuperarPasswordDTO } from './recuperar-password.dto';
@@ -46,6 +52,27 @@ export class UsuariosController {
     @Req() req: RequestConSesion,
   ) {
     return this.usuarios.actualizarDescripcion(id, dto.descripcion, req.sesion!);
+  }
+
+  @Put(':id/perfil')
+  @UseInterceptors(
+    FileInterceptor('foto', { limits: { fileSize: TAMANIO_MAXIMO_FOTO, files: 1 } }),
+  )
+  async actualizarPerfil(
+    @Param('id') id: string,
+    @Body() dto: ActualizarPerfilDTO,
+    @UploadedFile() foto: { buffer?: Buffer } | undefined,
+    @Req() req: RequestConSesion,
+  ) {
+    if (foto && !foto.buffer?.length) {
+      throw new BadRequestException('La foto de perfil no es válida');
+    }
+    return this.usuarios.actualizarPerfil(
+      id,
+      dto,
+      foto?.buffer,
+      req.sesion!,
+    );
   }
 
   /**

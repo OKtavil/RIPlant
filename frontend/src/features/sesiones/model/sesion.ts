@@ -30,6 +30,7 @@ export type Session = {
   /** Logros obtenidos. `[]` cuando no tiene ninguno. */
   insignias: Insignia[]
   descripcion?: string
+  avatarUrl?: string
   expiraEn: string
 }
 

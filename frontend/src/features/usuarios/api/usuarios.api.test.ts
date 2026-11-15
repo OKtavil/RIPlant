@@ -14,6 +14,29 @@ function conRespuesta(respuesta: Response) {
 }
 
 describe('usuariosApi', () => {
+  it('actualizarPerfil envía los campos opcionales y la foto como multipart', async () => {
+    conRespuesta(Response.json({ id: 'u1', descripcion: 'Hola', avatarUrl: '/uploads/avatar.png' }))
+    const foto = new File(['imagen'], 'perfil.png', { type: 'image/png' })
+
+    await usuariosApi.actualizarPerfil('u1', {
+      descripcion: 'Hola',
+      passwordActual: 'clave-anterior',
+      passwordNueva: 'clave-nueva-1',
+      foto,
+    })
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe(`${BASE}/usuarios/u1/perfil`)
+    expect(init.method).toBe('PUT')
+    expect(init.credentials).toBe('include')
+    expect(init.headers).toBeUndefined()
+    const cuerpo = init.body as FormData
+    expect(cuerpo.get('descripcion')).toBe('Hola')
+    expect(cuerpo.get('passwordActual')).toBe('clave-anterior')
+    expect(cuerpo.get('passwordNueva')).toBe('clave-nueva-1')
+    expect(cuerpo.get('foto')).toBe(foto)
+  })
+
   it('emitirCodigoRecuperacion hace POST /usuarios/:id/codigo-recuperacion con la contraseña actual', async () => {
     conRespuesta(Response.json({ codigoRecuperacion: 'ABCD-EFGH-IJKL-MNOP' }))
 

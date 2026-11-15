@@ -40,6 +40,9 @@ export class UsuarioDocumentModel {
   @Prop({ type: String, trim: true, maxlength: 280, default: '' })
   descripcion: string;
 
+  @Prop({ type: String, default: '' })
+  avatarUrl: string;
+
   /**
    * Logros del usuario. Hoy solo `superviviente-zombie`: se otorga al dueño
    * cuando una de sus lápidas revive (edición vía `PUT /lapidas/:id`).

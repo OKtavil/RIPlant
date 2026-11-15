@@ -112,14 +112,23 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
  * `Content-Type` lo tiene que poner el browser, que además agrega el `boundary`
  * del multipart. Fijarlo a mano dejaría el body ilegible para multer.
  */
-export async function subirArchivo<T>(path: string, campo: string, archivo: File): Promise<T> {
+export async function subirArchivo<T>(
+  path: string,
+  campo: string,
+  archivo?: File,
+  campos: Record<string, string | undefined> = {},
+  method: 'POST' | 'PUT' = 'POST',
+): Promise<T> {
   const cuerpo = new FormData()
-  cuerpo.append(campo, archivo)
+  if (archivo) cuerpo.append(campo, archivo)
+  for (const [nombre, valor] of Object.entries(campos)) {
+    if (valor !== undefined) cuerpo.append(nombre, valor)
+  }
 
   let response: Response
   try {
     response = await fetch(`${BASE_URL}${path}`, {
-      method: 'POST',
+      method,
       credentials: 'include',
       body: cuerpo,
     })

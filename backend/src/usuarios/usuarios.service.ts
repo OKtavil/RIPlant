@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -9,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model } from 'mongoose';
+import type { AlmacenamientoService } from '../almacenamiento/almacenamiento.interface';
+import { ALMACENAMIENTO } from '../almacenamiento/almacenamiento.token';
 import {
   generarCodigoRecuperacion,
   hashearCodigoRecuperacion,
@@ -39,6 +42,8 @@ export class UsuariosService implements OnModuleInit {
   constructor(
     @InjectModel(UsuarioDocumentModel.name)
     private readonly usuarioModel: Model<UsuarioDocumentModel>,
+    @Inject(ALMACENAMIENTO)
+    private readonly almacenamiento: AlmacenamientoService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -163,6 +168,7 @@ export class UsuariosService implements OnModuleInit {
     rol: Rol;
     insignias?: InsigniaUsuario[];
     descripcion?: string;
+    avatarUrl?: string;
   }): Usuario {
     return {
       id: String(doc._id),
@@ -172,6 +178,7 @@ export class UsuariosService implements OnModuleInit {
       // guardado, y la API promete una lista, no `undefined`.
       insignias: doc.insignias ?? [],
       descripcion: doc.descripcion ?? '',
+      avatarUrl: doc.avatarUrl ?? '',
     };
   }
 
@@ -191,7 +198,7 @@ export class UsuariosService implements OnModuleInit {
     const docs = await this.usuarioModel
       .find(
         { rol: { $ne: 'zombie' } },
-        { username: 1, rol: 1, descripcion: 1, insignias: 1 },
+        { username: 1, rol: 1, descripcion: 1, avatarUrl: 1, insignias: 1 },
       )
       .lean();
     return docs.map((doc) => this.aDominio(doc as any));
@@ -214,6 +221,53 @@ export class UsuariosService implements OnModuleInit {
       .lean();
     if (!doc) throw new NotFoundException('Usuario no encontrado');
     return this.aDominio(doc as any);
+  }
+
+  async actualizarPerfil(
+    id: string,
+    datos: {
+      descripcion?: string;
+      passwordActual?: string;
+      passwordNueva?: string;
+    },
+    foto: Buffer | undefined,
+    sesion: { usuario: { id: string; rol: string } },
+  ) {
+    if (!isValidObjectId(id)) throw new NotFoundException('Usuario no encontrado');
+    if (sesion.usuario.rol !== 'admin' && String(sesion.usuario.id) !== String(id)) {
+      throw new ForbiddenException('Solo el dueño o un admin pueden editar el perfil');
+    }
+
+    const docActual = await this.usuarioModel.findById(id).lean();
+    if (!docActual) throw new NotFoundException('Usuario no encontrado');
+
+    const cambios: Record<string, string> = {};
+    if (datos.descripcion !== undefined) cambios.descripcion = datos.descripcion.trim();
+
+    if (datos.passwordNueva !== undefined) {
+      if (!datos.passwordActual) {
+        throw new BadRequestException('Ingresá tu contraseña actual para cambiarla');
+      }
+      const coincide = await verifyPassword(datos.passwordActual, docActual.passwordHash);
+      if (!coincide) {
+        throw new ForbiddenException('La contraseña actual no es correcta');
+      }
+      cambios.passwordHash = await hashPassword(datos.passwordNueva);
+    }
+
+    const imagen = foto?.length ? await this.almacenamiento.guardar(foto) : undefined;
+    if (imagen) cambios.avatarUrl = imagen.rutaPublica;
+    if (Object.keys(cambios).length === 0) return this.aDominio(docActual);
+
+    const actualizado = await this.usuarioModel
+      .findByIdAndUpdate(id, { $set: cambios }, { new: true, runValidators: true })
+      .lean();
+    if (!actualizado) throw new NotFoundException('Usuario no encontrado');
+
+    if (imagen) {
+      await this.almacenamiento.borrar(docActual.avatarUrl);
+    }
+    return this.aDominio(actualizado as any);
   }
 
   /**

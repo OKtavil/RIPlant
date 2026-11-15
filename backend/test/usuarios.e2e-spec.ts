@@ -225,6 +225,30 @@ describe('Usuarios (e2e)', () => {
         .expect(400);
     });
 
+    it('actualiza el perfil y exige la contraseña actual para cambiarla', async () => {
+      await request(app.getHttpServer())
+        .put(`/usuarios/${idPerfil}/perfil`)
+        .set('Cookie', cookiePerfil)
+        .field('passwordNueva', 'clave-nueva-1')
+        .expect(400);
+
+      const actualizado = await request(app.getHttpServer())
+        .put(`/usuarios/${idPerfil}/perfil`)
+        .set('Cookie', cookiePerfil)
+        .field('passwordActual', 'clave-larga-1')
+        .field('passwordNueva', 'clave-nueva-1')
+        .expect(200);
+      expect(actualizado.body).toMatchObject({
+        username: nombrePerfil,
+        avatarUrl: '',
+      });
+
+      await request(app.getHttpServer())
+        .post('/sesiones')
+        .send({ username: nombrePerfil, password: 'clave-nueva-1' })
+        .expect(201);
+    });
+
     it('lista y muestra perfiles, sin la cuenta reservada zombie', async () => {
       const lista = await request(app.getHttpServer()).get('/usuarios').expect(200);
       expect(lista.body).toEqual(

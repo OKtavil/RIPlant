@@ -28,4 +28,6 @@ export interface Usuario {
   insignias: InsigniaUsuario[];
   /** Descripción del perfil. Editable solo por el dueño o admin. */
   descripcion: string;
+  /** Ruta pública de la imagen de perfil, vacía si no tiene una. */
+  avatarUrl: string;
 }

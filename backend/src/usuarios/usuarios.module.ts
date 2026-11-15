@@ -23,6 +23,7 @@ export class UsuariosModule implements NestModule {
       .apply(SesionRequeridaMiddleware)
       .forRoutes(
         { path: 'usuarios/:id/descripcion', method: RequestMethod.PUT },
+        { path: 'usuarios/:id/perfil', method: RequestMethod.PUT },
         {
           path: 'usuarios/:id/codigo-recuperacion',
           method: RequestMethod.POST,

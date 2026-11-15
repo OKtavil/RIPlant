@@ -28,6 +28,10 @@ inválido*.
 | POST | `/lapidas/:id/comentarios` | sesión (cualquier rol) | Crea un comentario (`201`); `400` si `texto` falta o supera 500 caracteres, `404` si la lápida no existe. `autor` y `usuarioId` salen de la sesión |
 | DELETE | `/comentarios/:id` | solo `admin` | Elimina el comentario (`200`) o `404`. El autor no borra el suyo |
 | POST | `/usuarios` | público | Crea una cuenta (`201`), `400` si el nombre es inválido o reservado, `409` si ya está en uso. Devuelve la misma cookie httpOnly que el login |
+| GET | `/usuarios` | público | Lista perfiles públicos, incluyendo `descripcion`, `avatarUrl` e insignias |
+| GET | `/usuarios/:id` | público | Devuelve el perfil público por id o `404` |
+| PUT | `/usuarios/:id/perfil` | dueño o `admin` | Actualiza en multipart cualquier combinación opcional de `descripcion`, `foto`, `passwordActual` y `passwordNueva`; cambiar contraseña exige validar la actual |
+| PUT | `/usuarios/:id/descripcion` | sesión; dueño o `admin` | Actualiza solo la descripción (ruta conservada por compatibilidad) |
 | GET | `/categorias` | público | Lista categorías |
 | POST | `/categorias` | solo `admin` | Crea una categoría validada; sin sesión `401`, con rol `usuario` `403` |
 | PUT | `/categorias/:id` | solo `admin` | Renombra una categoría o `404` |
@@ -86,6 +90,16 @@ al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
   más guardaría el hash de otra contraseña). El nombre `admin` y el nombre `zombie` están
   reservados y devuelven `400`; un nombre ya registrado, `409`. Al crearla, la sesión queda
   iniciada.
+- El perfil permite editar opcionalmente la descripción (máximo **280** caracteres), la
+  imagen y la contraseña. Si se envía `passwordNueva`, se exige `passwordActual` correcta;
+  la contraseña nueva acepta de 8 a 72 caracteres y solo se guarda su hash. La foto usa
+  las validaciones de imágenes comunes: JPEG, PNG o WebP, hasta **5 MB**, dimensiones
+  mínimas de 320 px por lado y máximo 50 megapíxeles. Nunca se devuelve el hash.
+- `GET /usuarios` y `GET /usuarios/:id` no exponen credenciales y publican `avatarUrl`
+  junto con la descripción. La lista muestra avatar o placeholder, nombre y descripción;
+  las tarjetas compactas recortan nombre a 22, epitafio a 96 y causa a 56 caracteres y
+  mantienen alturas uniformes. En Inicio y en el perfil no aparece una tarjeta duplicada
+  para publicar; PUBLICAR continúa disponible en la navegación.
 - Editar o borrar una lápida sin sesión devuelve `401`; con la sesión de otra persona y
   sin rol `admin`, `403`. Igual para subir la foto.
 - Una corona exige sesión y solo se puede dar una vez por usuario y lápida. **No es un
@@ -120,6 +134,9 @@ al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
 - El frontend muestra estados útiles: aviso de error si la API no está disponible (sin
   datos de demostración; los mocks se reservan para las pruebas), confirmación después
   de publicar y confirmación antes de eliminar categorías.
+- Los errores de validación y de API en formularios tienen una animación de entrada; un
+  reenvío vuelve a señalar el error aunque el mensaje no cambie. La animación se desactiva
+  cuando el sistema solicita movimiento reducido.
 - La **tarjeta** de la grilla muestra la foto, el nombre y, debajo del nombre, la
   categoría; después presenta el epitafio, la causa, el autor y las coronas. Aplica en el
   cementerio (Inicio), en el perfil y en las filas del ranking.

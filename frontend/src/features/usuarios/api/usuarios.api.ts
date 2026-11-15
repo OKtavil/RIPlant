@@ -1,4 +1,4 @@
-import { request } from '../../../shared/api/client'
+import { request, subirArchivo } from '../../../shared/api/client'
 import type { Session } from '../../sesiones/model/sesion'
 
 export type UsuarioPublico = {
@@ -7,16 +7,29 @@ export type UsuarioPublico = {
   rol: string
   insignias?: Session['insignias']
   descripcion?: string
+  avatarUrl?: string
+}
+
+export type ActualizarPerfil = {
+  descripcion?: string
+  passwordActual?: string
+  passwordNueva?: string
+  foto?: File
 }
 
 export const usuariosApi = {
   listar: () => request<UsuarioPublico[]>('/usuarios'),
   obtener: (id: string) => request<UsuarioPublico>(`/usuarios/${id}`),
-  actualizarDescripcion: (id: string, descripcion: string) =>
-    request<UsuarioPublico>(`/usuarios/${id}/descripcion`, {
-      method: 'PUT',
-      body: { descripcion },
-    }),
+  actualizarPerfil: (id: string, datos: ActualizarPerfil) => {
+    const { foto, ...campos } = datos
+    return subirArchivo<UsuarioPublico>(
+      `/usuarios/${id}/perfil`,
+      'foto',
+      foto,
+      campos,
+      'PUT',
+    )
+  },
   /**
    * Emite un código de recuperación nuevo y lo devuelve en claro, una sola vez.
    *
