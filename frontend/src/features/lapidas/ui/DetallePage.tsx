@@ -49,21 +49,21 @@ export function DetallePage({ lapida, categorias, sesion, onCorona, onBorrar, on
           )}
         </div>
 
-        <div className="detalle__card">
+        <div className={`detalle__card${lapida.resucitada ? ' detalle__card--resucitada' : ''}`}>
+          {/* Igual que en la tarjeta: el rótulo ocupa su alto siempre y solo se
+              revela al revivir. */}
+          <p
+            className="detalle__resucitada"
+            aria-hidden={lapida.resucitada ? undefined : true}
+            aria-label={lapida.resucitada ? 'Lápida resucitada' : undefined}
+          >
+            RESUCITADA
+          </p>
+
           <h1 className="detalle__titulo">“{lapida.nombrePlanta.toUpperCase()}”</h1>
           <p className="detalle__autor">por @{nombreDelDuenio(lapida)}</p>
 
           <p className="detalle__epitafio">“{lapida.epitafio}”</p>
-
-          {lapida.resucitada && (
-            <p
-              className="detalle__resucitada"
-              aria-label="Lápida resucitada"
-              role="status"
-            >
-              RESUCITADA
-            </p>
-          )}
 
           <div className="detalle__datos">
             <span>

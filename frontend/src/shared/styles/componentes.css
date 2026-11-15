@@ -352,6 +352,23 @@
   border-radius: 6px;
 }
 
+/* Rótulo de estado. Ocupa su alto siempre (visible u oculto) para que la
+   tarjeta no cambie de tamaño al resucitar. Es solo texto en el verde de la
+   paleta, para distinguirse del nombre sin agregar otra caja. */
+.lapida__resucitada {
+  visibility: hidden;
+  align-self: flex-start;
+  color: var(--madera);
+  font-family: var(--fuente-pixel);
+  font-size: 7px;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+}
+
+.lapida--resucitada .lapida__resucitada {
+  visibility: visible;
+}
+
 .lapida__nombre {
   font-weight: 700;
   font-size: 12px;
@@ -727,6 +744,22 @@ button.lapida__coronas:disabled {
   color: var(--texto-fuerte);
 }
 
+/* Mismo rótulo que la tarjeta: solo texto, sin caja, y reserva su alto esté
+   visible u oculto. */
+.detalle__resucitada {
+  visibility: hidden;
+  align-self: flex-start;
+  color: var(--madera);
+  font-family: var(--fuente-pixel);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+}
+
+.detalle__card--resucitada .detalle__resucitada {
+  visibility: visible;
+}
+
 .detalle__titulo {
   font-family: var(--fuente-pixel);
   font-size: 14px;
@@ -736,6 +769,7 @@ button.lapida__coronas:disabled {
 
 .detalle__autor {
   font-size: 11px;
+  font-weight: 700;
   color: var(--texto-suave);
 }
 

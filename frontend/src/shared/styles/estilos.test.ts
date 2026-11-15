@@ -65,4 +65,43 @@ describe('hoja de estilos', () => {
     expect(sidebar).toMatch(/height\s*:\s*calc\(\s*100vh/)
     expect(sidebar).toMatch(/overflow-y\s*:\s*auto/)
   })
+
+  it('reserva el alto del rótulo RESUCITADA y lo revela solo al revivir', () => {
+    // El span existe siempre: si se quitara del DOM, la lápida cambiaría de
+    // tamaño al resucitar. `visibility: hidden` conserva el espacio.
+    expect(bloque(componentes, '.lapida__resucitada')).toMatch(/visibility\s*:\s*hidden/)
+    expect(bloque(componentes, '.lapida--resucitada .lapida__resucitada')).toMatch(
+      /visibility\s*:\s*visible/,
+    )
+  })
+
+  it('pinta el rótulo RESUCITADA como texto propio, sin caja', () => {
+    const rotulo = bloque(componentes, '.lapida__resucitada')
+    expect(rotulo).toMatch(/color\s*:\s*var\(--madera\)/)
+    expect(rotulo).toMatch(/font-family\s*:\s*var\(--fuente-pixel\)/)
+    // Sin fondo ni borde: el rótulo no introduce otra caja en la tarjeta.
+    expect(rotulo).not.toMatch(/(?:^|;)\s*background\s*:/)
+    expect(rotulo).not.toMatch(/(?:^|;)\s*border\s*:/)
+  })
+
+  it('hace lo mismo con el rótulo del detalle de la lápida', () => {
+    expect(bloque(componentes, '.detalle__resucitada')).toMatch(/visibility\s*:\s*hidden/)
+    expect(bloque(componentes, '.detalle__card--resucitada .detalle__resucitada')).toMatch(
+      /visibility\s*:\s*visible/,
+    )
+
+    const rotulo = bloque(componentes, '.detalle__resucitada')
+    expect(rotulo).toMatch(/color\s*:\s*var\(--madera\)/)
+    expect(rotulo).toMatch(/font-family\s*:\s*var\(--fuente-pixel\)/)
+    expect(rotulo).not.toMatch(/(?:^|;)\s*background\s*:/)
+    expect(rotulo).not.toMatch(/(?:^|;)\s*border\s*:/)
+  })
+
+  it('destaca el autor solo en la página de la lápida', () => {
+    // En la ficha del detalle el autor es el dato que identifica al dueño; en
+    // la tarjeta de la grilla sigue en peso normal para no competir con el
+    // nombre.
+    expect(bloque(componentes, '.detalle__autor')).toMatch(/font-weight\s*:\s*700/)
+    expect(bloque(componentes, '.lapida__autor')).not.toMatch(/font-weight\s*:\s*700/)
+  })
 })

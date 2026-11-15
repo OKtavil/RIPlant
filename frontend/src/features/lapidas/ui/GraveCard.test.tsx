@@ -103,35 +103,57 @@ describe('GraveCard', () => {
 
       const tarjeta = container.querySelector('.lapida')!
       expect(tarjeta.className).not.toContain('lapida--resucitada')
-      expect(container.querySelector('.lapida__resucitada')).toBeNull()
     })
 
-    it('marca la tarjeta con una clase propia cuando revivió', () => {
+    it('reserva el hueco del rótulo aunque la lápida no haya revivido', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida({ resucitada: false })} onAbrir={vi.fn()} />,
+      )
+
+      const contenido = container.querySelector('.lapida__contenido')!
+      const rotulo = contenido.querySelector('.lapida__resucitada')!
+
+      // El span existe siempre, oculto, para que el alto no cambie al revivir.
+      expect(rotulo).toBeTruthy()
+      expect(rotulo.getAttribute('aria-hidden')).toBe('true')
+      expect(rotulo.textContent).toContain('RESUCITADA')
+    })
+
+    it('ubica el rótulo arriba del nombre', () => {
+      const { container } = render(
+        <GraveCard lapida={lapida({ resucitada: false })} onAbrir={vi.fn()} />,
+      )
+
+      const contenido = container.querySelector('.lapida__contenido')!
+      const rotulo = contenido.firstElementChild!
+
+      expect(rotulo.className).toBe('lapida__resucitada')
+      expect(rotulo.nextElementSibling?.className).toBe('lapida__nombre')
+    })
+
+    it('marca la tarjeta con una clase propia y muestra el rótulo cuando revivió', () => {
       const { container } = render(
         <GraveCard lapida={lapida({ resucitada: true })} onAbrir={vi.fn()} />,
       )
 
       const tarjeta = container.querySelector('.lapida')!
       expect(tarjeta.className).toContain('lapida--resucitada')
-    })
-
-    it('muestra el rótulo visible en la tarjeta, no solo el color', () => {
-      const { container } = render(
-        <GraveCard lapida={lapida({ resucitada: true })} onAbrir={vi.fn()} />,
-      )
 
       const rotulo = container.querySelector('.lapida__resucitada')!
-      expect(rotulo).toBeTruthy()
+      expect(rotulo.getAttribute('aria-hidden')).toBeNull()
       expect(rotulo.textContent).toContain('RESUCITADA')
     })
 
-    it('también marca la variante baja, que es la del perfil', () => {
+    it('también reserva y muestra el rótulo en la variante baja, que es la del perfil', () => {
       const { container } = render(
         <GraveCard lapida={lapida({ resucitada: true })} tamano="baja" onAbrir={vi.fn()} />,
       )
 
       expect(container.querySelector('.lapida--resucitada')).toBeTruthy()
-      expect(container.querySelector('.lapida__resucitada')).toBeTruthy()
+
+      const rotulo = container.querySelector('.lapida__contenido .lapida__resucitada')!
+      expect(rotulo.getAttribute('aria-hidden')).toBeNull()
+      expect(rotulo.textContent).toContain('RESUCITADA')
     })
   })
 })

@@ -23,11 +23,6 @@ type Props = {
 export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCorona, propia = false, onBorrar }: Props) {
   return (
     <article className={`lapida lapida--${tamano}${lapida.resucitada ? ' lapida--resucitada' : ''}`}>
-      {lapida.resucitada && (
-        <span className="lapida__resucitada" aria-label="Lápida resucitada">
-          RESUCITADA
-        </span>
-      )}
       <button
         className={`lapida__foto ${tamano === 'baja' ? 'lapida__foto--baja' : 'lapida__foto--alta'}`}
         style={lapida.fotoUrl ? undefined : { background: colorDeFoto(lapida.id) }}
@@ -42,6 +37,16 @@ export function GraveCard({ lapida, tamano = 'alta', categoria, onAbrir, onCoron
       </button>
 
       <div className="lapida__contenido">
+        {/* El rótulo se queda siempre en el flujo, oculto cuando la lápida no
+            revivió: así reserva su alto y la tarjeta no cambia de tamaño. */}
+        <span
+          className="lapida__resucitada"
+          aria-hidden={lapida.resucitada ? undefined : true}
+          aria-label={lapida.resucitada ? 'Lápida resucitada' : undefined}
+        >
+          RESUCITADA
+        </span>
+
         <button className="lapida__nombre" onClick={() => onAbrir(lapida)}>
           “{lapida.nombrePlanta}”
         </button>

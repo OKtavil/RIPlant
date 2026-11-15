@@ -215,11 +215,26 @@ describe('DetallePage', () => {
   })
 
   describe('estado resucitada (S5)', () => {
-    it('no muestra el rótulo en una lápida que nunca revivió', () => {
+    it('reserva el hueco del rótulo aunque la lápida no haya revivido', () => {
       const { container } = montar({ lapida: lapida({ resucitada: false }) })
 
-      expect(container.querySelector('.detalle__resucitada')).toBeNull()
-      expect(screen.queryByText(/resucitada/i)).toBeNull()
+      const card = container.querySelector('.detalle__card')!
+      const rotulo = card.querySelector('.detalle__resucitada')!
+
+      expect(rotulo).toBeTruthy()
+      expect(rotulo.getAttribute('aria-hidden')).toBe('true')
+      expect(rotulo.textContent).toContain('RESUCITADA')
+      expect(card.className).not.toContain('detalle__card--resucitada')
+    })
+
+    it('ubica el rótulo arriba del título', () => {
+      const { container } = montar({ lapida: lapida({ resucitada: false }) })
+
+      const card = container.querySelector('.detalle__card')!
+      const rotulo = card.firstElementChild!
+
+      expect(rotulo.className).toBe('detalle__resucitada')
+      expect(rotulo.nextElementSibling?.className).toBe('detalle__titulo')
     })
 
     it('muestra el rótulo RESUCITADA en una lápida que revivió', () => {
@@ -227,8 +242,11 @@ describe('DetallePage', () => {
         lapida: lapida({ resucitada: true, resucitadaEn: '2026-10-20T00:00:00.000Z' }),
       })
 
+      const card = container.querySelector('.detalle__card')!
+      expect(card.className).toContain('detalle__card--resucitada')
+
       const rotulo = container.querySelector('.detalle__resucitada')!
-      expect(rotulo).toBeTruthy()
+      expect(rotulo.getAttribute('aria-hidden')).toBeNull()
       expect(rotulo.textContent).toContain('RESUCITADA')
     })
 
