@@ -132,11 +132,20 @@ describe('E002 — los errores se limpian al cambiar de pestaña', () => {
 })
 
 describe('navegación de publicación', () => {
-  it('oculta PUBLICAR en el nav cuando no hay sesión', async () => {
+  it('muestra PUBLICAR en el nav también cuando no hay sesión', async () => {
     render(<App />)
 
     expect(await screen.findByRole('button', { name: /iniciar sesión/i })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /^publicar$/i })).toBeNull()
+    expect(screen.getByRole('button', { name: /^publicar$/i })).toBeTruthy()
+  })
+
+  it('abre el login al tocar PUBLICAR sin sesión, en vez del formulario', async () => {
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /^publicar$/i }))
+
+    expect(await screen.findByText(/vuelve a tu jardín/i)).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: /nueva lápida/i })).toBeNull()
   })
 
   it('muestra PUBLICAR en el nav con sesión iniciada', async () => {
@@ -144,6 +153,38 @@ describe('navegación de publicación', () => {
     render(<App />)
 
     expect(await screen.findByRole('button', { name: /^publicar$/i })).toBeTruthy()
+  })
+
+  it('abre el formulario al tocar PUBLICAR con sesión iniciada', async () => {
+    vi.mocked(sesionesApi.actual).mockResolvedValue(sesion())
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /^publicar$/i }))
+
+    expect(await screen.findByRole('heading', { name: /nueva lápida/i })).toBeTruthy()
+  })
+
+  it('manda a login si se entra directo a /publicar sin sesión', async () => {
+    window.history.replaceState(null, '', '/publicar')
+    render(<App />)
+
+    expect(await screen.findByText(/vuelve a tu jardín/i)).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: /nueva lápida/i })).toBeNull()
+
+    // El logo es la única salida de las pantallas de auth: tiene que volver al
+    // inicio, no reabrir el login sobre la ruta protegida.
+    fireEvent.click(screen.getByRole('button', { name: /r\.i\.planta/i }))
+    expect(await screen.findByRole('button', { name: /^publicar$/i })).toBeTruthy()
+    expect(window.location.pathname).toBe('/')
+  })
+
+  it('deja el formulario si se entra directo a /publicar con sesión iniciada', async () => {
+    window.history.replaceState(null, '', '/publicar')
+    vi.mocked(sesionesApi.actual).mockResolvedValue(sesion())
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /nueva lápida/i })).toBeTruthy()
+    expect(screen.queryByText(/vuelve a tu jardín/i)).toBeNull()
   })
 })
 

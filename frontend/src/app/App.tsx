@@ -38,6 +38,10 @@ export default function App() {
   const [asesinos, setAsesinos] = useState<Asesino[]>([])
   const [errorAsesinos, setErrorAsesinos] = useState('')
   const [sesion, setSesion] = useState<Session | null>(null)
+  // `sesion` arranca en null incluso para quien está logueado: `actual()` es
+  // asíncrono. Este flag dice cuándo esa respuesta ya llegó, para no mandar al
+  // login a alguien que todavía no dio tiempo a resolver la sesión.
+  const [sesionVerificada, setSesionVerificada] = useState(false)
   const [cargando, setCargando] = useState(true)
   const [actualizando, setActualizando] = useState(false)
   const [aviso, setAviso] = useState('')
@@ -55,6 +59,14 @@ export default function App() {
   /** Perfil pedido por la URL (`/perfiles/:username`), o `null` para la lista. */
   const usernamePerfil = ruta.tipo === 'perfilUsuario' ? ruta.username : null
   const seleccionada = detalleId ? lapidas.find((l) => l.id === detalleId) ?? null : null
+
+  /**
+   * `/publicar` es ruta protegida. Se deriva en el render, sin efecto: antes de
+   * que llegue `sesionesApi.actual` la sesión es null incluso para quien sí
+   * inició, y mandarlo al login sería un falso positivo en el primer render.
+   */
+  const loginPorPublicar =
+    sesionVerificada && !sesion && ruta.tipo === 'vista' && ruta.vista === 'publicar'
 
   useEffect(() => {
     let vigente = true
@@ -94,6 +106,8 @@ export default function App() {
         void recargarLapidasConSesion()
       } catch {
         // Sin sesión: es un estado válido, no un error.
+      } finally {
+        if (vigente) setSesionVerificada(true)
       }
     })()
 
@@ -139,10 +153,10 @@ export default function App() {
    * Abrir o cerrar una pantalla de autenticación limpia el aviso (E002): el
    * error de la sesión anterior no tiene por qué seguir en pantalla.
    */
-  function abrirAuth(destino: VistaAuth | null) {
+  const abrirAuth = useCallback((destino: VistaAuth | null) => {
     setAviso('')
     setVistaAuth(destino)
-  }
+  }, [])
 
   async function ingresar(credenciales: Credenciales) {
     const actual = await sesionesApi.iniciar(credenciales)
@@ -341,7 +355,7 @@ export default function App() {
     setCategorias((items) => items.filter((item) => item.id !== id))
   }
 
-  const navItems = sesion ? MENU : MENU.filter((item) => item !== 'publicar')
+  const navItems = MENU
   const vistaActiva: Vista | null = vistaAuth ? null : vista
 
   /** Navegar por el menú escribe la URL de esa vista. */
@@ -350,9 +364,13 @@ export default function App() {
       // Cambiar de pestaña descarta los errores de la anterior (E002); el aviso
       // global no tiene por qué seguir en una pantalla donde ya no aplica.
       setAviso('')
+      if (destino === 'publicar' && !sesion) {
+        abrirAuth('login')
+        return
+      }
       navegar(rutaDeVista(destino))
     },
-    [navegar],
+    [abrirAuth, navegar, sesion],
   )
   /** Abrir una lápida escribe la URL del detalle. */
   const abrirDetalle = useCallback(
@@ -377,19 +395,30 @@ export default function App() {
     [navegar],
   )
 
-  if (vistaAuth) {
+  if (vistaAuth || loginPorPublicar) {
+    const authVista = vistaAuth ?? 'login'
     return (
       <div className="pantalla">
-        <Nav activa={null} items={[]} onNavegar={() => abrirAuth(null)} />
-        {vistaAuth === 'login' && <LoginPage onIngresar={ingresar} onNavegar={abrirAuth} />}
-        {vistaAuth === 'registro' && (
+        <Nav
+          activa={null}
+          items={[]}
+          onNavegar={() => {
+            abrirAuth(null)
+            // Si el login viene de una URL directa a `/publicar`, el logo
+            // vuelve al inicio: mostrar la app sin salir de esa ruta reabriría
+            // el guard en el próximo render.
+            if (loginPorPublicar) navegar(rutaDeVista('inicio'))
+          }}
+        />
+        {authVista === 'login' && <LoginPage onIngresar={ingresar} onNavegar={abrirAuth} />}
+        {authVista === 'registro' && (
           <RegistroPage
             onRegistrar={registrar}
             onContinuar={continuarRegistro}
             onNavegar={abrirAuth}
           />
         )}
-        {vistaAuth === 'recuperar' && (
+        {authVista === 'recuperar' && (
           <RecuperarPage onRecuperar={recuperar} onNavegar={abrirAuth} />
         )}
       </div>
