@@ -6,17 +6,22 @@
 frontend/ React + Vite
     ├── app/            composición y navegación de pantallas
     ├── features/
-    │   ├── lapidas/    modelo, API y UI del cementerio
-    │   └── categorias/ modelo, API y UI del CRUD
-    └── shared/api/     cliente HTTP común
+    │   ├── lapidas/      modelo, API y UI del cementerio
+    │   ├── categorias/   modelo, API y UI del CRUD
+    │   ├── comentarios/  lectura pública y moderación
+    │   ├── usuarios/     perfil público y edición del perfil
+    │   └── sesiones/     login, registro y recuperación
+    └── shared/         cliente HTTP, estilos y componentes comunes
     │ HTTP/JSON + CORS
 backend/ NestJS
-    ├── lapidas/      dominio, DTO, esquema Mongoose, servicio y controlador
-    ├── categorias/   dominio, DTO, esquema Mongoose, servicio y controlador
-    ├── usuarios/     cuenta, rol y hash bcrypt; siembra del administrador
-    ├── sesiones/     sesión server-side, cookie httpOnly y middlewares
-    ├── app.module    conexión MongoDB y resolución global de sesión
-    └── shared/       validación global
+    ├── lapidas/        dominio, DTO, esquema, servicio, controlador y middlewares
+    ├── categorias/     dominio, DTO, esquema, servicio y controlador
+    ├── comentarios/    lectura pública y borrado de admin
+    ├── usuarios/       cuenta, hash bcrypt, perfil y códigos de recuperación
+    ├── sesiones/       sesión server-side, cookie httpOnly y middlewares
+    ├── almacenamiento/ guardado y validación de imágenes en disco
+    ├── app.module      conexión MongoDB y resolución global de sesión
+    └── shared/         validación global
 ```
 
 El frontend conoce contratos JSON, no detalles internos de NestJS. Los controladores
@@ -25,19 +30,22 @@ Mongoose persisten los documentos. Los ids numéricos del dominio se mantienen a
 MongoDB conserve internamente su `_id`, para no romper el contrato inicial del frontend.
 
 El frontend sigue scream architecture: cada feature se reconoce por su capacidad de
-negocio (`lapidas` y `categorias`) y contiene su modelo, acceso a datos y componentes de
-interfaz. `frontend/src/app/App.tsx` solo compone esas features y coordina la navegación;
-el cliente HTTP es una dependencia compartida, no una responsabilidad de las pantallas.
+negocio (`lapidas`, `categorias`, `comentarios`, `usuarios` y `sesiones`) y contiene su
+modelo, acceso a datos y componentes de interfaz. `frontend/src/app/App.tsx` solo compone
+esas features y coordina la navegación; el cliente HTTP es una dependencia compartida,
+no una responsabilidad de las pantallas.
 No hay datos de demostración ni persistencia local como segundo adaptador: si la API
 falla, la interfaz informa el error y no presenta cambios como si estuvieran guardados.
 
 ## Persistencia MongoDB
 
-El backend se conecta a `MONGODB_URI` y crea cuatro colecciones: `lapidas`,
-`categorias`, `usuarios` y `sesiones`. Los índices únicos protegen los ids numéricos y
-los `username`; los servicios insertan datos semilla solo cuando la colección está
-vacía. El contador de coronas usa `$inc`, una operación atómica. La colección `sesiones`
-tiene un índice TTL sobre `expiraEn`, así Mongo borra las sesiones vencidas solo.
+El backend se conecta a `MONGODB_URI` y crea seis colecciones: `lapidas`,
+`categorias`, `usuarios`, `sesiones`, `coronas` y `comentarios`. Los índices únicos
+protegen los ids numéricos y los `username` (y, en `coronas`, el par
+`(lapidaId, usuarioId)` que hace idempotente la corona); los servicios insertan datos
+semilla solo cuando la colección está vacía. El contador de coronas usa `$inc`, una
+operación atómica. La colección `sesiones` tiene un índice TTL sobre `expiraEn`, así
+Mongo borra las sesiones vencidas solo.
 
 ## Sesiones y autorización
 
@@ -60,11 +68,15 @@ prueban ese orden de verdad, no lo asumen.
 
 ## Próxima secuencia recomendada
 
-1. Extraer interfaces de repositorio (`LapidasRepository`, `CategoriasRepository`).
-2. Añadir usuario autenticado y hacer la corona idempotente por `(usuarioId, lapidaId)`.
-3. Añadir los endpoints de registro y recuperación de contraseña que el frontend ya
-   tiene como pantallas deshabilitadas.
-4. Añadir pruebas de integración contra MongoDB en Docker CI.
+1. Extraer interfaces de repositorio (`LapidasRepository`, `CategoriasRepository`); los
+   servicios todavía hablan directo con los modelos Mongoose.
+2. Añadir pruebas de integración contra MongoDB en Docker CI.
+3. Definir el borrado de usuarios y la política para sus lápidas, hoy solo documentada.
+
+Ya no están pendientes los puntos que recomendaba esta lista: el registro
+(`POST /usuarios`) y la recuperación con código de un solo uso
+(`POST /usuarios/recuperar`) están implementados, y la corona es idempotente por el
+índice único de `(lapidaId, usuarioId)`.
 
 ## Principios de mantenimiento
 

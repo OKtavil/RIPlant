@@ -9,6 +9,8 @@ Esta carpeta explica **qué entrega el proyecto**, **por qué está construido a
 2. Arranca el backend en una terminal: `pnpm --filter backend run start:dev`.
 3. Arranca el frontend en otra: `pnpm --filter frontend run dev`.
 4. Abre la URL que muestre Vite, normalmente `http://localhost:5173`.
+   Como atajo, `pnpm demo` levanta ambos procesos y abre un túnel público; está
+   descripto en el README principal.
 5. Lee la [especificación funcional](./spec.md) y prueba la checklist manual.
 6. Lee la [arquitectura](./architecture.md) y las [decisiones](./decisions.md) antes
    de cambiar persistencia, autenticación o UI.
@@ -63,12 +65,16 @@ datos ahora sí sobreviven al reinicio del backend porque viven en el volumen Do
 | Categorías | Abre `Categorías` → agrega, edita y elimina | La lista refleja cada operación y pide confirmación al eliminar |
 | Perfil | Abre `Mi perfil`, edita la descripción, elige una imagen y consulta `Perfiles` | Los cambios opcionales se guardan; al elegir otra imagen se ven juntas la actual y la vista previa. La lista pública muestra avatar, nombre y descripción; las lápidas compactas tienen textos limitados y altura uniforme |
 | Cambiar contraseña | En `Mi perfil` escribe una nueva contraseña y la actual | Se acepta solo si la contraseña actual coincide; sin nueva contraseña, los demás datos del perfil se pueden guardar sin cambiarla |
+| Recuperar contraseña | Desde `Mi perfil` genera un código, cierra sesión y usa `¿OLVIDASTE TU CONTRASEÑA?` con ese código | La contraseña cambia, las sesiones anteriores quedan cerradas y se entra con la nueva |
+| Borrar comentario (admin) | Como `admin`, abre el detalle de una lápida con comentarios y pulsa `Borrar el comentario` | Pide confirmación nombrando al autor y el comentario desaparece; un `usuario` no ve el botón |
 | Errores de formulario | Envía un formulario inválido o repite el envío con el mismo error | Los errores por campo y generales se distinguen con una breve animación, salvo que el sistema solicite movimiento reducido |
 
 Si el backend no está levantado, la interfaz **no entra en modo demostración**: informa
 el error y no presenta cambios como si estuvieran guardados. Los datos simulados se
 reservan para los mocks de las pruebas. Con MongoDB y el backend activos, las peticiones
-se envían a `http://localhost:3000` y persisten.
+se envían a `http://localhost:3000` y persisten. Aquí "modo demostración" significa datos
+simulados en la UI; no confundirlo con el script `pnpm demo` del README principal, que
+levanta el backend y el frontend reales detrás de un túnel.
 
 ## Probar la API directamente
 
@@ -100,5 +106,7 @@ Para detener el modo desarrollo, pulsa `Ctrl+C` en cada terminal.
 ## Estado y límites intencionales
 
 La aplicación es funcional de extremo a extremo con persistencia MongoDB. Al iniciar
-por primera vez una base vacía, el backend inserta datos semilla. Autenticación y
-autorización real son la siguiente iteración.
+por primera vez una base vacía, el backend inserta datos semilla. La autenticación
+(sesión en servidor con cookie `httpOnly`) y la autorización por roles ya funcionan;
+quedan como límites conocidos el borrado de usuarios, la recuperación por correo
+(hoy es con código) y las pruebas de integración en CI.
