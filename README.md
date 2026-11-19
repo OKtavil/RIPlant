@@ -536,6 +536,26 @@ pnpm --filter frontend run dev
 
 Abre la URL que indique Vite, normalmente `http://localhost:5173`.
 
+#### Modo demo (un solo comando + túnel)
+
+Si querés levantar todo junto y compartirlo por Internet:
+
+```bash
+docker compose up -d mongo   # el backend necesita MongoDB
+pnpm demo
+```
+
+`pnpm demo` corre `pnpm --filter backend run start:dev` y
+`pnpm --filter frontend run dev` en paralelo, espera a que Vite responda y
+después abre `cloudflared tunnel --url http://localhost:5173`. La URL pública
+(`https://<nombre>.trycloudflare.com`) la imprime cloudflared en la terminal.
+El túnel apunta al frontend, y el proxy de Vite reenvía `/api` y `/uploads` al
+backend, así que la cookie de sesión viaja en el mismo origen. Un solo `Ctrl+C`
+detiene los tres procesos.
+
+Necesitás `cloudflared` instalado y en el `PATH`, y MongoDB levantado; el script
+no hace `docker compose` por vos.
+
 ### 3. Ejecutar pruebas y builds
 
 ```bash
@@ -763,6 +783,14 @@ foto: el JSON de crear/editar ignora `fotoUrl`.
   medir al menos **320 px** y la imagen no puede superar **50 megapíxeles**. Las
   dimensiones se leen desde la cabecera, sin descomprimir la imagen; una foto que no
   cumple devuelve `400` con el motivo.
+- La foto de perfil (`PUT /usuarios/:id/perfil`) usa las mismas reglas de tipo,
+  tamaño y límite de píxeles, pero el mínimo es de **96 px por lado**: el avatar
+  se muestra a 56–84 px, así que pedir 320 px exigiría una foto cuatro veces más
+  grande de lo que la UI puede mostrar.
+- Al publicar, el formulario aplica estas mismas reglas **antes** de crear la lápida
+  (`frontend/src/features/lapidas/model/validar-foto.ts`): si la foto no entra, muestra el
+  motivo en el campo y no publica. La foto sigue siendo opcional; el servidor se mantiene
+  como fuente de verdad.
 - Se guarda en `backend/var/uploads/` (ignorado por git) y se sirve estático en
   `/uploads/<archivo>`. Al reemplazar la foto se borra la anterior, y al borrar la lápida
   se borra la suya (ambos best-effort).

@@ -23,6 +23,14 @@ export interface ImagenGuardada {
 }
 
 /**
+ * Ajustes por llamada. El lado mínimo depende de dónde se muestre la imagen:
+ * el avatar de perfil es mucho más chico que la foto de una lápida.
+ */
+export interface OpcionesGuardado {
+  ladoMinimo?: number;
+}
+
+/**
  * Contrato de almacenamiento de fotos. Las fotos viven hoy en disco local
  * (D2), pero el servicio queda detrás de esta interfaz para poder pasar a
  * S3/R2 sin tocar los controladores.
@@ -33,7 +41,7 @@ export interface AlmacenamientoService {
    * Lanza `UnsupportedMediaTypeException` si el tipo real no es una imagen
    * permitida.
    */
-  guardar(buffer: Buffer): Promise<ImagenGuardada>;
+  guardar(buffer: Buffer, opciones?: OpcionesGuardado): Promise<ImagenGuardada>;
 
   /**
    * Borra un archivo por su ruta pública (`/uploads/<archivo>`). Best-effort:

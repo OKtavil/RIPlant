@@ -1,0 +1,7 @@
+{
+  "name": "riplanta",
+  "private": true,
+  "scripts": {
+    "demo": "node scripts/demo.mjs"
+  }
+}

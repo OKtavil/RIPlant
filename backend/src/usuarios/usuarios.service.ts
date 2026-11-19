@@ -29,6 +29,13 @@ import { UsuarioDocumentModel } from './usuario.schema';
 const NOMBRES_RESERVADOS = ['admin', 'zombie'];
 
 /**
+ * Lado mínimo del avatar. Se muestra a 56 px en la lista y a 84 px en el
+ * editor, así que el mínimo de las lápidas (320 px) pediría una foto cuatro
+ * veces más grande de lo que la UI puede mostrar.
+ */
+export const LADO_MINIMO_AVATAR = 96;
+
+/**
  * Único error de `POST /usuarios/recuperar`. Es genérico a propósito: no
  * distingue "ese usuario no existe" de "ese código no es", porque esa
  * diferencia le diría a un atacante qué nombres están registrados.
@@ -255,7 +262,9 @@ export class UsuariosService implements OnModuleInit {
       cambios.passwordHash = await hashPassword(datos.passwordNueva);
     }
 
-    const imagen = foto?.length ? await this.almacenamiento.guardar(foto) : undefined;
+    const imagen = foto?.length
+      ? await this.almacenamiento.guardar(foto, { ladoMinimo: LADO_MINIMO_AVATAR })
+      : undefined;
     if (imagen) cambios.avatarUrl = imagen.rutaPublica;
     if (Object.keys(cambios).length === 0) return this.aDominio(docActual);
 

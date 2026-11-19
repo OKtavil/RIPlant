@@ -187,7 +187,7 @@ export function PerfilPage({
               etiqueta="Imagen de perfil (opcional)"
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              ayuda="JPEG, PNG o WebP, hasta 5 MB."
+              ayuda="JPEG, PNG o WebP, hasta 5 MB, desde 96 px por lado."
               error={erroresPerfil.foto}
               onChange={(evento) => {
                 const archivo = evento.target.files?.[0]

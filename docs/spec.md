@@ -94,7 +94,8 @@ al mostrarlas. Se guarda en disco local y se sirve en `/uploads/<archivo>`.
   imagen y la contraseña. Si se envía `passwordNueva`, se exige `passwordActual` correcta;
   la contraseña nueva acepta de 8 a 72 caracteres y solo se guarda su hash. La foto usa
   las validaciones de imágenes comunes: JPEG, PNG o WebP, hasta **5 MB**, dimensiones
-  mínimas de 320 px por lado y máximo 50 megapíxeles. Nunca se devuelve el hash.
+  mínimas de **96 px por lado** (el avatar se muestra a 56–84 px) y máximo 50 megapíxeles.
+  Nunca se devuelve el hash.
 - `GET /usuarios` y `GET /usuarios/:id` no exponen credenciales y publican `avatarUrl`
   junto con la descripción. La lista muestra avatar o placeholder, nombre y descripción;
   las tarjetas compactas recortan nombre a 22, epitafio a 96 y causa a 56 caracteres y

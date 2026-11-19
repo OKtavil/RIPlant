@@ -13,6 +13,7 @@ import {
   TIPOS_IMAGEN_PERMITIDOS,
   type AlmacenamientoService,
   type ImagenGuardada,
+  type OpcionesGuardado,
   type TipoImagenPermitido,
 } from './almacenamiento.interface';
 
@@ -32,6 +33,8 @@ export const TAMANIO_MAXIMO_FOTO = 5 * 1024 * 1024;
  * Lado mínimo de la foto (D003). La ficha del detalle la muestra a 320 px de
  * alto, así que por debajo de eso la imagen se ve borrosa incluso a 1x. El
  * mínimo no pretende juzgar la foto: separa una foto de un icono o un sticker.
+ * Es el mínimo por defecto; los llamadores que muestran la imagen más chica
+ * (el avatar de perfil) pueden pedir otro con `OpcionesGuardado`.
  */
 export const LADO_MINIMO_FOTO = 320;
 
@@ -86,9 +89,9 @@ export class AlmacenamientoDiscoService implements AlmacenamientoService {
    */
   private readonly directorio = directorioDeSubidas();
 
-  async guardar(buffer: Buffer): Promise<ImagenGuardada> {
+  async guardar(buffer: Buffer, opciones: OpcionesGuardado = {}): Promise<ImagenGuardada> {
     const tipo = await this.detectarTipo(buffer);
-    this.validarDimensiones(buffer);
+    this.validarDimensiones(buffer, opciones.ladoMinimo ?? LADO_MINIMO_FOTO);
 
     const nombreArchivo = `${randomUUID()}.${EXTENSION_POR_TIPO[tipo]}`;
     await mkdir(this.directorio, { recursive: true });
@@ -125,7 +128,7 @@ export class AlmacenamientoDiscoService implements AlmacenamientoService {
    * Los mensajes incluyen el tamaño real: sin eso, quien sube la foto solo ve
    * "400" y no tiene forma de saber qué corregir.
    */
-  private validarDimensiones(buffer: Buffer): void {
+  private validarDimensiones(buffer: Buffer, ladoMinimo: number): void {
     const dimensiones = leerDimensiones(buffer);
 
     if (!dimensiones) {
@@ -135,12 +138,12 @@ export class AlmacenamientoDiscoService implements AlmacenamientoService {
     }
 
     if (
-      dimensiones.ancho < LADO_MINIMO_FOTO ||
-      dimensiones.alto < LADO_MINIMO_FOTO
+      dimensiones.ancho < ladoMinimo ||
+      dimensiones.alto < ladoMinimo
     ) {
       throw new BadRequestException(
         `La foto es demasiado chica (${dimensiones.ancho}×${dimensiones.alto}). ` +
-          `Cada lado tiene que medir al menos ${LADO_MINIMO_FOTO} px.`,
+          `Cada lado tiene que medir al menos ${ladoMinimo} px.`,
       );
     }
 

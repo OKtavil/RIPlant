@@ -2,7 +2,7 @@ import type { Model } from 'mongoose';
 import { hashearCodigoRecuperacion } from './codigo-recuperacion';
 import type { AlmacenamientoService } from '../almacenamiento/almacenamiento.interface';
 import { hashPassword, verifyPassword } from './password';
-import { UsuariosService } from './usuarios.service';
+import { LADO_MINIMO_AVATAR, UsuariosService } from './usuarios.service';
 import type { UsuarioDocument } from './usuario.schema';
 
 /** Consulta Mongoose mínima: `.select()` encadenable y `.lean()` resoluble. */
@@ -27,6 +27,7 @@ describe('UsuariosService', () => {
     findByIdAndUpdate: jest.Mock;
   };
   let almacenamiento: AlmacenamientoService;
+  let guardarFoto: jest.Mock;
   let borrarFoto: jest.Mock;
   const ID = '507f1f77bcf86cd799439011';
   const dave = {
@@ -48,13 +49,14 @@ describe('UsuariosService', () => {
       findByIdAndUpdate: jest.fn().mockReturnValue(consultaLean(null)),
     };
     borrarFoto = jest.fn().mockResolvedValue(undefined);
+    guardarFoto = jest.fn().mockResolvedValue({
+      nombreArchivo: 'avatar.png',
+      rutaPublica: '/uploads/avatar.png',
+      tipo: 'image/png',
+      bytes: 10,
+    });
     almacenamiento = {
-      guardar: jest.fn().mockResolvedValue({
-        nombreArchivo: 'avatar.png',
-        rutaPublica: '/uploads/avatar.png',
-        tipo: 'image/png',
-        bytes: 10,
-      }),
+      guardar: guardarFoto,
       borrar: borrarFoto,
     } as unknown as AlmacenamientoService;
     service = new UsuariosService(
@@ -199,6 +201,10 @@ describe('UsuariosService', () => {
         { new: true, runValidators: true },
       );
       expect(borrarFoto).toHaveBeenCalledWith('/uploads/anterior.png');
+      // El avatar se muestra a 56–84 px: no debe pedir el mínimo de las lápidas.
+      expect(guardarFoto).toHaveBeenCalledWith(expect.any(Buffer), {
+        ladoMinimo: LADO_MINIMO_AVATAR,
+      });
     });
 
     it('exige y verifica la contraseña actual antes de reemplazarla', async () => {

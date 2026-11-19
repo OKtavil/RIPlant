@@ -7,9 +7,7 @@ import { CampoArea, CampoSelect, CampoTexto } from '../../../shared/ui/Campo'
 import { useFormErrorPulse } from '../../../shared/ui/useFormErrorPulse'
 import type { Category } from '../../categorias/model/categoria'
 import type { CreateGraveInput } from '../model/lapida'
-
-/** Mismo tope que aplica multer en el backend (`TAMANIO_MAXIMO_FOTO`). */
-const TAMANIO_MAXIMO_FOTO = 5 * 1024 * 1024
+import { validarFoto } from '../model/validar-foto'
 
 /**
  * Cota inferior del rango razonable de fallecimiento (E001), espejo del
@@ -82,6 +80,8 @@ export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props)
    * de los dos quedaría sin revocar.
    */
   const urlViva = useRef<string | null>(null)
+  /** Descarta el resultado de una validación menos reciente que la foto actual. */
+  const serieFoto = useRef(0)
 
   useEffect(
     () => () => {
@@ -90,16 +90,32 @@ export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props)
     [],
   )
 
+  // Si cambia la identidad dueña del borrador, una validación en vuelo no debe
+  // pintar su error en el formulario de la persona que entró después (E006).
+  useEffect(() => {
+    serieFoto.current += 1
+  }, [sesionId])
+
   /**
    * Cambia la foto y su vista previa. Revoca el blob anterior en el acto: sin
    * esto, cada foto elegida dejaría uno retenido hasta desmontar el formulario.
+   * La valida en cuanto se elige para mostrar el error antes del submit; el
+   * submit vuelve a validar por su cuenta, por si apretaron antes de que esta
+   * terminara.
    */
-  function elegirFoto(archivo: File | undefined) {
+  async function elegirFoto(archivo: File | undefined) {
+    const serie = ++serieFoto.current
     if (urlViva.current) URL.revokeObjectURL(urlViva.current)
     const url = archivo ? URL.createObjectURL(archivo) : null
     urlViva.current = url
     setBorrador((previo) => ({ ...previo, foto: archivo, fotoUrl: url }))
     setErrores((err) => ({ ...err, foto: '' }))
+
+    if (!archivo) return
+    const mensaje = await validarFoto(archivo)
+    if (serie === serieFoto.current && mensaje) {
+      setErrores((err) => ({ ...err, foto: mensaje }))
+    }
   }
 
   // Ajuste de estado durante el render, el patrón que recomienda React para
@@ -117,34 +133,35 @@ export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props)
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault()
-    const { nombrePlanta, categoriaId, fechaFallecimiento, causaMuerte, epitafio, foto } = borrador
-    const nuevosErrores: Record<string, string> = {}
-
-    // Se chequea antes de crear la lápida: si el archivo no entra, no tiene
-    // sentido publicar una lápida y fallar después en la subida.
-    if (foto && foto.size > TAMANIO_MAXIMO_FOTO) {
-      nuevosErrores.foto = 'La foto no puede superar los 5 MB.'
-    }
-    if (!nombrePlanta.trim()) nuevosErrores.nombrePlanta = 'El nombre de la planta es obligatorio.'
-    if (!categoriaId) nuevosErrores.categoriaId = 'Elegí una categoría.'
-    if (!fechaFallecimiento) {
-      nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento es obligatoria.'
-    } else if (fechaFallecimiento > hoy) {
-      nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento no puede ser futura.'
-    } else if (fechaFallecimiento < FECHA_MINIMA) {
-      nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento no puede ser anterior a 1900.'
-    }
-    if (!causaMuerte.trim()) nuevosErrores.causaMuerte = 'La causa de muerte es obligatoria.'
-    if (!epitafio.trim()) nuevosErrores.epitafio = 'El epitafio es obligatorio.'
-
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores)
-      return
-    }
-
-    setErrores({})
     setEnviando(true)
     try {
+      const { nombrePlanta, categoriaId, fechaFallecimiento, causaMuerte, epitafio, foto } = borrador
+      const nuevosErrores: Record<string, string> = {}
+
+      // Se chequea antes de crear la lápida: si el archivo no entra, no tiene
+      // sentido publicar una lápida y fallar después en la subida.
+      if (foto) {
+        const mensajeFoto = await validarFoto(foto)
+        if (mensajeFoto) nuevosErrores.foto = mensajeFoto
+      }
+      if (!nombrePlanta.trim()) nuevosErrores.nombrePlanta = 'El nombre de la planta es obligatorio.'
+      if (!categoriaId) nuevosErrores.categoriaId = 'Elegí una categoría.'
+      if (!fechaFallecimiento) {
+        nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento es obligatoria.'
+      } else if (fechaFallecimiento > hoy) {
+        nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento no puede ser futura.'
+      } else if (fechaFallecimiento < FECHA_MINIMA) {
+        nuevosErrores.fechaFallecimiento = 'La fecha de fallecimiento no puede ser anterior a 1900.'
+      }
+      if (!causaMuerte.trim()) nuevosErrores.causaMuerte = 'La causa de muerte es obligatoria.'
+      if (!epitafio.trim()) nuevosErrores.epitafio = 'El epitafio es obligatorio.'
+
+      if (Object.keys(nuevosErrores).length > 0) {
+        setErrores(nuevosErrores)
+        return
+      }
+
+      setErrores({})
       await onPublicar(
         {
           nombrePlanta: nombrePlanta.trim(),
@@ -182,9 +199,9 @@ export function PublicarPage({ categorias, sesionId = null, onPublicar }: Props)
           etiqueta="Foto (opcional)"
           type="file"
           accept="image/jpeg,image/png,image/webp"
-          ayuda="JPEG, PNG o WebP, hasta 5 MB. Se sube después de publicar."
+          ayuda="JPEG, PNG o WebP, hasta 5 MB y 50 Mpx, mínimo 320 px por lado. Se sube después de publicar."
           error={errores.foto}
-          onChange={(e) => elegirFoto(e.target.files?.[0])}
+          onChange={(e) => void elegirFoto(e.target.files?.[0])}
         />
 
         {/* R002: la foto se elige a ciegas si no se muestra cómo entra en la

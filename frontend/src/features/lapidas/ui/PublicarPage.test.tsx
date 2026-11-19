@@ -42,7 +42,18 @@ function completarFormulario() {
   fireEvent.change(screen.getByLabelText(/epitafio/i), { target: { value: 'Se fue' } })
 }
 
-function archivo(nombre = 'planta.png', bytes = 'bytes', tipo = 'image/png') {
+/** PNG mínimo con firma e IHDR, igual al que acepta el backend. */
+function png(ancho = 400, alto = 400): ArrayBuffer {
+  const bytes = new Uint8Array(24)
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0)
+  bytes.set([0x49, 0x48, 0x44, 0x52], 12)
+  const vista = new DataView(bytes.buffer)
+  vista.setUint32(16, ancho)
+  vista.setUint32(20, alto)
+  return bytes.buffer
+}
+
+function archivo(nombre = 'planta.png', bytes: BlobPart = png(), tipo = 'image/png') {
   return new File([bytes], nombre, { type: tipo })
 }
 
@@ -142,6 +153,49 @@ describe('PublicarPage', () => {
 
     expect(await screen.findByRole('alert')).toBeTruthy()
     expect(onPublicar).not.toHaveBeenCalled()
+  })
+
+  it('avisa al elegir un archivo que no es imagen y no publica la lápida', async () => {
+    const onPublicar = vi.fn()
+    render(<PublicarPage categorias={CATEGORIAS} onPublicar={onPublicar} />)
+    completarFormulario()
+
+    fireEvent.change(screen.getByLabelText(/foto/i), {
+      target: { files: [archivo('planta.png', 'esto no es una imagen')] },
+    })
+
+    expect(await screen.findByText(/debe ser una imagen JPEG, PNG o WebP/i)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: /publicar lápida/i }))
+    expect(onPublicar).not.toHaveBeenCalled()
+  })
+
+  it('rechaza una imagen de menos de 320 px antes de crear la lápida', async () => {
+    const onPublicar = vi.fn()
+    render(<PublicarPage categorias={CATEGORIAS} onPublicar={onPublicar} />)
+    completarFormulario()
+
+    const chica = new File([png(319, 400)], 'chica.png', { type: 'image/png' })
+    fireEvent.change(screen.getByLabelText(/foto/i), { target: { files: [chica] } })
+    // El submit puede llegar antes de que resolviera la validación al elegir:
+    // el submit también valida, así que no dependemos del orden de los eventos.
+    fireEvent.click(screen.getByRole('button', { name: /publicar lápida/i }))
+
+    expect(await screen.findByText(/demasiado chica \(319×400\)/i)).toBeTruthy()
+    await waitFor(() => expect(onPublicar).not.toHaveBeenCalled())
+  })
+
+  it('limpia el error de la foto al elegir una imagen válida', async () => {
+    render(<PublicarPage categorias={CATEGORIAS} onPublicar={vi.fn()} />)
+    fireEvent.change(screen.getByLabelText(/foto/i), {
+      target: { files: [archivo('planta.png', 'esto no es una imagen')] },
+    })
+    expect(await screen.findByText(/debe ser una imagen JPEG, PNG o WebP/i)).toBeTruthy()
+
+    fireEvent.change(screen.getByLabelText(/foto/i), { target: { files: [archivo()] } })
+
+    await waitFor(() =>
+      expect(screen.queryByText(/debe ser una imagen JPEG, PNG o WebP/i)).toBeNull(),
+    )
   })
 
   it('muestra el error del padre cuando la publicación falla', async () => {

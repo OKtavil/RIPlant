@@ -154,6 +154,20 @@ describe('AlmacenamientoDiscoService (S8)', () => {
       await expect(service.guardar(png(320, 320))).resolves.toBeDefined();
     });
 
+    it('acepta una imagen de 96 px cuando el llamador pide ese mínimo', async () => {
+      await expect(service.guardar(png(96, 120), { ladoMinimo: 96 })).resolves.toBeDefined();
+    });
+
+    it('rechaza por debajo del mínimo pedido', async () => {
+      await expect(service.guardar(png(95, 120), { ladoMinimo: 96 })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('mantiene el mínimo de 320 cuando no se pide uno distinto', async () => {
+      await expect(service.guardar(png(96, 96))).rejects.toBeInstanceOf(BadRequestException);
+    });
+
     it('acepta una foto de 48 megapíxeles (una cámara de celular)', async () => {
       // 8000×6000 es el tamaño típico de un celular de 48 Mpx. El tope no debe
       // rechazar la foto que la gente realmente saca.
